@@ -141,6 +141,7 @@
 			for ( var i = 0; i < num ; i ++ ) {
 				obj[i][1].fire(act);
 			}
+			return this;
 		}
 
 		function list() {
