@@ -1,32 +1,22 @@
 <html>
   <head>
-    <style>
-    .header {
-      font-family:Arial;
-      font-size:14pt;
-      color:#424242;
-    }
-    </style>
-    <script type="text/javascript" src="d3.v2.js"></script>
-    <script type="text/javascript" src="seeker.util.0.1.0.js"></script>
-    <script type="text/javascript" src="seeker.viewManager.0.1.0.js"></script>
-    <script type="text/javascript" src="seeker.controls.0.1.0.js"></script>
+    <link href="css/theme.css" rel="stylesheet"  type="text/css">
+    <script type="text/javascript" src="ext/d3.v2.js"></script>
+    <script type="text/javascript" src="js/seeker.util.js"></script>
+    <script type="text/javascript" src="js/seeker.viewManager.js"></script>
+    <script type="text/javascript" src="js/seeker.controls.js"></script>
+    <script type="text/javascript" src="js/seeker.annotator.js"></script>
   </head>
   <body>
   <script>
   var dim = seeker.util.winDimensions();
 
-  var vm = new seeker.messenger();
+  var m = new seeker.messenger();
   var v = new seeker.viewManager(100);
 
-  var t = v.get()
-    .attachTo(document.body)
-    .whxy(dim[0],50,0,0)
-    .style('background',seeker_theme.w02)
-    .class('header');
-
-  t.node.innerHTML = 'Seeker';
+  var an = new seeker.annotator(v).attachTo(document.body);
 
   </script>
+
   </body>
 </html>

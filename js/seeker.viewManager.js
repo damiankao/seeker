@@ -10,6 +10,14 @@
 		this.actions[act]();
 	}
 
+	seeker.view.prototype.clean = function() {
+		this.node.removeAttribute('style');
+		this.node.className = '';
+		this.node.innerHTML = '';
+
+		return this;
+	}
+
 	seeker.view.prototype.style = function(s, val) {
 		this.node.style[s] = val;
 		return this;
@@ -92,10 +100,17 @@
 	/////////////////////////
 	/////////////////////////
 
-
+	/*
+	publisher - subscription service
+	-contains a hash of actions for view elements to subscribe to. 
+	-when action is broadcasted, all view elements fire the action.
+	-attaches unsubscribe functions to view elements.
+	*/
 	seeker.messenger = function() {
+		//hash of actions 
 		var _actions = {};
 
+		//add unsub functions to view elements
 		seeker.view.prototype.unsub = function(act) {
 			var oid = this.oid;
 			var num = _actions[act].length;
@@ -124,6 +139,8 @@
 			return this;
 		}
 
+		//subscribe an object to an action 
+		//also add response function for the action
 		function subscribe(obj, act, f) {
 			if (_actions[act] == null) {
 				_actions[act] = [];
@@ -135,6 +152,7 @@
 			return obj;
 		}
 
+		//broadcast the action to all elements to fire
 		function broadcast(act) {
 			var num = _actions[act].length;
 			var obj = _actions[act];
@@ -144,6 +162,7 @@
 			return this;
 		}
 
+		//list all available actions
 		function list() {
 			var acts = [];
 			for (var act in _actions) {
@@ -153,10 +172,12 @@
 			return acts;
 		}
 
+		//list all objects for an action
 		function listObj(act) {
 			return _actions[act];
 		}
 
+		//delete any action with no elements
 		function cleanup() {
 			for (var act in _actions) {
 				if (_actions[act].length == 0) {
@@ -176,14 +197,26 @@
 		}
 	}
 
+	/*
+	A resource manager for view elements
+	-sets up a pool of available view elements
+	-creation and destruction of DOM elements is expensive
+	-view elements are recycled instead of destroyed
+	*/
 	seeker.viewManager = function(num) {
-		//object pools for views
+		//view elements pool and object counts
 		var _views = []
 		var objCount = 0;
 
+		//add a 'free' function to each view element
+		//detach view from parent and unsubscribe to any actions
+		//push this view to the _views pool
 		seeker.view.prototype.free = function() {
 			_views.push(this);
-			return this.detach().unsubAll();
+			if (this.disassemble()) {
+				this.disassemble();
+			}
+			return this.detach().unsubAll().clean();
 		}
 
 		//initialize pool with specified number objects
@@ -193,6 +226,9 @@
 			_views.push(nv);
 		}
 
+		//get available view from pool
+		//if no view available, create new view
+		//allows one argument for parent node
 		function getView() {
 			var nv;
 			if (_views.length == 0) {
@@ -208,10 +244,12 @@
 			}
 		}
 
+		//number of views remaining in pool
 		function remaining() {
 			return _views.length;
 		}
 
+		//number of views created so far
 		function created() {
 			return objCount - 1;
 		}
