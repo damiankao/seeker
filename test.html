@@ -3,18 +3,13 @@
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
     <script type="text/javascript" src="ext/d3.v2.js"></script>
     <script type="text/javascript" src="js/seeker.util.js"></script>
-    <script type="text/javascript" src="js/seeker.viewManager.js"></script>
-    <script type="text/javascript" src="js/seeker.controls.js"></script>
     <script type="text/javascript" src="js/seeker.annotator.js"></script>
   </head>
   <body>
   <script>
   var dim = seeker.util.winDimensions();
 
-  var m = new seeker.messenger();
-  var v = new seeker.viewManager(100);
-
-  var an = new seeker.annotator(v).attachTo(document.body);
+  var a = new seeker.annotator().attachTo(document.body).layout(800,800,20,20).initialize();
 
   </script>
 

@@ -31,10 +31,17 @@
 	minimum height - enough to show at least 5 features
 	*/
 
-	seeker.annotator = function(vm) {
+	seeker.annotator = function() {
 		//view elements
-		var container = vm.get();
-		var canvas;
+		var container = new seeker.container();
+		var canvas = d3
+			.select(container.node)
+			.append('svg')
+			.style('position','absolute')
+			.style('top',0)
+			.style('left',0);
+
+		var groups;
 
 		var _palette = [];
 
@@ -46,17 +53,53 @@
 			"legSpc":-1,
 			"align":[-1,'s'],   //-1 indicates align by start/end of entire sequence
 			                    //First element number refer to the featureType array index
-			"spineWidth":2,
-			"featWidth":5,
-			"seqSpacing":20,
-			"selected":[],      //selected elements. [name, sequence index, start, end, description]
-
-			"minWidth":400,
-			"minHeight":400,
-			"menuHeight":40
+			"spineWidth":1,     //width of the spine
+			"featWidth":8,      //width of the features on the spine
+			"seqLength":700,    //length of the entire sequence
+			"seqSpacing":20,    //spacing between each sequence
+			"margin":20,        //margins of the canvas element
+			"selected":[]       //selected elements. [name, sequence index, start, end, description]
 		};
 
 		var _data = {
+			'seqs':[
+				{'name':'seq01','len':10232,'descr':'NA','seq':-1,'show':true,
+					'feats':[
+						{'featType':0,'descr':'NA','start':1000,'end':4000,'show':true},
+						{'featType':3,'descr':'NA','start':7034,'end':8653,'show':true}
+					]
+				},
+				{'name':'seq02','len':8000,'descr':'NA','seq':-1,'show':false,
+					'feats':[
+						{'featType':0,'descr':'NA','start':5643,'end':6876,'show':true},
+						{'featType':2,'descr':'NA','start':2312,'end':3242,'show':true}
+					]
+				},
+				{'name':'seq03','len':4213,'descr':'NA','seq':-1,'show':true,
+					'feats':[
+						{'featType':2,'descr':'NA','start':1230,'end':2312,'show':true},
+						{'featType':1,'descr':'NA','start':3213,'end':3764,'show':true}
+					]
+				},
+				{'name':'seq04','len':11022,'descr':'NA','seq':-1,'show':true,
+					'feats':[
+						{'featType':1,'descr':'NA','start':1021,'end':6430,'show':true},
+						{'featType':2,'descr':'NA','start':8764,'end':10233,'show':true}
+					]
+				},
+				{'name':'seq05','len':9213,'descr':'NA','seq':-1,'show':false,
+					'feats':[
+						{'featType':2,'descr':'NA','start':3421,'end':5433,'show':true},
+						{'featType':1,'descr':'NA','start':7643,'end':8544,'show':true}
+					]
+				}
+			],
+			'featureType':[
+				{'name':'DOM01','count':2,'descr':'NA','color':'red'},
+				{'name':'DOM02','count':3,'descr':'NA','color':'blue'},
+				{'name':'DOM03','count':4,'descr':'NA','color':'yellow'},
+				{'name':'DOM04','count':1,'descr':'NA','color':'green'}
+			]
 			/*
 			'seqs':[
 				{
@@ -71,27 +114,31 @@
 							'start':10,
 							'end':40,
 							'show':true,
-							'color':'red'
 						}
 					],
 					'show':true
 				}
 			],
 			'featureType':[
-				'name':'feat01',
-				'count':10,
-				'descr':'feature 01'
+				{
+					'name':'feat01',
+					'count':10,
+					'descr':'feature 01',
+					'color':'red'
+				}
 			]
 			*/
 		};
 
+		container.data = _data;
+
 		container.layout = function() {
 			if (arguments.length == 4) {
 				container.whxy(
-					(arguments[0] < _data_application.minWidth) ? arguments[0]:_data_application.minWidth
-					,(arguments[1] < _data_application.minWidth) ? arguments[1]:_data_application.minHeight
-					,arguments[2]
-					,arguments[3]);
+					arguments[0],
+					arguments[1],
+					arguments[2],
+					arguments[3]);
 			}
 
 			var w = container.node.style.width;
@@ -101,20 +148,195 @@
 		}
 
 		container.parse = function(raw, delimiter) {
-			
+
 		}
 
-		container.render = function() {
-			
+		container.numberShownSeqs = function() {
+			var count = 0
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				if (seqs[i]['show'] == true) {
+					count += 1;
+				}
+			}
+
+			return count;
+		}
+
+		container.maxSeqLength = function() {
+			var maxLen = 0
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				if (seqs[i]['len'] > maxLen) {
+					maxLen = seqs[i]['len']
+				}
+			}
+
+			return maxLen;
+		}
+
+		container.initialize = function() {
+			canvas.remove();
+			canvas = d3
+				.select(container.node)
+				.append('svg')
+				.style('position','absolute')
+				.style('top',0)
+				.style('left',0);
+
+			canvas
+				.selectAll('groups')
+				.data(_data['seqs'])
+				.enter()
+				.append('g')
+				.attr('id','seqGroups');
+
+			canvas
+				.selectAll('#seqGroups')
+				.append('rect')
+				.attr('id','seqSpines');
+
+			canvas
+				.selectAll('#seqGroups')
+				.selectAll('features')
+				.data(function(d,i) {
+					return d['feats'];
+				})
+				.enter()
+				.append('rect')
+				.attr('id','seqFeatures');
+
+			return this;
+		}
+
+		container.update = function() {
+			var width = _data_application['seqLength'] + (_data_application['margin'] * 2);
+			var height = this.numberShownSeqs() * (_data_application['featWidth'] + _data_application['seqSpacing'] + 30) - _data_application['seqSpacing'] + (_data_application['margin'] * 2);
+
+			canvas
+				.style('width',width)
+				.style('height',height);
+
+			var index = 0;
+			canvas
+				.selectAll('#seqGroups')
+				.attr('transform',function(d) {
+					if (d['show'] == true) {
+        				return 'translate(' + _data_application['margin'] + ',' + ((30 + _data_application['featWidth'] + _data_application['seqSpacing']) * index++ + _data_application['margin']) + ")";
+        			}
+      			})
+      			.style('display',function(d) {
+      				if (d['show'] == false) {
+        				return 'none';
+        			} else {
+        				return 'block';
+        			}
+      			});
+
+      		var scale = d3.scale.linear()
+			    .domain([0, this.maxSeqLength()])
+			    .range([0, _data_application['seqLength']]);
+
+			canvas
+				.selectAll('#seqSpines')
+				.attr('width', function(d,i) {
+					return scale(d['len']);
+				})
+				.attr('height',_data_application['spineWidth'])
+				.attr('x',0)
+				.attr('y',function(d,i) {
+					return 25 + (_data_application['featWidth'] / 2);
+				})
+				.style('fill','black');
+
+			canvas
+				.selectAll('#seqFeatures')
+				.attr('width', function(d,i) {
+					return scale(d['end'] - d['start'] + 1);
+				})
+				.attr('height',_data_application['featWidth'])
+				.attr('x', function(d,i) {
+					return scale(d['start']);
+				})
+				.attr('y',25)
+				.style('fill',function(d,i) {
+					return _data['featureType'][d['featType']]['color'];
+				})
+				.style('display', function(d) {
+					if (d['show'] == true) {
+						return 'block';
+					} else {
+						return 'none';
+					}
+				});
+
+			return this;
 		}
 
 		container.extract = function() {
-			
+
+		}
+
+		//manipulate data structure
+		container.hideFeatureType = function(featIndex) {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				var featLen = seqs[i]['feats'].length
+				for ( var j = 0 ; j < featLen ; j++ ) {
+					if (seqs[i]['feats'][j]['featType'] == featIndex) {
+						seqs[i]['feats'][j]['show'] = false;
+					}
+				}
+			}
+
+			return this;
+		}
+
+		container.showFeatureType = function(featIndex) {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				var featLen = seqs[i]['feats'].length
+				for ( var j = 0 ; j < featLen ; j++ ) {
+					if (seqs[i]['feats'][j]['featType'] == featIndex) {
+						seqs[i]['feats'][j]['show'] = true;
+					}
+				}
+			}
+
+			return this;
+		}
+
+		container.showSequence = function(seqName) {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				if (seqs[i]['name'] == seqName) {
+					seqs[i]['show'] = true;
+				}
+			}
+
+			return this;
+		}
+
+		container.hideSequence = function(seqName) {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				if (seqs[i]['name'] == seqName) {
+					seqs[i]['show'] = false;
+				}
+			}
+
+			return this;
 		}
 
 		//called when freeing the object
 		container.disassemble = function() {
-			
+
 		}
 
 		return container;
