@@ -15,3 +15,58 @@
 	font-size:25pt;
 	color:white;
 }
+
+.menu {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    list-style:none;
+    background:#333333;
+    margin:0;
+    padding:5px 0px 5px 0px;
+    border:0;
+    display:inline-block;
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    position:relative;
+}
+
+.menuArrow {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 20px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    background-color:#333333;
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    z-index:-1;
+}
+
+.menu li {
+    font-size:11pt;
+    font-family:Arial;
+    color:#E3E3E3;
+    padding:3px 15px 3px 15px;
+}
+
+.menu > li + li, .menu > li:first-child {
+    border-top: solid 1px #696969;
+}
+
+.menu > li:last-of-type {
+    border-bottom: solid 1px #696969;
+}
+
+.menu li:hover {
+    background:#8A0000;
+    cursor:hand;
+};

@@ -41,9 +41,59 @@
 			.style('top',0)
 			.style('left',0);
 
+		var menu_seq = new seeker.menu();
+		var menu_feature = new seeker.menu();
+
+		menu_feature.addItem('show all', function() {
+			container.showFeatureType(_mouseOver[1]['featType']);
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+		menu_feature.addItem('hide all', function() {
+			container.hideFeatureType(_mouseOver[1]['featType']);
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+		menu_feature.addItem('hide feature', function() {
+			_mouseOver[1]['show'] = false;
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+
+		menu_seq.addItem('hide sequence',function() {
+			container.hideSequence(d['name']);
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+		menu_seq.addItem('show all features',function() {
+			var f = d['feats'];
+			var len = f.len;
+			for ( var i = 0 ; i < len ; i ++ ) {
+				f[i]['show'] = true;
+			}
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+		menu_seq.addItem('hide all features',function() {
+			var f = d['feats'];
+			var len = f.len;
+			for ( var i = 0 ; i < len ; i ++ ) {
+				f[i]['show'] = false;
+			}
+			container.update();
+			menu_feature.style.display = 'none';
+		});
+
+		menu_feature.style.display = 'none';
+		menu_seq.style.display = 'none';
+
+		var legend;
+
+		var _mouseOver = [];
+
 		var groups;
 
-		var _palette = [];
+		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
 
 		var _data_application = {
 			"currentSelection":[],
@@ -51,14 +101,15 @@
 			"legdRows":-1,
 			"legdCols":-1,
 			"legSpc":-1,
-			"align":[-1,'s'],   //-1 indicates align by start/end of entire sequence
-			                    //First element number refer to the featureType array index
-			"spineWidth":1,     //width of the spine
-			"featWidth":8,      //width of the features on the spine
-			"seqLength":700,    //length of the entire sequence
-			"seqSpacing":20,    //spacing between each sequence
-			"margin":20,        //margins of the canvas element
-			"selected":[]       //selected elements. [name, sequence index, start, end, description]
+			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence
+			                           //First element number refer to the featureType array index
+			"spineWidth":1,            //width of the spine
+			"spineColor":'#575757',
+			"featWidth":12,            //width of the features on the spine
+			"seqLength":900,           //length of the entire sequence
+			"seqSpacing":20,           //spacing between each sequence
+			"margin":20,               //margins of the canvas element
+			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
 
 		var _data = {
@@ -95,10 +146,10 @@
 				}
 			],
 			'featureType':[
-				{'name':'DOM01','count':2,'descr':'NA','color':'red'},
-				{'name':'DOM02','count':3,'descr':'NA','color':'blue'},
-				{'name':'DOM03','count':4,'descr':'NA','color':'yellow'},
-				{'name':'DOM04','count':1,'descr':'NA','color':'green'}
+				{'name':'DOM01','count':2,'descr':'NA','color':_palette[6]},
+				{'name':'DOM02','count':3,'descr':'NA','color':_palette[2]},
+				{'name':'DOM03','count':4,'descr':'NA','color':_palette[3]},
+				{'name':'DOM04','count':1,'descr':'NA','color':_palette[4]}
 			]
 			/*
 			'seqs':[
@@ -129,8 +180,6 @@
 			]
 			*/
 		};
-
-		container.data = _data;
 
 		container.layout = function() {
 			if (arguments.length == 4) {
@@ -206,7 +255,15 @@
 				})
 				.enter()
 				.append('rect')
-				.attr('id','seqFeatures');
+				.attr('id','seqFeatures')
+				.on('mouseout',function() {
+					d3.select(this).style('stroke-width','0px');
+					document.body.style.cursor = 'default';
+				})
+				.on('click', function(d,i) {
+					//_mouseOver = [1,d];
+					positionMenu(d3.mouse(document.body), 1, d);
+				});
 
 			return this;
 		}
@@ -247,9 +304,9 @@
 				.attr('height',_data_application['spineWidth'])
 				.attr('x',0)
 				.attr('y',function(d,i) {
-					return 25 + (_data_application['featWidth'] / 2);
+					return 25 + (_data_application['featWidth'] / 2) - (_data_application['spineWidth'] / 2);
 				})
-				.style('fill','black');
+				.style('fill',_data_application['spineColor']);
 
 			canvas
 				.selectAll('#seqFeatures')
@@ -270,9 +327,66 @@
 					} else {
 						return 'none';
 					}
+				})
+				.on('mouseover',function(d,i) {
+					d3.select(this).style('stroke-width','4px');
+					d3.select(this).style('stroke',_data['featureType'][d['featType']]['color']);
+					document.body.style.cursor = 'hand';
 				});
 
 			return this;
+		}
+
+		function positionMenu(coord) {
+			if (_mouseOver[0] == 0) {
+
+			} else {
+				var reposition = false;
+				if (menu_feature.style.display == "none") {
+					menu_feature.style.display = 'inline-block';
+					reposition = true;
+				} else {
+					menu_feature.style.display = 'none';
+				}
+
+				if (reposition) {
+					var winDim = seeker.util.winDimensions();
+					var width = menu_feature.offsetWidth;
+					var height = menu_feature.offsetHeight;
+
+					if (coord[1] - height < 30) {
+						//near top, make under cursor
+						menu_feature.orient(1);
+						menu_feature.style.top = coord[1] + 20;
+						console.log('near top');
+					} else if (coord[1] + height > winDim[1] - 30) {
+						//near bottom, make above cursor
+						menu_feature.orient(0);
+						menu_feature.style.top = coord[1] - menu_feature.offsetHeight - 10;
+						console.log('near bottom');
+					} else {
+						//default, under cursor
+						menu_feature.orient(1);
+						menu_feature.style.top = coord[1] + 20;
+					}
+
+					if (coord[0] - width < 30) {
+						//near left, make right of cursor
+						menu_feature.position(1);
+						menu_feature.style.left = coord[0] - 15;
+						console.log('near left');
+					} else if (coord[0] + width > winDim[0] - 30) {
+						//near right, make left of cursor
+						menu_feature.position(0);
+						menu_feature.style.left = coord[0] - menu_feature.offsetWidth + 15
+						console.log('near right')
+					} else {
+						//default, right of cursor
+						menu_feature.position(1);
+						menu_feature.style.left = coord[0] - 15;
+					}
+				}
+			}
 		}
 
 		container.extract = function() {
@@ -330,6 +444,14 @@
 					seqs[i]['show'] = false;
 				}
 			}
+
+			return this;
+		}
+
+		container.attachTo = function(obj) {
+			obj.appendChild(container.node);
+			obj.appendChild(menu_feature);
+			obj.appendChild(menu_seq);
 
 			return this;
 		}
