@@ -75,8 +75,8 @@
 	}
 
 	seeker.menu = function() {
-		var list = document.createElement('ul');
 		var arrow = document.createElement('div');
+		var list = document.createElement('ul');
 
 		arrow.className = 'arrow';
 		list.className = 'menu';
@@ -97,6 +97,7 @@
 			list.appendChild(arrow);
 			arrow.style.top = '20px';
 			arrow.style.left = '20px';
+
 			return list;
 		}
 

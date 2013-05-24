@@ -156,34 +156,6 @@
 				{'name':'DOM03','count':4,'descr':'NA','color':_palette[3]},
 				{'name':'DOM04','count':1,'descr':'NA','color':_palette[4]}
 			]
-			/*
-			'seqs':[
-				{
-					'name':'seq01',
-					'len':100,
-					'descr':'sequence number 01',
-					'seq':'AGATGAGAG',
-					'feats':[
-						{
-							'featType':0,
-							'descr':'seq01 feat description',
-							'start':10,
-							'end':40,
-							'show':true,
-						}
-					],
-					'show':true
-				}
-			],
-			'featureType':[
-				{
-					'name':'feat01',
-					'count':10,
-					'descr':'feature 01',
-					'color':'red'
-				}
-			]
-			*/
 		};
 
 		container.data = _data;
