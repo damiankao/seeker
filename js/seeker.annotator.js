@@ -34,6 +34,11 @@
 	seeker.annotator = function() {
 		//view elements
 		var container = new seeker.container();
+		container
+			.style('overflow','auto')
+
+		container.node.className = 'container';
+
 		var canvas = d3
 			.select(container.node)
 			.append('svg')
@@ -61,27 +66,27 @@
 		});
 
 		menu_seq.addItem('hide sequence',function() {
-			container.hideSequence(d['name']);
+			container.hideSequence(_mouseOver[1]['name']);
 			container.update();
-			menu_feature.style.display = 'none';
+			menu_seq.style.display = 'none';
 		});
 		menu_seq.addItem('show all features',function() {
-			var f = d['feats'];
-			var len = f.len;
+			var f = _mouseOver[1]['feats'];
+			var len = f.length;
 			for ( var i = 0 ; i < len ; i ++ ) {
 				f[i]['show'] = true;
 			}
 			container.update();
-			menu_feature.style.display = 'none';
+			menu_seq.style.display = 'none';
 		});
 		menu_seq.addItem('hide all features',function() {
-			var f = d['feats'];
-			var len = f.len;
+			var f = _mouseOver[1]['feats'];
+			var len = f.length;
 			for ( var i = 0 ; i < len ; i ++ ) {
 				f[i]['show'] = false;
 			}
 			container.update();
-			menu_feature.style.display = 'none';
+			menu_seq.style.display = 'none';
 		});
 
 		menu_feature.style.display = 'none';
@@ -103,10 +108,10 @@
 			"legSpc":-1,
 			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence
 			                           //First element number refer to the featureType array index
-			"spineWidth":1,            //width of the spine
-			"spineColor":'#575757',
+			"spineWidth":8,            //width of the spine
+			"spineColor":'#9C9C9C',
 			"featWidth":12,            //width of the features on the spine
-			"seqLength":900,           //length of the entire sequence
+			"seqLength":700,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
 			"margin":20,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
@@ -181,6 +186,8 @@
 			*/
 		};
 
+		container.data = _data;
+
 		container.layout = function() {
 			if (arguments.length == 4) {
 				container.whxy(
@@ -249,6 +256,23 @@
 
 			canvas
 				.selectAll('#seqGroups')
+				.append('text')
+				.attr('id','seqLabels')
+				.on('click', function(d,i) {
+					d3.event.stopPropagation();
+					if (_mouseOver[1]) {
+						if (d['name'] != _mouseOver[1]['name']) {
+							menu_seq.style.display = 'none';
+						}
+					} else {
+						menu_seq.style.display = 'none';
+					}
+					_mouseOver = [0,d];
+					positionMenu(d3.mouse(document.body));
+				});
+
+			canvas
+				.selectAll('#seqGroups')
 				.selectAll('features')
 				.data(function(d,i) {
 					return d['feats'];
@@ -261,8 +285,16 @@
 					document.body.style.cursor = 'default';
 				})
 				.on('click', function(d,i) {
-					//_mouseOver = [1,d];
-					positionMenu(d3.mouse(document.body), 1, d);
+					d3.event.stopPropagation();
+					if (_mouseOver[1]) {
+						if (d['featType'] != _mouseOver[1]['featType']) {
+							menu_feature.style.display = 'none';
+						}
+					} else {
+						menu_feature.style.display = 'none';
+					}
+					_mouseOver = [1,d];
+					positionMenu(d3.mouse(document.body));
 				});
 
 			return this;
@@ -309,6 +341,14 @@
 				.style('fill',_data_application['spineColor']);
 
 			canvas
+				.selectAll('#seqLabels')
+				.attr('x',25)
+				.attr('y',10)
+				.text(function(d) {
+					return d['name']
+				});
+
+			canvas
 				.selectAll('#seqFeatures')
 				.attr('width', function(d,i) {
 					return scale(d['end'] - d['start'] + 1);
@@ -339,8 +379,20 @@
 
 		function positionMenu(coord) {
 			if (_mouseOver[0] == 0) {
+				menu_feature.style.display = 'none';
+				var reposition = false;
+				if (menu_seq.style.display == "none") {
+					menu_seq.style.display = 'inline-block';
+					reposition = true;
+				} else {
+					menu_seq.style.display = 'none';
+				}
 
+				if (reposition) {
+					menu_seq.place(coord);
+				}
 			} else {
+				menu_seq.style.display = 'none';
 				var reposition = false;
 				if (menu_feature.style.display == "none") {
 					menu_feature.style.display = 'inline-block';
@@ -350,41 +402,7 @@
 				}
 
 				if (reposition) {
-					var winDim = seeker.util.winDimensions();
-					var width = menu_feature.offsetWidth;
-					var height = menu_feature.offsetHeight;
-
-					if (coord[1] - height < 30) {
-						//near top, make under cursor
-						menu_feature.orient(1);
-						menu_feature.style.top = coord[1] + 20;
-						console.log('near top');
-					} else if (coord[1] + height > winDim[1] - 30) {
-						//near bottom, make above cursor
-						menu_feature.orient(0);
-						menu_feature.style.top = coord[1] - menu_feature.offsetHeight - 10;
-						console.log('near bottom');
-					} else {
-						//default, under cursor
-						menu_feature.orient(1);
-						menu_feature.style.top = coord[1] + 20;
-					}
-
-					if (coord[0] - width < 30) {
-						//near left, make right of cursor
-						menu_feature.position(1);
-						menu_feature.style.left = coord[0] - 15;
-						console.log('near left');
-					} else if (coord[0] + width > winDim[0] - 30) {
-						//near right, make left of cursor
-						menu_feature.position(0);
-						menu_feature.style.left = coord[0] - menu_feature.offsetWidth + 15
-						console.log('near right')
-					} else {
-						//default, right of cursor
-						menu_feature.position(1);
-						menu_feature.style.left = coord[0] - 15;
-					}
+					menu_feature.place(coord);
 				}
 			}
 		}
@@ -456,10 +474,17 @@
 			return this;
 		}
 
-		//called when freeing the object
 		container.disassemble = function() {
-
+			container.detach();
+			menu_feature.detach();
+			menu_seq.detach();
+			canvas.remove();
 		}
+
+		document.addEventListener('click', function() {
+			menu_feature.style.display = 'none';
+			menu_seq.style.display = 'none';
+		});
 
 		return container;
 	}

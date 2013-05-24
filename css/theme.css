@@ -9,14 +9,29 @@
     font-style: normal;
 }
 
-.header {
-	font-family:QuicksandLight;
-	font-weight:bold;
-	font-size:25pt;
-	color:white;
+svg #seqLabels{
+    font-family:Arial;
+    font-size:11pt;
 }
 
-.menu {
+svg #seqLabels:hover{
+    cursor:hand;
+    font-weight:bold;
+}
+
+.container {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    list-style:none;
+    background:#F2F2F2;
+    margin:0;
+    padding:5px 0px 5px 0px;
+    border:1px solid #8C8C8C;
+}
+
+.menu,.tooltip {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     -khtml-border-radius: 6px;
@@ -33,7 +48,7 @@
     position:relative;
 }
 
-.menuArrow {
+.arrow {
     content: ' ';
     display: block;
     position: absolute;
@@ -51,7 +66,7 @@
     z-index:-1;
 }
 
-.menu li {
+.menu li, .tooltip {
     font-size:11pt;
     font-family:Arial;
     color:#E3E3E3;
