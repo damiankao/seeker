@@ -1,37 +1,23 @@
-@font-face {
-    font-family: 'QuicksandLight';
-    src: url('font/Quicksand_Light-webfont.eot');
-    src: url('font/Quicksand_Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('font/Quicksand_Light-webfont.woff') format('woff'),
-         url('font/Quicksand_Light-webfont.ttf') format('truetype'),
-         url('font/Quicksand_Light-webfont.svg#QuicksandLight') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
-svg #seqLabels{
-    font-family:Arial;
-    font-size:11pt;
-}
-
-svg #seqLabels:hover{
-    cursor:hand;
-    font-weight:bold;
-}
-
-.container {
+div.annotator {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     -khtml-border-radius: 6px;
     border-radius: 6px;
     list-style:none;
-    background:#F2F2F2;
-    margin:0;
-    padding:5px 0px 5px 0px;
-    border:1px solid #8C8C8C;
+    background:white;
 }
 
-.arrow {
+div.annotator #seqLabels{
+    font-family:Arial;
+    font-size:11pt;
+}
+
+div.annotator #seqLabels:hover{
+    cursor:hand;
+    font-weight:bold;
+}
+
+#arrow {
     content: ' ';
     display: block;
     position: absolute;
@@ -48,7 +34,7 @@ svg #seqLabels:hover{
     -moz-transform: rotate(45deg);
 }
 
-.menu,.tooltip {
+#menu, #tooltip {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
     -khtml-border-radius: 6px;
@@ -65,22 +51,53 @@ svg #seqLabels:hover{
     position:relative;
 }
 
-.menu li, .tooltip {
+#menu > li, #tooltip {
     font-size:11pt;
     font-family:Arial;
     color:#E3E3E3;
     padding:3px 15px 3px 15px;
 }
 
-.menu > li + li, .menu > li:first-child {
+#menu > li + li, #menu > li:first-child {
     border-top: solid 1px #696969;
 }
 
-.menu > li:last-of-type {
+#menu > li:last-of-type {
     border-bottom: solid 1px #696969;
 }
 
-.menu li:hover {
+#menu > li:hover {
     background:#8A0000;
     cursor:hand;
-};
+}
+
+#navigation {
+    top:5px;
+    left:5px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    background:#333333;
+    list-style:none;
+    position:relative;
+    margin:0;
+    padding:5px 5px 5px 5px;
+    border:0;
+}
+
+#navigation > li {
+    display:inline;
+    font-size:10pt;
+    font-family:Arial;
+    color:#E3E3E3;
+    padding:3px 8px 3px 8px;
+}
+
+#navigation > li + li {
+    border-left: solid 1px #696969;
+}
+
+#navigation > li:not(:first-child):hover {
+    background:#8A0000;
+    cursor:hand;
+}

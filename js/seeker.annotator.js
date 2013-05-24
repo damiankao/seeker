@@ -25,10 +25,6 @@
 	features - list of feature types with show/hide and color options. list of pinned features.
 	selection - list of sequence feature selections or custom selections. allows for sequence extraction.
 	options - options for feature display, shorten inter-feature, legend, alignment
-
-	physical properties:
-	minimum width - enough for logo and 4 menu items
-	minimum height - enough to show at least 5 features
 	*/
 
 	seeker.annotator = function() {
@@ -37,14 +33,12 @@
 		container
 			.style('overflow','auto')
 
-		container.node.className = 'container';
+		container.node.className = 'annotator';
 
 		var canvas = d3
 			.select(container.node)
 			.append('svg')
-			.style('position','absolute')
-			.style('top',0)
-			.style('left',0);
+			.style('position','absolute');
 
 		var menu_seq = new seeker.menu();
 		var menu_feature = new seeker.menu();
@@ -92,14 +86,26 @@
 		menu_feature.style.display = 'none';
 		menu_seq.style.display = 'none';
 
-		var legend;
+		var navigation = new seeker.navigation();
+		container.node.appendChild(navigation);
+		navigation.addItem('Input',function(){});
+		navigation.addItem('Sequence',function(){});
+		navigation.addItem('Feature',function(){});
+		navigation.addItem('Selection',function(){});
+
+		navigation.setLogo('<b>S E E K E R</b> : annotation viewer',50);
+		navigation.initialize();
+
+		var panel_navInput;
+		var menu_navSeq;
+		var menu_nvaSeqsub;
+		var menu_navFeat;
+		var menu_navFeatsub;
+		var menu_navSelection;
 
 		var _mouseOver = [];
-
 		var groups;
-
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
-
 		var _data_application = {
 			"currentSelection":[],
 			"interFeat":-1,
@@ -111,8 +117,9 @@
 			"spineWidth":8,            //width of the spine
 			"spineColor":'#9C9C9C',
 			"featWidth":12,            //width of the features on the spine
-			"seqLength":700,           //length of the entire sequence
+			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
+			"menuSpacing":40,
 			"margin":20,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -158,7 +165,7 @@
 			]
 		};
 
-		container.data = _data;
+		container.settings = _data_application;
 
 		container.layout = function() {
 			if (arguments.length == 4) {
@@ -172,6 +179,7 @@
 			var w = container.node.style.width;
 			var h = container.node.style.height;
 
+			navigation.style.width = parseInt(w) - 19 + "px";
 			return this;
 		}
 
@@ -211,7 +219,7 @@
 				.select(container.node)
 				.append('svg')
 				.style('position','absolute')
-				.style('top',0)
+				.style('top',_data_application['menuSpacing'])
 				.style('left',0);
 
 			canvas
@@ -232,14 +240,29 @@
 				.attr('id','seqLabels')
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
+					var open = true;
 					if (_mouseOver[1]) {
 						if (d['name'] != _mouseOver[1]['name']) {
-							menu_seq.style.display = 'none';
+							open = false;
+						} else {
+							if (menu_feature.style.display == 'none') {
+								open = false;
+							} else {
+								open = true;
+							}
 						}
 					} else {
-						menu_seq.style.display = 'none';
+						open = false;
 					}
-					_mouseOver = [0,d];
+					_mouseOver = [1,d];
+	
+					seeker.env_closeMenus();
+					if (open) {
+						menu_feature.style.display = 'inline-block';
+					} else {
+						menu_feature.style.display = 'none';
+					}
+
 					positionMenu(d3.mouse(document.body));
 				});
 
@@ -258,14 +281,29 @@
 				})
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
+					var open = true;
 					if (_mouseOver[1]) {
 						if (d['featType'] != _mouseOver[1]['featType']) {
-							menu_feature.style.display = 'none';
+							open = false;
+						} else {
+							if (menu_feature.style.display == 'none') {
+								open = false;
+							} else {
+								open = true;
+							}
 						}
+					} else {
+						open = false;
+					}
+					_mouseOver = [1,d];
+	
+					seeker.env_closeMenus();
+					if (open) {
+						menu_feature.style.display = 'inline-block';
 					} else {
 						menu_feature.style.display = 'none';
 					}
-					_mouseOver = [1,d];
+
 					positionMenu(d3.mouse(document.body));
 				});
 
@@ -351,7 +389,6 @@
 
 		function positionMenu(coord) {
 			if (_mouseOver[0] == 0) {
-				menu_feature.style.display = 'none';
 				var reposition = false;
 				if (menu_seq.style.display == "none") {
 					menu_seq.style.display = 'inline-block';
@@ -364,7 +401,6 @@
 					menu_seq.place(coord);
 				}
 			} else {
-				menu_seq.style.display = 'none';
 				var reposition = false;
 				if (menu_feature.style.display == "none") {
 					menu_feature.style.display = 'inline-block';
@@ -453,10 +489,17 @@
 			canvas.remove();
 		}
 
-		document.addEventListener('click', function() {
-			menu_feature.style.display = 'none';
-			menu_seq.style.display = 'none';
-		});
+		if (!seeker.env_menus) {
+			seeker.env_menus = [];
+			seeker.env_menus.push(menu_feature);
+			seeker.env_menus.push(menu_seq);
+			var num = seeker.env_menus.length;
+			seeker.env_closeMenus = function() {
+				for ( var i = 0 ; i < num ; i++ ) {
+					seeker.env_menus[i].style.display = 'none';
+				}
+			}	
+		}
 
 		return container;
 	}
