@@ -245,7 +245,7 @@
 						if (d['name'] != _mouseOver[1]['name']) {
 							open = false;
 						} else {
-							if (menu_feature.style.display == 'none') {
+							if (menu_seq.style.display == 'none') {
 								open = false;
 							} else {
 								open = true;
@@ -254,13 +254,13 @@
 					} else {
 						open = false;
 					}
-					_mouseOver = [1,d];
+					_mouseOver = [0,d];
 	
 					seeker.env_closeMenus();
 					if (open) {
-						menu_feature.style.display = 'inline-block';
+						menu_seq.style.display = 'inline-block';
 					} else {
-						menu_feature.style.display = 'none';
+						menu_seq.style.display = 'none';
 					}
 
 					positionMenu(d3.mouse(document.body));
@@ -499,7 +499,12 @@
 					seeker.env_menus[i].style.display = 'none';
 				}
 			}	
+		} else {
+			seeker.env_menus.push(menu_feature);
+			seeker.env_menus.push(menu_seq);
 		}
+
+		document.addEventListener('click',seeker.env_closeMenus);
 
 		return container;
 	}
