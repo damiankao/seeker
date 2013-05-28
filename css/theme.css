@@ -7,9 +7,19 @@ div.annotator {
     background:white;
 }
 
-div.annotator #seqLabels{
+div.annotator #seqLabels {
     font-family:Arial;
     font-size:11pt;
+}
+
+div.annotator #legendColsText {
+    font-family:Arial;
+    font-size:11pt;
+}
+
+div.annotator #legendColsText:hover {
+    font-weight:bold;
+    cursor:hand;
 }
 
 div.annotator #seqLabels:hover{
