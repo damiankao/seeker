@@ -1,4 +1,12 @@
 (function() {
+	/*
+	Author: Damian Kao
+	E-mail: damian.kao@gmail.com
+
+	Introduction:
+	Utility functions are included in this file
+	*/
+
 	seeker = {};
 	seeker.util = {}
 

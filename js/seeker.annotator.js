@@ -1,5 +1,8 @@
 (function() {
 	/*
+	Author: Damian Kao
+	E-mail: damian.kao@gmail.com
+
 	introduction:
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
@@ -272,6 +275,9 @@
 					_mouseOver = [0,d];
 					positionMenu(d3.mouse(document.body));
 				});
+
+			canvas
+				.selectAll('#damiankao')
 
 			canvas
 				.selectAll('#seqGroups')
