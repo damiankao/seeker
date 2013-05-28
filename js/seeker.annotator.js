@@ -12,9 +12,15 @@
 	application data:
 	selection list - list of selections
 	shorten inter-feature threshold - shorten long inter-feature distances with a break point
-	legend rows - number of rows for legend
+
+	legend width
+	legend height
+	legened top - put legend above sequences or below
+	legened left margin - left margin for the legend
+	legened square size - size of the colored square
 	legend cols - number of columns for legend
-	legend spacing - distance in pixels between legend elements
+	legend spacing - spacing between legend and sequences
+
 	alignment - align all sequences by start/end of feature type (when exist)
 	spine thickness - thickness of the spine in pixels
 	feature thickness - thickness of the feature in pixels
@@ -159,9 +165,9 @@
 			"interFeat":-1,
 
 			"legendX":70,
-			"legendWidth":800,
+			"legendWidth":700,
 			"legendHeight":60,
-			"legendCols":8,
+			"legendCols":5,
 			"legendSpacing":10,
 			"legendSize":20,
 			"legendTop":true,
