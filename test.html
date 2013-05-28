@@ -10,7 +10,12 @@
   <script>
   var dim = seeker.util.winDimensions();
 
-  var a = new seeker.annotator().attachTo(document.body).layout(dim[0],dim[1] - 30,0,30).initialize().update();
+  var a = new seeker.annotator()
+    .attachTo(document.body)
+    .layout(dim[0],dim[1] - 30,0,30)
+    .initialize()
+    .update();
+
   a.settings['seqLength'] = dim[0] - 100;
   a.update();
 
@@ -19,6 +24,5 @@
   a.setStatus(b);
 
   </script>
-MENU GOES HERE
   </body>
 </html>

@@ -25,6 +25,10 @@
 		return this;
 	}
 
+	seeker.container.prototype.d3 = function() {
+		return d3.select(this.node);
+	}
+
 	seeker.container.prototype.style = function(s, val) {
 		this.node.style[s] = val;
 		return this;

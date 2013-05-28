@@ -8,6 +8,10 @@
 	*/
 
 	seeker.popup = function(ele, cl) {
+		/*
+		This is used for any DOM element that pops up and requires attention to edge of window. 
+		This element is an arrowed rounded corner container.
+		*/
 		var arrow = document.createElement('div');
 		var e = document.createElement(ele);
 

@@ -159,6 +159,13 @@
 			status_env = obj
 		}
 
+		//save as png
+		var panel_preview = new seeker.container();
+		panel_preview.attachTo(document.body);
+		panel_preview.d3()
+			.append('div')
+			.attr('id','annotator_preview');
+
 		//data
 		var _mouseOver = [];
 		var groups;
@@ -193,6 +200,7 @@
 
 		//methods
 		container.layout = function() {
+			var winDim = seeker.util.winDimensions();
 			if (arguments.length == 4) {
 				container.whxy(
 					arguments[0],
@@ -204,6 +212,12 @@
 			var w = parseInt(container.node.style.width);
 			var h = parseInt(container.node.style.height);
 
+			panel_preview.whxy(winDim[0],winDim[1],0,0);
+			panel_preview.d3()
+				.style('background','white')
+				.style('opacity',0.9)
+				.style('z-index',10000)
+				.style('display','none');
 			return this;
 		}
 
@@ -262,6 +276,8 @@
 				.selectAll('#seqGroups')
 				.append('text')
 				.attr('id','seqLabels')
+				.style('font-family','Arial')
+				.style('font-size','11pt')
 				.on('mouseover', function(d,i) {
 					var str = d['name'] + ': ' + d['len'] + " bp, " + d['feats'].length + " features";
 					container.status(str);
@@ -328,6 +344,8 @@
 				.selectAll('#legendCols')
 				.append('text')
 				.attr('id','legendColsText')
+				.style('font-family','Arial')
+				.style('font-size','11pt')
 				.on('mouseover', function(d,i) {
 					var str = d['name'] + ': ' + d['count'] + ' features total';
 					container.status(str);
@@ -484,6 +502,38 @@
 
 		container.extract = function() {
 
+		}
+
+		container.preview = function() {
+			var winDim = seeker.util.winDimensions();
+
+			panel_preview.d3()
+				.selectAll('img')
+				.remove()
+
+			d3.select('#annotator_preview')
+				.style('width',winDim[0] * 3/4)
+				.style('height', winDim[1] * 3/4)
+				.style('top', winDim[1] * 1/8)
+				.style('left', winDim[0] * 1/8)
+				.style('position','absolute')
+				.style('overflow','auto');
+
+			var html = canvas
+				.attr("title", "annotations")
+				.attr("version", 1.1)
+				.attr("xmlns", "http://www.w3.org/2000/svg")
+				.node().parentNode.innerHTML;
+
+			d3.select('#annotator_preview')
+				.append("img")
+				.style('top',0)
+				.style('left',0)
+		        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
+		        .style('zIndex',100);
+
+		    panel_preview.d3()
+		    	.style('display','block');
 		}
 
 		//manipulate data structure
