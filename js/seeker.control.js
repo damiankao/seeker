@@ -1,4 +1,12 @@
 (function() {
+	/*
+	Author: Damian Kao
+	E-mail: damian.kao@gmail.com
+
+	Introduction:
+	DOM elements like menus, navigation bars, tooltips are included in this file.
+	*/
+
 	seeker.popup = function(ele, cl) {
 		var arrow = document.createElement('div');
 		var e = document.createElement(ele);
@@ -163,7 +171,7 @@
 	}
 
 	seeker.navigation = function() {
-		
+
 	}	
 
 })();

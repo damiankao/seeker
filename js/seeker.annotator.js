@@ -573,6 +573,7 @@
 		seeker.env_menus.push(menu_legend);
 		
 		document.addEventListener('click',seeker.env_closeMenus);
+		container.node.addEventListener('scroll',seeker.env_closeMenus);
 
 		return container;
 	}
