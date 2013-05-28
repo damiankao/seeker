@@ -178,7 +178,7 @@
 			"legendWidth":700,
 			"legendHeight":60,
 			"legendCols":5,
-			"legendSpacing":10,
+			"legendSpacing":20,
 			"legendSize":20,
 			"legendTop":true,
 
@@ -190,7 +190,7 @@
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
 			"menuSpacing":0,
-			"margin":20,               //margins of the canvas element
+			"margin":50,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
 
@@ -366,8 +366,8 @@
 
 		container.update = function() {
 			var width = _data_application['seqLength'] + (_data_application['margin'] * 2);
-			var featureHeight = this.numberShownSeqs() * (_data_application['featWidth'] + _data_application['seqSpacing'] + 30) - _data_application['seqSpacing'] + (_data_application['margin'] * 2);
-			var height = featureHeight + _data_application['legendHeight'] + _data_application['legendSpacing'];
+			var featureHeight = this.numberShownSeqs() * (_data_application['featWidth'] + _data_application['seqSpacing'] + 30) - _data_application['seqSpacing'];
+			var height = featureHeight + _data_application['legendHeight'] + _data_application['legendSpacing'] + (_data_application['margin'] * 2);
 
 			canvas
 				.style('width',width)
@@ -379,7 +379,7 @@
 				.attr('transform',function(d) {
 					if (d['show'] == true) {
 						if (_data_application['legendTop']) {
-							return 'translate(' + _data_application['margin'] + ',' + ((30 + _data_application['featWidth'] + _data_application['seqSpacing']) * index++ + _data_application['margin'] + _data_application['legendHeight'] + _data_application['legendSpacing']) + ")";
+							return 'translate(' + _data_application['margin'] + ',' + (((30 + _data_application['featWidth'] + _data_application['seqSpacing']) * index++ + _data_application['legendHeight'] + _data_application['legendSpacing']) + _data_application['margin']) + ")";
 						} else {
         					return 'translate(' + _data_application['margin'] + ',' + ((30 + _data_application['featWidth'] + _data_application['seqSpacing']) * index++ + _data_application['margin']) + ")";
         				}
@@ -453,7 +453,7 @@
 				.selectAll('#legendRows')
 				.attr('transform', function(d,i) {
 					if (_data_application['legendTop']) {
-						return 'translate(' + (_data_application['margin'] + _data_application['legendX']) + ',' + (i * legendRowHeight) + ")";	
+						return 'translate(' + (_data_application['margin'] + _data_application['legendX']) + ',' + ((i * legendRowHeight) + _data_application['margin']) + ")";	
 					} else {
 						return 'translate(' + (_data_application['margin'] + _data_application['legendX']) + ',' + (featureHeight + _data_application['legendSpacing'] + (i * legendRowHeight)) + ")";	
 					}

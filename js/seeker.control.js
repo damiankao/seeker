@@ -155,10 +155,14 @@
 			textBox.style.display = 'table';
 			textBox.innerHTML = val;
 			var winDim = seeker.util.winDimensions();
-			textBox.style.top = winDim[1] - textBox.offsetHeight - 20;
-			textBox.style.left = winDim[0] - textBox.offsetWidth - 30;
+			textBox.style.top = 40;
+			textBox.style.left = winDim[0] / 2 - textBox.offsetWidth /2;
 
 			return textBox;
+		}
+
+		textBox.setPosition = function(x,y) {
+
 		}
 
 		textBox.hide = function() {
