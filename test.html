@@ -14,6 +14,11 @@
   a.settings['seqLength'] = dim[0] - 100;
   a.update();
 
+  var b = new seeker.status();
+  b.attachTo(document.body);
+  a.setStatus(b);
+
+  
   </script>
 
   </body>

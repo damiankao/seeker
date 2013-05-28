@@ -26,9 +26,6 @@ div.annotator #seqLabels:hover{
     width: 10px;
     height: 10px;
     background-color:#333333;
-    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
@@ -100,4 +97,13 @@ div.annotator #seqLabels:hover{
 #navigation > li:not(:first-child):hover {
     background:#8A0000;
     cursor:hand;
+}
+
+#status {
+    position:fixed;
+    background:#FCF3A9;
+    border:1px solid #BDBDBD;
+    padding:2px 2px 2px 2px;
+    font-family:Arial;
+    font-size:9pt;
 }

@@ -89,6 +89,8 @@
 				var newItem = document.createElement('li');
 				newItem.innerHTML = _items[i][0];
 				newItem.onclick = _items[i][1];
+				newItem.onmouseover = _items[i][2];
+				newItem.onmouseout = _items[i][3];
 				list.appendChild(newItem);
 			}
 
@@ -99,8 +101,8 @@
 			return list;
 		}
 
-		list.addItem = function(label, f) {
-			_items.push([label,f]);
+		list.addItem = function(label, click, over, out) {
+			_items.push([label,click,over,out]);
 			list.initialize();
 			return list;
 		}
@@ -132,54 +134,36 @@
 		return list;
 	}
 
-	seeker.menu_complex = function() {
-		
+	seeker.status = function() {
+		var textBox = document.createElement('div');
+		textBox.setAttribute('id','status');
+		textBox.style.display = 'none';
+
+		textBox.layout = function(val) {
+			textBox.style.display = 'table';
+			textBox.innerHTML = val;
+			var winDim = seeker.util.winDimensions();
+			textBox.style.top = winDim[1] - textBox.offsetHeight - 20;
+			textBox.style.left = winDim[0] - textBox.offsetWidth - 30;
+
+			return textBox;
+		}
+
+		textBox.hide = function() {
+			textBox.style.display = 'none';
+		}
+
+		textBox.attachTo = function(node) {
+			node.appendChild(textBox);
+
+			return textBox;
+		}
+
+		return textBox;
 	}
 
 	seeker.navigation = function() {
-		var list = document.createElement('ul');
-		list.setAttribute('id','navigation');
 
-		var _items = [];
-		var _logo = -1;
-		var _divider;
-
-		list.setLogo = function(obj, divide) {
-			_logo = obj;
-			_divider = divide
-		}
-
-		list.initialize = function() {
-			while (list.lastChild) {
-  				list.removeChild(list.lastChild);
-			}
-
-			if (_logo != -1) {
-				var logoObj = document.createElement('li');
-				logoObj.innerHTML = _logo;
-				list.appendChild(logoObj);
-				logoObj.style.paddingRight = _divider;
-				logoObj.style.paddingLeft = _divider;
-				logoObj.style.fontSize = '10pt';
-			}
-
-			for ( var i = 0 ; i < _items.length ; i ++ ) {
-				var newItem = document.createElement('li');
-				newItem.innerHTML = _items[i][0];
-				list.appendChild(newItem);
-			}
-		}
-
-		list.lyaout = function() {
-
-		}
-
-		list.addItem = function(label, f) {
-			_items.push([label,f]);
-			list.initialize();
-			return list;
-		}
-
-		return list;
 	}
+
 })();

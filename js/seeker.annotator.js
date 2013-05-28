@@ -28,7 +28,7 @@
 	*/
 
 	seeker.annotator = function() {
-		//view elements
+		//container and canvas
 		var container = new seeker.container();
 		container
 			.style('overflow','auto')
@@ -40,6 +40,7 @@
 			.append('svg')
 			.style('position','absolute');
 
+		//context menus
 		var menu_seq = new seeker.menu();
 		var menu_feature = new seeker.menu();
 
@@ -47,22 +48,38 @@
 			container.showFeatureType(_mouseOver[1]['featType']);
 			container.update();
 			menu_feature.style.display = 'none';
+		}, function() {
+			container.status('show all ' + _data['featureType'][_mouseOver[1]['featType']]['name'] + " features");
+		}, function() {
+			container.statusHide();
 		});
 		menu_feature.addItem('hide all', function() {
 			container.hideFeatureType(_mouseOver[1]['featType']);
 			container.update();
 			menu_feature.style.display = 'none';
+		}, function() {
+			container.status('hide all ' + _data['featureType'][_mouseOver[1]['featType']]['name'] + " features");
+		}, function() {
+			container.statusHide();
 		});
 		menu_feature.addItem('hide feature', function() {
 			_mouseOver[1]['show'] = false;
 			container.update();
 			menu_feature.style.display = 'none';
+		}, function() {
+			container.status('hide this feature');
+		}, function() {
+			container.statusHide();
 		});
 
 		menu_seq.addItem('hide sequence',function() {
 			container.hideSequence(_mouseOver[1]['name']);
 			container.update();
 			menu_seq.style.display = 'none';
+		}, function() {
+			container.status('hide this sequence');
+		}, function() {
+			container.statusHide();
 		});
 		menu_seq.addItem('show all features',function() {
 			var f = _mouseOver[1]['feats'];
@@ -72,6 +89,10 @@
 			}
 			container.update();
 			menu_seq.style.display = 'none';
+		}, function() {
+			container.status('show all feautures on this sequence');
+		}, function() {
+			container.statusHide();
 		});
 		menu_seq.addItem('hide all features',function() {
 			var f = _mouseOver[1]['feats'];
@@ -81,28 +102,36 @@
 			}
 			container.update();
 			menu_seq.style.display = 'none';
+		}, function() {
+			container.status('hide all features on this sequence');
+		}, function() {
+			container.statusHide();
 		});
 
 		menu_feature.style.display = 'none';
 		menu_seq.style.display = 'none';
 
-		var navigation = new seeker.navigation();
-		container.node.appendChild(navigation);
-		navigation.addItem('Input',function(){});
-		navigation.addItem('Sequence',function(){});
-		navigation.addItem('Feature',function(){});
-		navigation.addItem('Selection',function(){});
 
-		navigation.setLogo('<b>S E E K E R</b> : annotation viewer',50);
-		navigation.initialize();
 
-		var panel_navInput;
-		var menu_navSeq;
-		var menu_nvaSeqsub;
-		var menu_navFeat;
-		var menu_navFeatsub;
-		var menu_navSelection;
+		//status if exists
+		var status_env;
+		container.status = function(val) {
+			if (status_env) {
+				status_env.layout(val);
+			}
+		}
 
+		container.statusHide = function() {
+			if (status_env) {
+				status_env.style.display = 'none';
+			}
+		}
+
+		container.setStatus = function(obj) {
+			status_env = obj
+		}
+
+		//data
 		var _mouseOver = [];
 		var groups;
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
@@ -119,7 +148,7 @@
 			"featWidth":12,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
-			"menuSpacing":40,
+			"menuSpacing":0,
 			"margin":20,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -167,6 +196,7 @@
 
 		container.settings = _data_application;
 
+		//methods
 		container.layout = function() {
 			if (arguments.length == 4) {
 				container.whxy(
@@ -176,10 +206,9 @@
 					arguments[3]);
 			}
 
-			var w = container.node.style.width;
-			var h = container.node.style.height;
+			var w = parseInt(container.node.style.width);
+			var h = parseInt(container.node.style.height);
 
-			navigation.style.width = parseInt(w) - 19 + "px";
 			return this;
 		}
 
@@ -238,31 +267,17 @@
 				.selectAll('#seqGroups')
 				.append('text')
 				.attr('id','seqLabels')
+				.on('mouseover', function(d,i) {
+					var str = d['name'] + ': ' + d['len'] + " bp, " + d['feats'].length + " features";
+					container.status(str);
+				})
+				.on('mouseout', function(d,i) {
+					container.statusHide();
+				})
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
-					var open = true;
-					if (_mouseOver[1]) {
-						if (d['name'] != _mouseOver[1]['name']) {
-							open = false;
-						} else {
-							if (menu_seq.style.display == 'none') {
-								open = false;
-							} else {
-								open = true;
-							}
-						}
-					} else {
-						open = false;
-					}
-					_mouseOver = [0,d];
-	
 					seeker.env_closeMenus();
-					if (open) {
-						menu_seq.style.display = 'inline-block';
-					} else {
-						menu_seq.style.display = 'none';
-					}
-
+					_mouseOver = [0,d];
 					positionMenu(d3.mouse(document.body));
 				});
 
@@ -278,32 +293,12 @@
 				.on('mouseout',function() {
 					d3.select(this).style('stroke-width','0px');
 					document.body.style.cursor = 'default';
+					container.statusHide();
 				})
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
-					var open = true;
-					if (_mouseOver[1]) {
-						if (d['featType'] != _mouseOver[1]['featType']) {
-							open = false;
-						} else {
-							if (menu_feature.style.display == 'none') {
-								open = false;
-							} else {
-								open = true;
-							}
-						}
-					} else {
-						open = false;
-					}
-					_mouseOver = [1,d];
-	
 					seeker.env_closeMenus();
-					if (open) {
-						menu_feature.style.display = 'inline-block';
-					} else {
-						menu_feature.style.display = 'none';
-					}
-
+					_mouseOver = [1,d];
 					positionMenu(d3.mouse(document.body));
 				});
 
@@ -379,6 +374,8 @@
 					}
 				})
 				.on('mouseover',function(d,i) {
+					var str = _data['featureType'][d['featType']]['name'] + ": " + d['start'] + " - " + d['end'] + ' (' + (d['end'] - d['start'] + 1) + "bp)";
+					container.status(str);
 					d3.select(this).style('stroke-width','4px');
 					d3.select(this).style('stroke',_data['featureType'][d['featType']]['color']);
 					document.body.style.cursor = 'hand';
@@ -482,6 +479,7 @@
 			return this;
 		}
 
+		//disassemble this element
 		container.disassemble = function() {
 			container.detach();
 			menu_feature.detach();
