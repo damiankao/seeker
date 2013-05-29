@@ -23,7 +23,7 @@
 		e.orient = function(m) {
 			if (m == '0') {
 				//above cursor
-				arrow.style.top = this.offsetHeight - 4;
+				arrow.style.top = this.offsetHeight - 6;
 			} else {
 				//below cursor
 				arrow.style.top = -4;
@@ -178,8 +178,62 @@
 		return textBox;
 	}
 
+	seeker.button = function(t) {
+		var button = document.createElement('a');
+		button.setAttribute('href','#');
+
+		if (t == 0) {
+			button.setAttribute('id','buttonA');
+		} else if (t == 1) {
+			button.setAttribute('id','buttonB');
+		}
+
+		button.xy = function(x,y) {
+			var s = this.style;
+			s.left = (x != -1) ? x : s.left;
+			s.top = (y != -1) ? y : s.top;
+			return this;
+		}
+
+		button.setText = function(val) {
+			this.innerHTML = val;
+
+			return this;
+		}
+
+		button.attachTo = function(obj) {
+			obj.appendChild(this);
+
+			return this;
+		}
+
+		button.d3 = function() {
+			return d3.select(this);
+		}
+
+		button.setClick = function(f) {
+			this.onclick = f;
+
+			return this;
+		}
+
+		return button;
+	}
+
+	seeker.textNode = function(parent, val, x, y) {
+		var p = document.createElement('p');
+		p.innerHTML = val;
+		p.setAttribute('id','textA')
+		p.style.position = 'absolute';
+		p.style.top = y;
+		p.style.left = x;
+		parent.appendChild(p);
+
+		return p;
+	}
+
 	seeker.navigation = function() {
 
-	}	
+	}
 
 })();

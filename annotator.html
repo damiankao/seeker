@@ -8,12 +8,13 @@
     <script type="text/javascript" src="js/seeker.annotator.js"></script>
   </head>
   <body>
+
   <script>
   var dim = seeker.util.winDimensions();
 
   var a = new seeker.annotator()
     .attachTo(document.body)
-    .layout(dim[0],dim[1] - 30,0,30)
+    .layout(dim[0],dim[1] - 50,0,50)
     .initialize()
     .update();
 
@@ -27,8 +28,5 @@
   Mousetrap.bind('`', a.preview);
 
   </script>
-  <div style='width:100%;height:30;position:absolute;top:0;left:0;background:#545454;font-family:Arial;font-size:11pt;color:#D4D4D4;box-shadow: 1px 4px 10px rgba(2, 0, 0, .2);
-    -webkit-box-shadow: 1px 4px 10px rgba(2, 0, 0, .2);
-    -moz-box-shadow: 1px 4px 10px rgba(2, 0, 0, .2);'>Annotation viewer - MENU GOES HERE</div>
   </body>
 </html>

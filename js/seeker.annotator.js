@@ -168,7 +168,18 @@
 		panel_preview.attachTo(document.body);
 		panel_preview.d3()
 			.append('div')
-			.attr('id','annotator_preview');
+			.attr('id','annotator_preview')
+			.style('border','1px solid #BABABA');
+
+		var panel_text = new seeker.textNode(panel_preview.node, 'Right click on the below SVG image and choose "save image as" to save the image to your computer.',0,0);
+
+		var panel_preview_close = new seeker.button(0);
+		panel_preview_close
+			.attachTo(panel_preview.node)
+			.setText('close')
+			.setClick(function() {
+				panel_preview.node.style.display = 'none';
+			});
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -179,25 +190,21 @@
 		var groups;
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
 		var _data_application = {
-			"currentSelection":[],
-			"interFeat":-1,
-
-			"legendX":70,
-			"legendWidth":700,
-			"legendHeight":60,
-			"legendCols":5,
-			"legendSpacing":20,
-			"legendSize":20,
-			"legendTop":true,
-
-			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence
-			                           //First element number refer to the featureType array index
+			"currentSelection":[],     //selections that have been added
+			"interFeat":-1,            //break inter-feature regions
+			"legendX":70,              //left spacing of legend
+			"legendWidth":700,         //width of legend
+			"legendHeight":60,         //height of legend
+			"legendCols":5,            //number of columns in legend
+			"legendSpacing":20,        //spacing between legend and sequences
+			"legendSize":20,           //size of squares in legend
+			"legendTop":true,          //legend on top of the sequences or below
+			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence. First element number refer to the featureType array index
 			"spineWidth":8,            //width of the spine
-			"spineColor":'#9C9C9C',
+			"spineColor":'#9C9C9C',    //color of the spine
 			"featWidth":12,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
-			"menuSpacing":0,
 			"margin":50,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -303,8 +310,17 @@
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
-					_mouseOver = [0,d];
-					positionMenu(d3.mouse(document.body));
+
+					if (!this.opened) {
+						_mouseOver = [0,d];
+						positionMenu(d3.mouse(document.body));
+						this.opened = true;
+					} else {
+						this.opened = false;
+					}
+				})
+				.each(function(d,i) {
+					this.opened = false;
 				});
 
 			canvas
@@ -324,8 +340,17 @@
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
-					_mouseOver = [1,d];
-					positionMenu(d3.mouse(document.body));
+
+					if (!this.opened) {
+						_mouseOver = [1,d];
+						positionMenu(d3.mouse(document.body));
+						this.opened = true;
+					} else {
+						this.opened = false;
+					}
+				})
+				.each(function(d,i) {
+					this.opened = false;
 				});
 
 			var rows = [];
@@ -368,9 +393,18 @@
 				.on('click', function(d,i) {
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
-					_mouseOver = [2,i];
-					positionMenu(d3.mouse(document.body));
-				});;
+
+					if (!this.opened) {
+						_mouseOver = [2,i];
+						positionMenu(d3.mouse(document.body));
+						this.opened = true;
+					} else {
+						this.opened = false;
+					}
+				})
+				.each(function(d,i) {
+					this.opened = false;
+				});
 
 
 			return this;
@@ -513,41 +547,42 @@
 		}
 
 		container.preview = function() {
-			if (panel_preview.node.style.display == 'block') {
-				panel_preview.d3()
-			    	.style('display','none');
-			} else {
-				var winDim = seeker.util.winDimensions();
+			var winDim = seeker.util.winDimensions();
 
-				panel_preview.d3()
-					.selectAll('img')
-					.remove()
+			panel_preview_close.style.top = winDim[1] * 3/4 + 20;
+			panel_preview_close.style.left = winDim[0] / 2 - panel_preview_close.offsetWidth / 2;
 
-				d3.select('#annotator_preview')
-					.style('width',winDim[0] * 4/5)
-					.style('height', winDim[1] * 1/2)
-					.style('top', winDim[1] * 1/4)
-					.style('left', winDim[0] * 1/10)
-					.style('position','absolute')
-					.style('overflow-x','hidden')
-					.style('overflow-y','auto');
+			panel_text.style.top = winDim[1] * 1/4 - 40;
+			panel_text.style.left = winDim[0] / 2 - 290;
 
-				var html = canvas
-					.attr("title", "annotations")
-					.attr("version", 1.1)
-					.attr("xmlns", "http://www.w3.org/2000/svg")
-					.node().parentNode.innerHTML;
+			panel_preview.d3()
+				.selectAll('img')
+				.remove()
 
-				d3.select('#annotator_preview')
-					.append("img")
-					.style('top',0)
-					.style('left',0)
-			        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
-			        .style('zIndex',100);
+			d3.select('#annotator_preview')
+				.style('width',winDim[0] * 4/5)
+				.style('height', winDim[1] * 1/2)
+				.style('top', winDim[1] * 1/4)
+				.style('left', winDim[0] * 1/10)
+				.style('position','absolute')
+				.style('overflow-x','hidden')
+				.style('overflow-y','auto');
 
-			    panel_preview.d3()
-			    	.style('display','block');
-			}
+			var html = canvas
+				.attr("title", "annotations")
+				.attr("version", 1.1)
+				.attr("xmlns", "http://www.w3.org/2000/svg")
+				.node().parentNode.innerHTML;
+
+			d3.select('#annotator_preview')
+				.append("img")
+				.style('top',0)
+				.style('left',0)
+		        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
+		        .style('zIndex',100);
+
+		    panel_preview.d3()
+		    	.style('display','block');
 		}
 
 		//manipulate data structure

@@ -39,7 +39,7 @@ div.annotator #seqLabels:hover{
     list-style:none;
     background:#333333;
     margin:0;
-    padding:9px 0px 5px 0px;
+    padding:9px 0px 9px 0px;
     border:0;
     display:inline-block;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
@@ -66,6 +66,29 @@ div.annotator #seqLabels:hover{
 #menu > li:hover {
     background:#8A0000;
     cursor:hand;
+}
+
+#buttonA {
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -khtml-border-radius: 5px;
+    padding:2px 10px 2px 10px;
+    background:#333333;
+    text-decoration:none;
+    font-family:Arial;
+    font-size:11pt;
+    color:#E3E3E3;
+    border: 1px solid #292929;
+    position:absolute;
+}
+
+#buttonA:hover {
+    color:white;
+}
+
+#textA {
+    font-family:Arial;
+    font-size:10pt;
 }
 
 #navigation {
