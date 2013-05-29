@@ -165,7 +165,7 @@
 		var _data_application = {
 			"currentSelection":[],     //selections that have been added
 			"interFeat":-1,            //shorten inter-feature regions more than certain amount of length
-			"legendX":70,              //left spacing of legend
+			"legendX":0,               //left spacing of legend
 			"legendWidth":620,         //width of legend
 			"legendHeight":50,         //height of legend
 			"legendCols":5,            //number of columns in legend
@@ -173,12 +173,13 @@
 			"legendSize":15,           //size of squares in legend
 			"legendTop":true,          //legend on top of the sequences or below
 			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence. First element number refer to the featureType array index
-			"spineWidth":8,            //width of the spine
+			"spineWidth":5,            //width of the spine
 			"spineColor":'#9C9C9C',    //color of the spine
-			"featWidth":12,            //width of the features on the spine
+			"featWidth":10,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
 			"seqLabelX":10,            //left spacing of each sequence label
+			"seqNumbered":true,        //prefix each sequence by a number
 			"margin":50,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -281,7 +282,7 @@
 				.append('text')
 				.attr('id','seqLabels')
 				.style('font-family','Arial')
-				.style('font-size','11pt')
+				.style('font-size','10pt')
 				.on('mouseover', function(d,i) {
 					var str = d['name'] + ': ' + d['len'] + " bp, " + d['feats'].length + " features";
 					container.status(str);
@@ -335,7 +336,7 @@
 			for (var i = 0 ; i < _data['featureType'].length ; i += _data_application['legendCols'] ) {
 				rows.push(_data['featureType'].slice(i,i+_data_application['legendCols']));
 			}
-			
+
 			canvas
 				.selectAll('legendRows')
 				.data(rows)
@@ -360,7 +361,7 @@
 				.append('text')
 				.attr('id','legendColsText')
 				.style('font-family','Arial')
-				.style('font-size','11pt')
+				.style('font-size','10pt')
 				.on('mouseover', function(d,i) {
 					var str = d['name'] + ': ' + d['count'] + ' features total';
 					container.status(str);
@@ -434,8 +435,12 @@
 				.selectAll('#seqLabels')
 				.attr('x',_data_application['seqLabelX'])
 				.attr('y',16)
-				.text(function(d) {
-					return d['name']
+				.text(function(d, i) {
+					if (_data_application['seqNumbered']) {
+						return (i + 1) + ". " + d['name'];
+					} else {
+						return d['name'];
+					}
 				});
 
 			canvas

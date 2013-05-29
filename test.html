@@ -6,93 +6,88 @@
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.util.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.control.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.annotator.js"></script>
+    <style>
+    #topBar {
+      display:inline;
+      position:absolute;
+      top:0;
+      left:0;
+      background:#365791;
+      padding:4px 10px 3px 400px;
+      border-bottom:4px solid #C9C9C9;
+      overflow:hidden;
+    }
+
+    #logo {
+      top:2;
+      left:60;
+      font-family:Arial;
+      font-size:17pt;
+      letter-spacing:3px;
+      font-weight:bold;
+      color:#C9C9C9;
+      position:absolute;
+    }
+
+    body {
+      overflow:hidden;
+    }
+    </style>
   </head>
   <body>
   <script>
-  document.body.style.overflow = 'hidden';
   var dim = seeker.util.winDimensions();
 
-  var menu = d3.select(document.body).append('div');
-
-  menu
+  //setup top logo and navigation bar
+  var menu = d3.select(document.body)
+    .append('div')
     .style('width',dim[0])
-    .style('display','inline')
-    .style('position','absolute')
-    .style('list-style-type','none')
-    .style('top',0)
-    .style('left',0)
-    .style('background','#365791')
-    .style('font-family','Arial')
-    .style('font-size','9pt')
-    .style('font-weight','bold')
-    .style('color','white')
-    .style('padding','4px 10px 3px 400px')
-    .style('border-bottom','2px solid #C9C9C9')
-    .style('overflow','hidden');
+    .attr('id','topBar');
+
+  var logo = menu
+    .append('div')
+    .attr('id','logo')
+    .text('ANNOTATION VIEWER');
 
   var nav = menu
     .append('ul')
     .style('top',0)
-    .attr('id','navigation');
-
-  nav
+    .attr('id','navigation')
+    .selectAll('menuItems')
+    .data(['input','sequences','features','selection','options','svg','?'])
+    .enter()
     .append('li')
-    .text('input');
+    .text(function(d) {
+      return d;
+    })
+    .attr('id', function(d) {
+      return 'menu_' + d;
+    });
 
-  nav
-    .append('li')
-    .text('sequences');
-
-  nav
-    .append('li')
-    .text('features');
-
-  nav
-    .append('li')
-    .text('selection');
-
-  nav
-    .append('li')
-    .text('options');
-
-  var logoA = menu.append('div');
-  logoA
-    .style('top',2)
-    .style('left',60)
-    .style('font-family','Arial')
-    .style('font-size','17pt')
-    .style('color','#C9C9C9')
-    .style('letter-spacing','3px')
-    .text('ANNOTATION VIEWER')
-    .style('font-weight','bold')
-    .style('position','absolute');
-
-  var a = new seeker.annotator()
+  //setup annotator
+  var anno = new seeker.annotator()
     .attachTo(document.body)
     .layout(dim[0],dim[1] - menu.node().offsetHeight,0,menu.node().offsetHeight)
     .initialize();
 
-  a.setProp('seqLength',dim[0] - (a.settings['margin'] * 2) - 20);
+  anno.setProp('seqLength',dim[0] - (anno.settings['margin'] * 2) - 20);
 
-  var b = new seeker.status(document.body);
+  //setup status pop up
+  var stat = new seeker.status(document.body);
 
-  b
+  stat
     .setPosition(function() {
       var winDim = seeker.util.winDimensions();
-      return [winDim[0] / 2 - this.offsetWidth / 2, 35]
+      return [winDim[0] / 2 - this.offsetWidth / 2, 30]
     });
 
-  a.setStatus(b);
+  anno.setStatus(stat);
 
-  nav
-    .append('li')
-    .text('svg')
-    .on('click',a.preview);
+  //create menus for top navigation bar
 
-  nav
-    .append('li')
-    .text('?');
-
+  //hook up functions to menu bar
+  d3.select('#menu_svg')
+    .on('click',anno.preview);
   </script>
   </body>
 </html>
