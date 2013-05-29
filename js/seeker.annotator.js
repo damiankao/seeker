@@ -37,6 +37,10 @@
 	*/
 
 	seeker.annotator = function() {
+////////////////////////////////////////////////////////////////////////////////////////
+/////// VIEW ELEMENTS //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+		
 		//container and canvas
 		var container = new seeker.container();
 		container
@@ -159,14 +163,18 @@
 			status_env = obj
 		}
 
-		//save as png
+		//save as svg
 		var panel_preview = new seeker.container();
 		panel_preview.attachTo(document.body);
 		panel_preview.d3()
 			.append('div')
 			.attr('id','annotator_preview');
 
-		//data
+
+////////////////////////////////////////////////////////////////////////////////////////
+/////// DATA ///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 		var _mouseOver = [];
 		var groups;
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
@@ -198,30 +206,15 @@
 
 		container.settings = _data_application;
 
-		//methods
-		container.layout = function() {
-			var winDim = seeker.util.winDimensions();
-			if (arguments.length == 4) {
-				container.whxy(
-					arguments[0],
-					arguments[1],
-					arguments[2],
-					arguments[3]);
-			}
-
-			var w = parseInt(container.node.style.width);
-			var h = parseInt(container.node.style.height);
-
-			panel_preview.whxy(winDim[0],winDim[1],0,0);
-			panel_preview.d3()
-				.style('background','white')
-				.style('opacity',0.9)
-				.style('z-index',10000)
-				.style('display','none');
-			return this;
-		}
+////////////////////////////////////////////////////////////////////////////////////////
+/////// METHODS ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 		container.parse = function(raw, delimiter) {
+
+		}
+
+		container.extract = function() {
 
 		}
 
@@ -249,6 +242,28 @@
 			}
 
 			return maxLen;
+		}
+
+		container.layout = function() {
+			var winDim = seeker.util.winDimensions();
+			if (arguments.length == 4) {
+				container.whxy(
+					arguments[0],
+					arguments[1],
+					arguments[2],
+					arguments[3]);
+			}
+
+			var w = parseInt(container.node.style.width);
+			var h = parseInt(container.node.style.height);
+
+			panel_preview.whxy(winDim[0],winDim[1],0,0);
+			panel_preview.d3()
+				.style('background','white')
+				.style('opacity',0.9)
+				.style('z-index',10000)
+				.style('display','none');
+			return this;
 		}
 
 		container.initialize = function() {
@@ -291,9 +306,6 @@
 					_mouseOver = [0,d];
 					positionMenu(d3.mouse(document.body));
 				});
-
-			canvas
-				.selectAll('#damiankao')
 
 			canvas
 				.selectAll('#seqGroups')
@@ -500,40 +512,42 @@
 			}
 		}
 
-		container.extract = function() {
-
-		}
-
 		container.preview = function() {
-			var winDim = seeker.util.winDimensions();
+			if (panel_preview.node.style.display == 'block') {
+				panel_preview.d3()
+			    	.style('display','none');
+			} else {
+				var winDim = seeker.util.winDimensions();
 
-			panel_preview.d3()
-				.selectAll('img')
-				.remove()
+				panel_preview.d3()
+					.selectAll('img')
+					.remove()
 
-			d3.select('#annotator_preview')
-				.style('width',winDim[0] * 3/4)
-				.style('height', winDim[1] * 3/4)
-				.style('top', winDim[1] * 1/8)
-				.style('left', winDim[0] * 1/8)
-				.style('position','absolute')
-				.style('overflow','auto');
+				d3.select('#annotator_preview')
+					.style('width',winDim[0] * 4/5)
+					.style('height', winDim[1] * 1/2)
+					.style('top', winDim[1] * 1/4)
+					.style('left', winDim[0] * 1/10)
+					.style('position','absolute')
+					.style('overflow-x','hidden')
+					.style('overflow-y','auto');
 
-			var html = canvas
-				.attr("title", "annotations")
-				.attr("version", 1.1)
-				.attr("xmlns", "http://www.w3.org/2000/svg")
-				.node().parentNode.innerHTML;
+				var html = canvas
+					.attr("title", "annotations")
+					.attr("version", 1.1)
+					.attr("xmlns", "http://www.w3.org/2000/svg")
+					.node().parentNode.innerHTML;
 
-			d3.select('#annotator_preview')
-				.append("img")
-				.style('top',0)
-				.style('left',0)
-		        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
-		        .style('zIndex',100);
+				d3.select('#annotator_preview')
+					.append("img")
+					.style('top',0)
+					.style('left',0)
+			        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
+			        .style('zIndex',100);
 
-		    panel_preview.d3()
-		    	.style('display','block');
+			    panel_preview.d3()
+			    	.style('display','block');
+			}
 		}
 
 		//manipulate data structure
@@ -607,6 +621,10 @@
 			menu_seq.detach();
 			canvas.remove();
 		}
+
+////////////////////////////////////////////////////////////////////////////////////////
+/////// SEEKER NAMESPACE OPERATIONS ////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
 		if (!seeker.env_menus) {
 			seeker.env_menus = [];
