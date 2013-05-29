@@ -64,10 +64,10 @@ div.annotator #seqLabels:hover{
 }
 
 #buttonA {
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -khtml-border-radius: 5px;
-    padding:7px 10px 7px 10px;
+    -moz-border-radius: 7px;
+    -webkit-border-radius: 7px;
+    -khtml-border-radius: 7px;
+    padding:5px 10px 5px 10px;
     background:#365791;
     text-decoration:none;
     font-family:Arial;

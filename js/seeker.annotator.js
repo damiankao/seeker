@@ -262,7 +262,7 @@
 				.select(container.node)
 				.append('svg')
 				.style('position','absolute')
-				.style('top',_data_application['menuSpacing'])
+				.style('top',0)
 				.style('left',0);
 
 			canvas
@@ -392,8 +392,8 @@
 			var height = featureHeight + _data_application['legendHeight'] + _data_application['legendSpacing'] + (_data_application['margin'] * 2);
 
 			canvas
-				.style('width',width)
-				.style('height',height);
+				.attr('width',width)
+				.attr('height',height);
 
 			var index = 0;
 			canvas
@@ -556,10 +556,9 @@
 
 			d3.select('#annotator_preview')
 				.append("img")
-				.style('top',0)
-				.style('left',0)
-		        .attr("src", "data:image/svg+xml;base64,"+ btoa(html))
-		        .style('zIndex',100);
+		        .attr("src", "data:image/svg+xml;base64," + btoa(html))
+		        .style('width',winDim[0] * 4/5)
+		        .style('height','auto');
 
 		    panel_preview.d3()
 		    	.style('display','block');
