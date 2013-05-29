@@ -127,7 +127,7 @@
 			container.update();
 			menu_legend.style.display = 'none';
 		}, function() {
-			container.status('show all ' + _data['featureType'][_mouseOver[1]]['name'] + " features");
+			container.status('show all ' + _mouseOver[1]['count'] + " " + _mouseOver[1]['name'] + " features");
 		}, function() {
 			container.statusHide();
 		});
@@ -136,7 +136,7 @@
 			container.update();
 			menu_legend.style.display = 'none';
 		}, function() {
-			container.status('hide all ' + _data['featureType'][_mouseOver[1]]['name'] + " features");
+			container.status('hide all ' + _mouseOver[1]['count'] + " " +_mouseOver[1]['name'] + " features");
 		}, function() {
 			container.statusHide();
 		});
@@ -308,15 +308,16 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
 
 					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
 						_mouseOver = [0,d];
 						positionMenu(d3.mouse(document.body));
 						seeker.env_menuTarget = this;
 					} else {
-						seeker.env_menuTarget = null;
+						seeker.env_closeMenus();
 					}
 				});
 
@@ -335,15 +336,16 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
 
 					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
 						_mouseOver = [1,d];
 						positionMenu(d3.mouse(document.body));
 						seeker.env_menuTarget = this;
 					} else {
-						seeker.env_menuTarget = null;
+						seeker.env_closeMenus();
 					}
 				});
 
@@ -385,15 +387,16 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
 
 					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
 						_mouseOver = [2,d];
 						positionMenu(d3.mouse(document.body));
 						seeker.env_menuTarget = this;
 					} else {
-						seeker.env_menuTarget = null;
+						seeker.env_closeMenus();
 					}
 				});
 
@@ -657,9 +660,13 @@
 			seeker.env_menus = [];
 
 			seeker.env_closeMenus = function() {
-				var num = seeker.env_menus.length;
-				for ( var i = 0 ; i < num ; i++ ) {
-					seeker.env_menus[i].style.display = 'none';
+				if (seeker.env_menuTarget) {
+					var num = seeker.env_menus.length;
+					for ( var i = 0 ; i < num ; i++ ) {
+						seeker.env_menus[i].style.display = 'none';
+					}
+
+					seeker.env_menuTarget = null;
 				}
 			}	
 		}

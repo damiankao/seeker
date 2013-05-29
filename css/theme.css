@@ -39,7 +39,7 @@ div.annotator #seqLabels:hover{
     list-style:none;
     background:#333333;
     margin:0;
-    padding:9px 0px 9px 0px;
+    padding:8px 0px 8px 0px;
     border:0;
     display:inline-block;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
