@@ -40,7 +40,7 @@ div.annotator #seqLabels:hover{
     background:#333333;
     margin:0;
     padding:8px 0px 8px 0px;
-    border:0;
+    border:1px solid #2E2E2E;
     display:inline-block;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
@@ -78,12 +78,13 @@ div.annotator #seqLabels:hover{
     font-family:Arial;
     font-size:11pt;
     color:#E3E3E3;
-    border: 1px solid #292929;
+    border: 1px solid #2E2E2E;
     position:absolute;
 }
 
 #buttonA:hover {
     color:white;
+    background:#8A0000;
 }
 
 #textA {
@@ -126,7 +127,8 @@ div.annotator #seqLabels:hover{
     position:fixed;
     background:#FCF3A9;
     border:1px solid #BDBDBD;
-    padding:2px 2px 2px 2px;
+    padding:2px 15px 2px 15px;
+    font-weight:bold;
     font-family:Arial;
     font-size:9pt;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);

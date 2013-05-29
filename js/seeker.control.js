@@ -146,33 +146,36 @@
 		return list;
 	}
 
-	seeker.status = function() {
+	seeker.status = function(p) {
 		var textBox = document.createElement('div');
 		textBox.setAttribute('id','status');
 		textBox.style.display = 'none';
 
+		p.appendChild(textBox);
+
+		var _pos;
+
 		textBox.layout = function(val) {
 			textBox.style.display = 'table';
 			textBox.innerHTML = val;
-			var winDim = seeker.util.winDimensions();
-			textBox.style.top = 40;
-			textBox.style.left = winDim[0] / 2 - textBox.offsetWidth /2;
+
+			var textDim = _pos();
+			textBox.style.top = textDim[1];
+			textBox.style.left = textDim[0];
 
 			return textBox;
 		}
 
-		textBox.setPosition = function(x,y) {
+		textBox.setPosition = function(f) {
+			_pos = f.bind(this);
 
+			return textBox;
 		}
 
 		textBox.hide = function() {
 			textBox.style.display = 'none';
-		}
 
-		textBox.attachTo = function(node) {
-			node.appendChild(textBox);
-
-			return textBox;
+			return this;
 		}
 
 		return textBox;
@@ -181,6 +184,7 @@
 	seeker.button = function(t) {
 		var button = document.createElement('a');
 		button.setAttribute('href','#');
+		this.node = button;
 
 		if (t == 0) {
 			button.setAttribute('id','buttonA');
@@ -188,37 +192,38 @@
 			button.setAttribute('id','buttonB');
 		}
 
-		button.xy = function(x,y) {
-			var s = this.style;
-			s.left = (x != -1) ? x : s.left;
-			s.top = (y != -1) ? y : s.top;
-			return this;
-		}
-
-		button.setText = function(val) {
-			this.innerHTML = val;
-
-			return this;
-		}
-
-		button.attachTo = function(obj) {
-			obj.appendChild(this);
-
-			return this;
-		}
-
-		button.d3 = function() {
-			return d3.select(this);
-		}
-
-		button.setClick = function(f) {
-			this.onclick = f;
-
-			return this;
-		}
-
-		return button;
+		return this;
 	}
+
+	seeker.button.prototype.xy = function(x,y) {
+		var s = this.node.style;
+		s.left = (x != -1) ? x : s.left;
+		s.top = (y != -1) ? y : s.top;
+		return this;
+	}
+
+	seeker.button.prototype.setText = function(val) {
+		this.node.innerHTML = val;
+
+		return this;
+	}
+
+	seeker.button.prototype.attachTo = function(obj) {
+		obj.appendChild(this.node);
+
+		return this;
+	}
+
+	seeker.button.prototype.d3 = function() {
+		return d3.select(this.node);
+	}
+
+	seeker.button.prototype.setClick = function(f) {
+		this.node.onclick = f;
+
+		return this;
+	}
+
 
 	seeker.textNode = function(parent, val, x, y) {
 		var p = document.createElement('p');
@@ -230,6 +235,19 @@
 		parent.appendChild(p);
 
 		return p;
+	}
+
+	seeker.textNode.prototype.text = function(val) {
+		p.innerHTML = val;
+
+		return this;
+	}
+
+	seeker.textNode.prototype.xy = function(x,y) {
+		p.style.top = y;
+		p.style.left = x;
+
+		return this
 	}
 
 	seeker.navigation = function() {

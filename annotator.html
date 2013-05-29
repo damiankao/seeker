@@ -15,14 +15,18 @@
   var a = new seeker.annotator()
     .attachTo(document.body)
     .layout(dim[0],dim[1] - 50,0,50)
-    .initialize()
-    .update();
+    .initialize();
 
-  a.settings['seqLength'] = dim[0] - 120;
-  a.update();
+  a.setProp('seqLength',dim[0] - (a.settings['margin'] * 2) - 20);
 
-  var b = new seeker.status();
-  b.attachTo(document.body);
+  var b = new seeker.status(document.body);
+
+  b
+    .setPosition(function() {
+      var winDim = seeker.util.winDimensions();
+      return [winDim[0] / 2 - this.offsetWidth / 2, 40]
+    });
+
   a.setStatus(b);
 
   Mousetrap.bind('`', a.preview);

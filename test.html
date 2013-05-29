@@ -1,6 +1,7 @@
 <html>
   <head>
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
+    <script type="text/javascript" src="http://www.nextgenetics.net/data/ext/mousetrap.min.js.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/ext/d3.v2.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.util.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.control.js"></script>
@@ -22,6 +23,8 @@
   var b = new seeker.status();
   b.attachTo(document.body);
   a.setStatus(b);
+
+  Mousetrap.bind('`', a.preview);
 
   </script>
   <div style='width:100%;height:30;position:absolute;top:0;left:0;background:#545454;font-family:Arial;font-size:11pt;color:#D4D4D4;box-shadow: 1px 4px 10px rgba(2, 0, 0, .2);

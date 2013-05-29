@@ -187,11 +187,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 		var _mouseOver = [];
-		var groups;
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
 		var _data_application = {
 			"currentSelection":[],     //selections that have been added
-			"interFeat":-1,            //break inter-feature regions
+			"interFeat":-1,            //shorten inter-feature regions more than certain amount of length
 			"legendX":70,              //left spacing of legend
 			"legendWidth":700,         //width of legend
 			"legendHeight":60,         //height of legend
@@ -216,6 +215,13 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 /////// METHODS ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
+
+		container.setProp = function(prop, val) {
+			this.settings[prop] = val;
+			this.update();
+
+			return this;
+		}
 
 		container.parse = function(raw, delimiter) {
 
@@ -270,6 +276,7 @@
 				.style('opacity',0.9)
 				.style('z-index',10000)
 				.style('display','none');
+
 			return this;
 		}
 
@@ -399,7 +406,6 @@
 						seeker.env_closeMenus();
 					}
 				});
-
 
 			return this;
 		}
@@ -543,8 +549,8 @@
 		container.preview = function() {
 			var winDim = seeker.util.winDimensions();
 
-			panel_preview_close.style.top = winDim[1] * 3/4 + 20;
-			panel_preview_close.style.left = winDim[0] / 2 - panel_preview_close.offsetWidth / 2;
+			panel_preview_close.node.style.top = winDim[1] * 3/4 + 20;
+			panel_preview_close.node.style.left = winDim[0] / 2 - panel_preview_close.node.offsetWidth / 2;
 
 			panel_text.style.top = winDim[1] * 1/4 - 40;
 			panel_text.style.left = winDim[0] / 2 - 290;
