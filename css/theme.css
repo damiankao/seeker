@@ -1,9 +1,4 @@
 div.annotator {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    -khtml-border-radius: 6px;
-    border-radius: 6px;
-    list-style:none;
     background:white;
 }
 
@@ -25,7 +20,7 @@ div.annotator #seqLabels:hover{
     top: -4px;
     width: 10px;
     height: 10px;
-    background-color:#333333;
+    background-color:#365791;
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
@@ -37,10 +32,10 @@ div.annotator #seqLabels:hover{
     -khtml-border-radius: 6px;
     border-radius: 6px;
     list-style:none;
-    background:#333333;
+    border:1px solid #9FB8CC;
+    background:#365791;
     margin:0;
     padding:8px 0px 8px 0px;
-    border:1px solid #2E2E2E;
     display:inline-block;
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
@@ -56,11 +51,11 @@ div.annotator #seqLabels:hover{
 }
 
 #menu > li + li, #menu > li:first-child {
-    border-top: solid 1px #696969;
+    border-top: solid 1px #C9C9C9;
 }
 
 #menu > li:last-of-type {
-    border-bottom: solid 1px #696969;
+    border-bottom: solid 1px #C9C9C9;
 }
 
 #menu > li:hover {
@@ -73,12 +68,12 @@ div.annotator #seqLabels:hover{
     -webkit-border-radius: 5px;
     -khtml-border-radius: 5px;
     padding:2px 10px 2px 10px;
-    background:#333333;
+    background:#365791;
     text-decoration:none;
     font-family:Arial;
     font-size:11pt;
     color:#E3E3E3;
-    border: 1px solid #2E2E2E;
+    border: 1px solid #9FB8CC;
     position:absolute;
 }
 
@@ -93,16 +88,9 @@ div.annotator #seqLabels:hover{
 }
 
 #navigation {
-    top:5px;
-    left:5px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -khtml-border-radius: 3px;
-    background:#333333;
     list-style:none;
     position:relative;
     margin:0;
-    padding:5px 5px 5px 5px;
     border:0;
 }
 
@@ -110,22 +98,23 @@ div.annotator #seqLabels:hover{
     display:inline;
     font-size:10pt;
     font-family:Arial;
-    color:#E3E3E3;
-    padding:3px 8px 3px 8px;
+    color:#DBDBDB;
+    padding:0px 7px 0px 7px;
+    border-right: solid 1px #C9C9C9;
 }
 
-#navigation > li + li {
-    border-left: solid 1px #696969;
+#navigation > li:first-child{
+    border-left: solid 1px #C9C9C9;
 }
 
-#navigation > li:not(:first-child):hover {
-    background:#8A0000;
+#navigation > li:hover {
+    color:white;
     cursor:hand;
 }
 
 #status {
     position:fixed;
-    background:#FCF3A9;
+    background:#FFFCA1;
     border:1px solid #BDBDBD;
     padding:2px 15px 2px 15px;
     font-weight:bold;

@@ -6,34 +6,6 @@
 	introduction:
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
-
-	data structures:
-	sequence name, start, end, feature type, feature description(optional)
-	feature type, counts, feature description(optional)
-	sequence name, sequence length, sequence description(optional), sequence(optional)
-
-	application data:
-	selection list - list of selections
-	shorten inter-feature threshold - shorten long inter-feature distances with a break point
-
-	legend width
-	legend height
-	legened top - put legend above sequences or below
-	legened left margin - left margin for the legend
-	legened square size - size of the colored square
-	legend cols - number of columns for legend
-	legend spacing - spacing between legend and sequences
-
-	alignment - align all sequences by start/end of feature type (when exist)
-	spine thickness - thickness of the spine in pixels
-	feature thickness - thickness of the feature in pixels
-	sequence spacing - spacing between displayed sequence/features
-
-	menu items:
-	input - user data input. tab/comma delimited, file upload. Allow re-ordering of sequences.
-	features - list of feature types with show/hide and color options. list of pinned features.
-	selection - list of sequence feature selections or custom selections. allows for sequence extraction.
-	options - options for feature display, shorten inter-feature, legend, alignment
 	*/
 
 	seeker.annotator = function() {
@@ -204,6 +176,7 @@
 			"featWidth":12,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
+			"seqLabelX":10,            //left spacing of each sequence label
 			"margin":50,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -457,8 +430,8 @@
 
 			canvas
 				.selectAll('#seqLabels')
-				.attr('x',25)
-				.attr('y',10)
+				.attr('x',_data_application['seqLabelX'])
+				.attr('y',16)
 				.text(function(d) {
 					return d['name']
 				});
