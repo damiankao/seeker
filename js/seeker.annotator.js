@@ -311,16 +311,13 @@
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
 
-					if (!this.opened) {
+					if (seeker.env_menuTarget != this) {
 						_mouseOver = [0,d];
 						positionMenu(d3.mouse(document.body));
-						this.opened = true;
+						seeker.env_menuTarget = this;
 					} else {
-						this.opened = false;
+						seeker.env_menuTarget = null;
 					}
-				})
-				.each(function(d,i) {
-					this.opened = false;
 				});
 
 			canvas
@@ -341,16 +338,13 @@
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
 
-					if (!this.opened) {
+					if (seeker.env_menuTarget != this) {
 						_mouseOver = [1,d];
 						positionMenu(d3.mouse(document.body));
-						this.opened = true;
+						seeker.env_menuTarget = this;
 					} else {
-						this.opened = false;
+						seeker.env_menuTarget = null;
 					}
-				})
-				.each(function(d,i) {
-					this.opened = false;
 				});
 
 			var rows = [];
@@ -394,16 +388,13 @@
 					d3.event.stopPropagation();
 					seeker.env_closeMenus();
 
-					if (!this.opened) {
-						_mouseOver = [2,i];
+					if (seeker.env_menuTarget != this) {
+						_mouseOver = [2,d];
 						positionMenu(d3.mouse(document.body));
-						this.opened = true;
+						seeker.env_menuTarget = this;
 					} else {
-						this.opened = false;
+						seeker.env_menuTarget = null;
 					}
-				})
-				.each(function(d,i) {
-					this.opened = false;
 				});
 
 
@@ -662,6 +653,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 		if (!seeker.env_menus) {
+			seeker.env_menuTarget = null;
 			seeker.env_menus = [];
 
 			seeker.env_closeMenus = function() {
