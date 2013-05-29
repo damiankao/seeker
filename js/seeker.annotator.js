@@ -6,37 +6,13 @@
 	introduction:
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
-
-	data structures:
-	sequence name, start, end, feature type, feature description(optional)
-	feature type, counts, feature description(optional)
-	sequence name, sequence length, sequence description(optional), sequence(optional)
-
-	application data:
-	selection list - list of selections
-	shorten inter-feature threshold - shorten long inter-feature distances with a break point
-
-	legend width
-	legend height
-	legened top - put legend above sequences or below
-	legened left margin - left margin for the legend
-	legened square size - size of the colored square
-	legend cols - number of columns for legend
-	legend spacing - spacing between legend and sequences
-
-	alignment - align all sequences by start/end of feature type (when exist)
-	spine thickness - thickness of the spine in pixels
-	feature thickness - thickness of the feature in pixels
-	sequence spacing - spacing between displayed sequence/features
-
-	menu items:
-	input - user data input. tab/comma delimited, file upload. Allow re-ordering of sequences.
-	features - list of feature types with show/hide and color options. list of pinned features.
-	selection - list of sequence feature selections or custom selections. allows for sequence extraction.
-	options - options for feature display, shorten inter-feature, legend, alignment
 	*/
 
 	seeker.annotator = function() {
+////////////////////////////////////////////////////////////////////////////////////////
+/////// VIEW ELEMENTS //////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+		
 		//container and canvas
 		var container = new seeker.container();
 		container
@@ -123,7 +99,7 @@
 			container.update();
 			menu_legend.style.display = 'none';
 		}, function() {
-			container.status('show all ' + _data['featureType'][_mouseOver[1]]['name'] + " features");
+			container.status('show all ' + _mouseOver[1]['count'] + " " + _mouseOver[1]['name'] + " features");
 		}, function() {
 			container.statusHide();
 		});
@@ -132,7 +108,7 @@
 			container.update();
 			menu_legend.style.display = 'none';
 		}, function() {
-			container.status('hide all ' + _data['featureType'][_mouseOver[1]]['name'] + " features");
+			container.status('hide all ' + _mouseOver[1]['count'] + " " +_mouseOver[1]['name'] + " features");
 		}, function() {
 			container.statusHide();
 		});
@@ -159,37 +135,48 @@
 			status_env = obj
 		}
 
-		//save as png
+		//save as svg
 		var panel_preview = new seeker.container();
 		panel_preview.attachTo(document.body);
 		panel_preview.d3()
 			.append('div')
-			.attr('id','annotator_preview');
+			.attr('id','annotator_preview')
+			.style('border','1px solid #BABABA');
 
-		//data
+		var panel_text = new seeker.textNode(panel_preview.node, 'Right click on the below SVG image and choose "save image as" to save the image to your computer.',0,0);
+
+		var panel_preview_close = new seeker.button(0);
+		panel_preview_close
+			.attachTo(panel_preview.node)
+			.setText('close')
+			.setClick(function() {
+				panel_preview.node.style.display = 'none';
+			});
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+/////// DATA ///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 		var _mouseOver = [];
-		var groups;
 		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
 		var _data_application = {
-			"currentSelection":[],
-			"interFeat":-1,
-
-			"legendX":70,
-			"legendWidth":700,
-			"legendHeight":60,
-			"legendCols":5,
-			"legendSpacing":20,
-			"legendSize":20,
-			"legendTop":true,
-
-			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence
-			                           //First element number refer to the featureType array index
+			"currentSelection":[],     //selections that have been added
+			"interFeat":-1,            //shorten inter-feature regions more than certain amount of length
+			"legendX":70,              //left spacing of legend
+			"legendWidth":700,         //width of legend
+			"legendHeight":60,         //height of legend
+			"legendCols":5,            //number of columns in legend
+			"legendSpacing":20,        //spacing between legend and sequences
+			"legendSize":20,           //size of squares in legend
+			"legendTop":true,          //legend on top of the sequences or below
+			"align":[-1,'s'],          //-1 indicates align by start/end of entire sequence. First element number refer to the featureType array index
 			"spineWidth":8,            //width of the spine
-			"spineColor":'#9C9C9C',
+			"spineColor":'#9C9C9C',    //color of the spine
 			"featWidth":12,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
 			"seqSpacing":20,           //spacing between each sequence
-			"menuSpacing":0,
+			"seqLabelX":10,            //left spacing of each sequence label
 			"margin":50,               //margins of the canvas element
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
@@ -198,30 +185,22 @@
 
 		container.settings = _data_application;
 
-		//methods
-		container.layout = function() {
-			var winDim = seeker.util.winDimensions();
-			if (arguments.length == 4) {
-				container.whxy(
-					arguments[0],
-					arguments[1],
-					arguments[2],
-					arguments[3]);
-			}
+////////////////////////////////////////////////////////////////////////////////////////
+/////// METHODS ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 
-			var w = parseInt(container.node.style.width);
-			var h = parseInt(container.node.style.height);
+		container.setProp = function(prop, val) {
+			this.settings[prop] = val;
+			this.update();
 
-			panel_preview.whxy(winDim[0],winDim[1],0,0);
-			panel_preview.d3()
-				.style('background','white')
-				.style('opacity',0.9)
-				.style('z-index',10000)
-				.style('display','none');
 			return this;
 		}
 
 		container.parse = function(raw, delimiter) {
+
+		}
+
+		container.extract = function() {
 
 		}
 
@@ -249,6 +228,29 @@
 			}
 
 			return maxLen;
+		}
+
+		container.layout = function() {
+			var winDim = seeker.util.winDimensions();
+			if (arguments.length == 4) {
+				container.whxy(
+					arguments[0],
+					arguments[1],
+					arguments[2],
+					arguments[3]);
+			}
+
+			var w = parseInt(container.node.style.width);
+			var h = parseInt(container.node.style.height);
+
+			panel_preview.whxy(winDim[0],winDim[1],0,0);
+			panel_preview.d3()
+				.style('background','white')
+				.style('opacity',0.9)
+				.style('z-index',10000)
+				.style('display','none');
+
+			return this;
 		}
 
 		container.initialize = function() {
@@ -286,14 +288,18 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
-					_mouseOver = [0,d];
-					positionMenu(d3.mouse(document.body));
-				});
 
-			canvas
-				.selectAll('#damiankao')
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [0,d];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
+				});
 
 			canvas
 				.selectAll('#seqGroups')
@@ -310,10 +316,17 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
-					_mouseOver = [1,d];
-					positionMenu(d3.mouse(document.body));
+
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [1,d];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
 				});
 
 			var rows = [];
@@ -354,12 +367,18 @@
 					container.statusHide();
 				})
 				.on('click', function(d,i) {
+					d3.event.preventDefault();
 					d3.event.stopPropagation();
-					seeker.env_closeMenus();
-					_mouseOver = [2,i];
-					positionMenu(d3.mouse(document.body));
-				});;
 
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [2,d];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
+				});
 
 			return this;
 		}
@@ -411,8 +430,8 @@
 
 			canvas
 				.selectAll('#seqLabels')
-				.attr('x',25)
-				.attr('y',10)
+				.attr('x',_data_application['seqLabelX'])
+				.attr('y',16)
 				.text(function(d) {
 					return d['name']
 				});
@@ -500,24 +519,27 @@
 			}
 		}
 
-		container.extract = function() {
-
-		}
-
 		container.preview = function() {
 			var winDim = seeker.util.winDimensions();
+
+			panel_preview_close.node.style.top = winDim[1] * 3/4 + 20;
+			panel_preview_close.node.style.left = winDim[0] / 2 - panel_preview_close.node.offsetWidth / 2;
+
+			panel_text.style.top = winDim[1] * 1/4 - 40;
+			panel_text.style.left = winDim[0] / 2 - 290;
 
 			panel_preview.d3()
 				.selectAll('img')
 				.remove()
 
 			d3.select('#annotator_preview')
-				.style('width',winDim[0] * 3/4)
-				.style('height', winDim[1] * 3/4)
-				.style('top', winDim[1] * 1/8)
-				.style('left', winDim[0] * 1/8)
+				.style('width',winDim[0] * 4/5)
+				.style('height', winDim[1] * 1/2)
+				.style('top', winDim[1] * 1/4)
+				.style('left', winDim[0] * 1/10)
 				.style('position','absolute')
-				.style('overflow','auto');
+				.style('overflow-x','hidden')
+				.style('overflow-y','auto');
 
 			var html = canvas
 				.attr("title", "annotations")
@@ -608,13 +630,22 @@
 			canvas.remove();
 		}
 
+////////////////////////////////////////////////////////////////////////////////////////
+/////// SEEKER NAMESPACE OPERATIONS ////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
 		if (!seeker.env_menus) {
+			seeker.env_menuTarget = null;
 			seeker.env_menus = [];
 
 			seeker.env_closeMenus = function() {
-				var num = seeker.env_menus.length;
-				for ( var i = 0 ; i < num ; i++ ) {
-					seeker.env_menus[i].style.display = 'none';
+				if (seeker.env_menuTarget) {
+					var num = seeker.env_menus.length;
+					for ( var i = 0 ; i < num ; i++ ) {
+						seeker.env_menus[i].style.display = 'none';
+					}
+
+					seeker.env_menuTarget = null;
 				}
 			}	
 		}
