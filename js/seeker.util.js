@@ -18,6 +18,19 @@
 		}
 	}
 
+	seeker.util.windowOffsetTop = function(elem) {
+		{
+		    var offsetTop = 0;
+		    do {
+		      if ( !isNaN( elem.offsetTop ) )
+		      {
+		          offsetTop += elem.offsetTop;
+		      }
+		    } while( elem = elem.offsetParent );
+		    return offsetTop;
+		}
+	}
+
 	seeker.container = function() {
 		this.node = document.createElement('div');
 		this.node.style.position = "absolute";

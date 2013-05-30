@@ -516,7 +516,7 @@
 					return d['name'];
 				})
 				.attr('x',_data_application['legendSize'] + 5)
-				.attr('y',_data_application['legendSize'] / 2 + 6);
+				.attr('y',_data_application['legendSize'] / 2 + 5);
 
 			for ( var i = 0 ; i < _onUpdate.length ; i++ ) {
 				_onUpdate[i]();
@@ -626,6 +626,26 @@
 				if (seqs[i]['name'] == seqName) {
 					seqs[i]['show'] = false;
 				}
+			}
+
+			return this;
+		}
+
+		container.showAllSequence = function() {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				seqs[i]['show'] = true;
+			}
+
+			return this;
+		}
+
+		container.hideAllSequence = function() {
+			var seqs = _data.seqs;
+			var seqLen = _data['seqs'].length;
+			for ( var i = 0; i < seqLen; i++ ) {
+				seqs[i]['show'] = false;
 			}
 
 			return this;
