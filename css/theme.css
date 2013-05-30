@@ -125,3 +125,34 @@ div.annotator #seqLabels:hover{
     -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     z-index:10000;
 }
+
+#navMenu {
+    list-style:none;
+    background:#C9C9C9;
+    margin:0;
+    padding:0px 0px 0px 0px;
+    position:absolute;
+    overflow:auto;
+    border-bottom:7px solid #919191;
+    box-shadow: 3px 4px 12px rgba(0, 0, 0, .6);
+    -webkit-box-shadow: 3px 4px 12px rgba(0, 0, 0, .6);
+    -moz-box-shadow: 3px 4px 12px rgba(0, 0, 0, .6);
+    z-index:600;
+}
+
+#navMenu li {
+    font-size:9pt;
+    font-family:Arial;
+    color:#262626;
+    padding:5px 15px 5px 15px;
+}
+
+#navMenu li:nth-child(odd) {
+    background:#A8A8A8;
+}
+
+#navMenu li:hover {
+    color:white;
+    background:#8A0000;
+    cursor:hand;
+};

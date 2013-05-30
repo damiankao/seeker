@@ -89,7 +89,7 @@
 	}
 
 	seeker.menu = function() {
-		var list = new seeker.popup('ul','menu')
+		var list = new seeker.popup('ul','menu');
 
 		var _items = [];
 		list.initialize = function() {
