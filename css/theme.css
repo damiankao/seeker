@@ -36,6 +36,9 @@ div.annotator #seqLabels:hover{
     -webkit-border-radius: 6px;
     -khtml-border-radius: 6px;
     border-radius: 6px;
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
 }
 
 #picker {
