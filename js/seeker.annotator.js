@@ -137,6 +137,17 @@
 			status_env = obj
 		}
 
+		//color picker if exist
+		var colorpicker_env;
+		container.setColorpicker = function(obj) {
+			colorpicker_env = obj;
+			colorpicker_env.setCallback(function(a,b,c) {
+				seeker.env_menuTarget.setAttribute('fill',a);
+				_mouseOver[1]['color'] = a;
+				container.update();
+			});
+		}
+
 		//save as svg
 		var panel_preview = new seeker.container();
 		panel_preview.attachTo(document.body);
@@ -362,7 +373,26 @@
 			canvas
 				.selectAll('#legendCols')
 				.append('rect')
-				.attr('id','legendColsRect');
+				.attr('id','legendColsRect')
+				.on('mouseover', function() {
+					document.body.style.cursor = 'pointer';
+				})
+				.on('mouseout', function() {
+					document.body.style.cursor = 'default';
+				})
+				.on('click',function(d,i) {
+					d3.event.preventDefault();
+					d3.event.stopPropagation();
+
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [4,d];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
+				});
 
 			canvas
 				.selectAll('#legendCols')
@@ -532,9 +562,12 @@
 			} else if (_mouseOver[0] == 1) {
 				menu_feature.style.display = 'inline-block';
 				menu_feature.place(coord);
-			} else {
+			} else if (_mouseOver[0] == 2) {
 				menu_legend.style.display = 'inline-block';
 				menu_legend.place(coord);
+			} else {
+				colorpicker_env.style.display = 'block';
+				colorpicker_env.place(coord);
 			}
 		}
 

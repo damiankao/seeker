@@ -3,6 +3,7 @@
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
     <script type="text/javascript" src="http://www.nextgenetics.net/data/ext/mousetrap.min.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/ext/d3.v2.js"></script>
+    <script type="text/javascript" src="http://www.nextgenetics.net/data/ext/colorpicker.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.util.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.control.js"></script>
     <script type="text/javascript" src="http://www.nextgenetics.net/data/js/seeker.annotator.js"></script>
@@ -45,7 +46,7 @@
       border-right:1px solid #363636;
     }
 
-    #navMenu .seqControl a:hover {
+    #navMenu .seqControl a:hover{
       color:white;
       cursor:pointer;
     }
@@ -73,6 +74,7 @@
     </style>
   </head>
   <body>
+  </div>
   <script>
   var dim = seeker.util.winDimensions();
 
@@ -124,7 +126,22 @@
 
   anno.setStatus(stat);
 
+  //colorpicker
+  var colorpicker = new seeker.colorpicker();
+  colorpicker.style.display = 'none';
+
+  anno.setColorpicker(colorpicker);
+  seeker.env_menus.push(colorpicker);
+
+  d3.select('#colorpicker')
+    .style('zIndex',2000);
+
   //create menus for top navigation bar
+
+  ////////////////////////////////////////////////////////////////
+  //sequence menu item////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
+
   var seqMenu = document.createElement('ul');
   document.body.appendChild(seqMenu);
 
@@ -400,6 +417,28 @@
         }
       });
   }
+
+  ////////////////////////////////////////////////////////////////
+  //features menu item////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
+
+  var featureMenu = document.createElement('ul');
+  document.body.appendChild(featureMenu);
+
+  d3.select(featureMenu)
+    .append('li')
+    .attr('id','featureControl');
+
+  d3.select(featureMenu)
+    .selectAll('featureItems')
+    .data(anno.data['featureType'])
+    .enter()
+    .append('li')
+    .attr('id','featureItems');
+
+  ////////////////////////////////////////////////////////////////
+  //input menu item///////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
 
   //hook up functions to menu bar
   d3.select('#menu_sequences')

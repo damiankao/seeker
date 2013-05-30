@@ -88,6 +88,32 @@
 		return e;
 	}
 
+	seeker.colorpicker = function() {
+		var picker = document.createElement('div');
+		var slider = document.createElement('div');
+		picker.setAttribute('id','picker');
+		slider.setAttribute('id','slide');
+
+		var container = seeker.popup('div','colorpicker');
+		container.appendChild(picker);
+		container.appendChild(slider);
+		container.appendChild(container.arrow);
+
+		document.body.appendChild(container);
+
+		container.cp = ColorPicker(
+			document.getElementById('slide'),
+			document.getElementById('picker'),
+			function(hex, hsv, rgb) {
+				console.log(hex);
+		});
+
+		container.setCallback = function(f) {
+			this.cp.callback = f;
+		}
+		return container;
+	}
+
 	seeker.menu = function() {
 		var list = new seeker.popup('ul','menu');
 

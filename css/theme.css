@@ -26,6 +26,34 @@ div.annotator #seqLabels:hover{
     -moz-transform: rotate(45deg);
 }
 
+#colorpicker {
+    position:relative;
+    z-index:2000;
+    width:90px;
+    height:80px;
+    background:#365791;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+}
+
+#picker {
+    width: 60px; 
+    height: 60px;
+    position:absolute;
+    top:10;
+    left:10;
+}
+
+#slide {
+    width: 10px; 
+    height: 60px;
+    position:absolute;
+    top:10;
+    left:70;
+}
+
 #menu, #tooltip {
     -moz-border-radius: 6px;
     -webkit-border-radius: 6px;
