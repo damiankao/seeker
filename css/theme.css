@@ -4,11 +4,11 @@ div.annotator {
 
 div.annotator #legendColsText:hover {
     font-weight:bold;
-    cursor:hand;
+    cursor:pointer;
 }
 
 div.annotator #seqLabels:hover{
-    cursor:hand;
+    cursor:pointer;
     font-weight:bold;
 }
 
@@ -60,7 +60,7 @@ div.annotator #seqLabels:hover{
 
 #menu > li:hover {
     background:#8A0000;
-    cursor:hand;
+    cursor:pointer;
 }
 
 #buttonA {
@@ -109,7 +109,7 @@ div.annotator #seqLabels:hover{
 
 #navigation > li:hover {
     color:white;
-    cursor:hand;
+    cursor:pointer;
 }
 
 #status {
