@@ -114,6 +114,16 @@
 		}, function() {
 			container.statusHide();
 		});
+		menu_legend.addItem('hide legend', function() {
+			_data['featureType'][_mouseOver[1]]['legend'] = false;
+			container.update();
+			menu_legend.style.display = 'none';
+		}, function() {
+			var feat = _data['featureType'][_mouseOver[1]];
+			container.status('hide ' + feat['name'] + "'s legend");
+		}, function() {
+			container.statusHide();
+		});
 
 		menu_feature.style.display = 'none';
 		menu_seq.style.display = 'none';
@@ -196,7 +206,7 @@
 			"selected":[]              //selected elements. [name, sequence index, start, end, description]
 		};
 
-		var _data = {'seqs': [{'name': 'Trr1 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 951, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 821, 'end': 925, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 639, 'end': 724, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 578, 'end': 633, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1789, 'descr': 'NA', 'feats': [{'featType': 0, 'start': 89, 'end': 153, 'descr': 'NA', 'show': true}]}, {'name': 'Mll1/2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 2685, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2558, 'end': 2662, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2390, 'end': 2456, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1900, 'end': 1949, 'descr': 'NA', 'show': true}]}, {'name': 'Set1 Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 1641, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1334, 'end': 1492, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1514, 'end': 1618, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 104, 'end': 172, 'descr': 'NA', 'show': true}]}, {'name': 'MLL2 Danio rerio', 'seq': -1, 'show': true, 'len': 4967, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 218, 'end': 265, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 265, 'end': 312, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 822, 'end': 871, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 872, 'end': 920, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 950, 'end': 1001, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 4666, 'end': 4753, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 4838, 'end': 4942, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 4610, 'end': 4662, 'descr': 'NA', 'show': true}]}, {'name': 'TRX Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 3726, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3599, 'end': 3703, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3387, 'end': 3472, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1889, 'end': 1938, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1423, 'end': 1481, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 390, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 263, 'end': 367, 'descr': 'NA', 'show': true}, {'featType': 5, 'start': 134, 'end': 234, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 892, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 652, 'end': 763, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 728, 'end': 780, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Homo sapiens', 'seq': -1, 'show': true, 'len': 3969, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3840, 'end': 3944, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3667, 'end': 3749, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1481, 'end': 1532, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1568, 'end': 1626, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2023, 'end': 2072, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1148, 'end': 1194, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1A Homo sapiens', 'seq': -1, 'show': true, 'len': 1707, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1418, 'end': 1558, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1580, 'end': 1684, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 101, 'end': 165, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1685, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1558, 'end': 1662, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Danio rerio', 'seq': -1, 'show': true, 'len': 1265, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 344, 'end': 445, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 129, 'end': 174, 'descr': 'NA', 'show': true}]}, {'name': 'SET1 Schizosaccharomyces pombe', 'seq': -1, 'show': true, 'len': 920, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 630, 'end': 771, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 794, 'end': 897, 'descr': 'NA', 'show': true}, {'featType': 7, 'start': 279, 'end': 343, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 96, 'end': 172, 'descr': 'NA', 'show': true}]}, {'name': 'Trr1 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1638, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1509, 'end': 1613, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1309, 'end': 1394, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1250, 'end': 1304, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1617, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1490, 'end': 1594, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 2, 'end': 51, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1840, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 614, 'end': 728, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 3003, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 195, 'end': 244, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 244, 'end': 290, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 831, 'end': 878, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 3002, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2875, 'end': 2979, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2213, 'end': 2243, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Danio rerio', 'seq': -1, 'show': true, 'len': 4219, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 4090, 'end': 4194, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3917, 'end': 3999, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2218, 'end': 2267, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1675, 'end': 1726, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1313, 'end': 1359, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1443, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1313, 'end': 1417, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1129, 'end': 1214, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1057, 'end': 1111, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of trr Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 3551, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 334, 'end': 384, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 384, 'end': 430, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 827, 'end': 874, 'descr': 'NA', 'show': true}]}, {'name': 'Mll5-2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 937, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 583, 'end': 658, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B-A Danio rerio', 'seq': -1, 'show': true, 'len': 1844, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1549, 'end': 1695, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1717, 'end': 1821, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 145, 'end': 209, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 1336, 'descr': 'NA', 'feats': [{'featType': 8, 'start': 1026, 'end': 1110, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1206, 'end': 1310, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 967, 'end': 1021, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Danio rerio', 'seq': -1, 'show': true, 'len': 3915, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3786, 'end': 3890, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3615, 'end': 3701, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 20, 'end': 70, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 70, 'end': 116, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 147, 'end': 198, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 3558, 'end': 3610, 'descr': 'NA', 'show': true}]}, {'name': 'SET-16 Caenorhabditis elegans', 'seq': -1, 'show': true, 'len': 2475, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2343, 'end': 2450, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2109, 'end': 2194, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2053, 'end': 2104, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 427, 'end': 479, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 479, 'end': 527, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Homo sapiens', 'seq': -1, 'show': true, 'len': 1858, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 346, 'end': 444, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 120, 'end': 165, 'descr': 'NA', 'show': true}]}, {'name': 'Trr1 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1763, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1634, 'end': 1739, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1452, 'end': 1538, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1394, 'end': 1448, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Capitella telata', 'seq': -1, 'show': true, 'len': 1731, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 327, 'end': 372, 'descr': 'NA', 'show': true}]}, {'name': 'MLL2 Homo sapiens', 'seq': -1, 'show': true, 'len': 5537, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 275, 'end': 322, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1379, 'end': 1428, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1429, 'end': 1476, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 5408, 'end': 5512, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 5237, 'end': 5323, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 5180, 'end': 5232, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1327, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1197, 'end': 1301, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 992, 'end': 1079, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 914, 'end': 970, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Homo sapiens', 'seq': -1, 'show': true, 'len': 1923, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1629, 'end': 1774, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1796, 'end': 1900, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 110, 'end': 174, 'descr': 'NA', 'show': true}]}, {'name': 'SET-2 Caenorhabditis elegans', 'seq': -1, 'show': true, 'len': 1507, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1379, 'end': 1484, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 132, 'end': 190, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 capitella teleta', 'seq': -1, 'show': true, 'len': 2487, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2360, 'end': 2464, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2185, 'end': 2265, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1419, 'end': 1467, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 971, 'end': 1029, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 686, 'end': 729, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 3518, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 41, 'end': 90, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 90, 'end': 136, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 559, 'end': 606, 'descr': 'NA', 'show': true}, {'featType': 6, 'start': 3303, 'end': 3375, 'descr': 'NA', 'show': true}, {'featType': 6, 'start': 3408, 'end': 3499, 'descr': 'NA', 'show': true}]}, {'name': 'TRR Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 2431, 'descr': 'NA', 'feats': [{'featType': 8, 'start': 2123, 'end': 2211, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 2302, 'end': 2406, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2066, 'end': 2119, 'descr': 'NA', 'show': true}]}, {'name': 'MLL4 Homo sapiens', 'seq': -1, 'show': true, 'len': 2715, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2586, 'end': 2690, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2412, 'end': 2494, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1251, 'end': 1302, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1337, 'end': 1394, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1732, 'end': 1782, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 960, 'end': 1005, 'descr': 'NA', 'show': true}]}, {'name': 'Trr Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1560, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1431, 'end': 1536, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1241, 'end': 1326, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1182, 'end': 1238, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1074, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 313, 'end': 362, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 362, 'end': 408, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 820, 'end': 866, 'descr': 'NA', 'show': true}]}, {'name': 'MLL4 Danio rerio', 'seq': -1, 'show': true, 'len': 3772, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3643, 'end': 3747, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3469, 'end': 3551, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1654, 'end': 1701, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1702, 'end': 1752, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2231, 'end': 2280, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1408, 'end': 1452, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Capitella teleta', 'seq': -1, 'show': true, 'len': 844, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 715, 'end': 819, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 540, 'end': 627, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 482, 'end': 536, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of trr Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 1482, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 206, 'end': 253, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 253, 'end': 300, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 530, 'end': 580, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 580, 'end': 626, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 3018, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2892, 'end': 2995, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2662, 'end': 2727, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2102, 'end': 2157, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1 Capitella teleta', 'seq': -1, 'show': true, 'len': 388, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 261, 'end': 365, 'descr': 'NA', 'show': true}, {'featType': 5, 'start': 97, 'end': 228, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Homo sapiens', 'seq': -1, 'show': true, 'len': 4911, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 390, 'end': 437, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 959, 'end': 1009, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1009, 'end': 1055, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 4782, 'end': 4886, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 4606, 'end': 4693, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 4550, 'end': 4602, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Capitella telata', 'seq': -1, 'show': true, 'len': 4211, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 428, 'end': 475, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 476, 'end': 523, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 863, 'end': 909, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 940, 'end': 992, 'descr': 'NA', 'show': true}]}], 'featureType': [{'count': 8, 'color': '#F2E479', 'name': 'RRM 1', 'descr': 'NA'}, {'count': 39, 'color': '#622C7A', 'name': 'SET', 'descr': 'NA'}, {'count': 48, 'color': '#2C337A', 'name': 'PHD', 'descr': 'NA'}, {'count': 5, 'color': '#2C7A69', 'name': 'zf-CXXC', 'descr': 'NA'}, {'count': 23, 'color': '#337A2C', 'name': 'FYRN', 'descr': 'NA'}, {'count': 7, 'color': '#7A5C2C', 'name': 'N-SET', 'descr': 'NA'}, {'count': 2, 'color': '#9E2121', 'name': 'Cadherin', 'descr': 'NA'}, {'count': 1, 'color': '#A8DEFF', 'name': 'SET assoc', 'descr': 'NA'}, {'count': 22, 'color': '#FC7632', 'name': 'FYRC', 'descr': 'NA'}]};
+		var _data = {'seqs': [{'name': 'Trr1 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 951, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 821, 'end': 925, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 639, 'end': 724, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 578, 'end': 633, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1789, 'descr': 'NA', 'feats': [{'featType': 0, 'start': 89, 'end': 153, 'descr': 'NA', 'show': true}]}, {'name': 'Mll1/2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 2685, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2558, 'end': 2662, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2390, 'end': 2456, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1900, 'end': 1949, 'descr': 'NA', 'show': true}]}, {'name': 'Set1 Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 1641, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1334, 'end': 1492, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1514, 'end': 1618, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 104, 'end': 172, 'descr': 'NA', 'show': true}]}, {'name': 'MLL2 Danio rerio', 'seq': -1, 'show': true, 'len': 4967, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 218, 'end': 265, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 265, 'end': 312, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 822, 'end': 871, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 872, 'end': 920, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 950, 'end': 1001, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 4666, 'end': 4753, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 4838, 'end': 4942, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 4610, 'end': 4662, 'descr': 'NA', 'show': true}]}, {'name': 'TRX Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 3726, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3599, 'end': 3703, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3387, 'end': 3472, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1889, 'end': 1938, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1423, 'end': 1481, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 390, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 263, 'end': 367, 'descr': 'NA', 'show': true}, {'featType': 5, 'start': 134, 'end': 234, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 892, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 652, 'end': 763, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 728, 'end': 780, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Homo sapiens', 'seq': -1, 'show': true, 'len': 3969, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3840, 'end': 3944, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3667, 'end': 3749, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1481, 'end': 1532, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1568, 'end': 1626, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2023, 'end': 2072, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1148, 'end': 1194, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1A Homo sapiens', 'seq': -1, 'show': true, 'len': 1707, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1418, 'end': 1558, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1580, 'end': 1684, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 101, 'end': 165, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1685, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1558, 'end': 1662, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Danio rerio', 'seq': -1, 'show': true, 'len': 1265, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 344, 'end': 445, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 129, 'end': 174, 'descr': 'NA', 'show': true}]}, {'name': 'SET1 Schizosaccharomyces pombe', 'seq': -1, 'show': true, 'len': 920, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 630, 'end': 771, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 794, 'end': 897, 'descr': 'NA', 'show': true}, {'featType': 7, 'start': 279, 'end': 343, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 96, 'end': 172, 'descr': 'NA', 'show': true}]}, {'name': 'Trr1 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1638, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1509, 'end': 1613, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1309, 'end': 1394, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1250, 'end': 1304, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1617, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1490, 'end': 1594, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 2, 'end': 51, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1840, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 614, 'end': 728, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 3003, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 195, 'end': 244, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 244, 'end': 290, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 831, 'end': 878, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 3002, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2875, 'end': 2979, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2213, 'end': 2243, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Danio rerio', 'seq': -1, 'show': true, 'len': 4219, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 4090, 'end': 4194, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3917, 'end': 3999, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2218, 'end': 2267, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1675, 'end': 1726, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1313, 'end': 1359, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1443, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1313, 'end': 1417, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1129, 'end': 1214, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1057, 'end': 1111, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of trr Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 3551, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 334, 'end': 384, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 384, 'end': 430, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 827, 'end': 874, 'descr': 'NA', 'show': true}]}, {'name': 'Mll5-2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 937, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 583, 'end': 658, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B-A Danio rerio', 'seq': -1, 'show': true, 'len': 1844, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1549, 'end': 1695, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1717, 'end': 1821, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 145, 'end': 209, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Schmidtea mediterranea', 'seq': -1, 'show': true, 'len': 1336, 'descr': 'NA', 'feats': [{'featType': 8, 'start': 1026, 'end': 1110, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1206, 'end': 1310, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 967, 'end': 1021, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Danio rerio', 'seq': -1, 'show': true, 'len': 3915, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3786, 'end': 3890, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3615, 'end': 3701, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 20, 'end': 70, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 70, 'end': 116, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 147, 'end': 198, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 3558, 'end': 3610, 'descr': 'NA', 'show': true}]}, {'name': 'SET-16 Caenorhabditis elegans', 'seq': -1, 'show': true, 'len': 2475, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2343, 'end': 2450, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2109, 'end': 2194, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2053, 'end': 2104, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 427, 'end': 479, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 479, 'end': 527, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Homo sapiens', 'seq': -1, 'show': true, 'len': 1858, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 346, 'end': 444, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 120, 'end': 165, 'descr': 'NA', 'show': true}]}, {'name': 'Trr1 Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 1763, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1634, 'end': 1739, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1452, 'end': 1538, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1394, 'end': 1448, 'descr': 'NA', 'show': true}]}, {'name': 'MLL5 Capitella telata', 'seq': -1, 'show': true, 'len': 1731, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 327, 'end': 372, 'descr': 'NA', 'show': true}]}, {'name': 'MLL2 Homo sapiens', 'seq': -1, 'show': true, 'len': 5537, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 275, 'end': 322, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1379, 'end': 1428, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1429, 'end': 1476, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 5408, 'end': 5512, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 5237, 'end': 5323, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 5180, 'end': 5232, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 1327, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1197, 'end': 1301, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 992, 'end': 1079, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 914, 'end': 970, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1B Homo sapiens', 'seq': -1, 'show': true, 'len': 1923, 'descr': 'NA', 'feats': [{'featType': 5, 'start': 1629, 'end': 1774, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 1796, 'end': 1900, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 110, 'end': 174, 'descr': 'NA', 'show': true}]}, {'name': 'SET-2 Caenorhabditis elegans', 'seq': -1, 'show': true, 'len': 1507, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1379, 'end': 1484, 'descr': 'NA', 'show': true}, {'featType': 0, 'start': 132, 'end': 190, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 capitella teleta', 'seq': -1, 'show': true, 'len': 2487, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2360, 'end': 2464, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2185, 'end': 2265, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1419, 'end': 1467, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 971, 'end': 1029, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 686, 'end': 729, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Clonorchis sinensis', 'seq': -1, 'show': true, 'len': 3518, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 41, 'end': 90, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 90, 'end': 136, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 559, 'end': 606, 'descr': 'NA', 'show': true}, {'featType': 6, 'start': 3303, 'end': 3375, 'descr': 'NA', 'show': true}, {'featType': 6, 'start': 3408, 'end': 3499, 'descr': 'NA', 'show': true}]}, {'name': 'TRR Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 2431, 'descr': 'NA', 'feats': [{'featType': 8, 'start': 2123, 'end': 2211, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 2302, 'end': 2406, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2066, 'end': 2119, 'descr': 'NA', 'show': true}]}, {'name': 'MLL4 Homo sapiens', 'seq': -1, 'show': true, 'len': 2715, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2586, 'end': 2690, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2412, 'end': 2494, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1251, 'end': 1302, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1337, 'end': 1394, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1732, 'end': 1782, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 960, 'end': 1005, 'descr': 'NA', 'show': true}]}, {'name': 'Trr Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1560, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 1431, 'end': 1536, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 1241, 'end': 1326, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 1182, 'end': 1238, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Schistosoma mansoni', 'seq': -1, 'show': true, 'len': 1074, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 313, 'end': 362, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 362, 'end': 408, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 820, 'end': 866, 'descr': 'NA', 'show': true}]}, {'name': 'MLL4 Danio rerio', 'seq': -1, 'show': true, 'len': 3772, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 3643, 'end': 3747, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 3469, 'end': 3551, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1654, 'end': 1701, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1702, 'end': 1752, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2231, 'end': 2280, 'descr': 'NA', 'show': true}, {'featType': 3, 'start': 1408, 'end': 1452, 'descr': 'NA', 'show': true}]}, {'name': 'Trr2 Capitella teleta', 'seq': -1, 'show': true, 'len': 844, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 715, 'end': 819, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 540, 'end': 627, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 482, 'end': 536, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of trr Drosophila melanogaster', 'seq': -1, 'show': true, 'len': 1482, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 206, 'end': 253, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 253, 'end': 300, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 530, 'end': 580, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 580, 'end': 626, 'descr': 'NA', 'show': true}]}, {'name': 'MLL1 Echinococcus multilocularis', 'seq': -1, 'show': true, 'len': 3018, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 2892, 'end': 2995, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 2662, 'end': 2727, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 2102, 'end': 2157, 'descr': 'NA', 'show': true}]}, {'name': 'SETD1 Capitella teleta', 'seq': -1, 'show': true, 'len': 388, 'descr': 'NA', 'feats': [{'featType': 1, 'start': 261, 'end': 365, 'descr': 'NA', 'show': true}, {'featType': 5, 'start': 97, 'end': 228, 'descr': 'NA', 'show': true}]}, {'name': 'MLL3 Homo sapiens', 'seq': -1, 'show': true, 'len': 4911, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 390, 'end': 437, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 959, 'end': 1009, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 1009, 'end': 1055, 'descr': 'NA', 'show': true}, {'featType': 1, 'start': 4782, 'end': 4886, 'descr': 'NA', 'show': true}, {'featType': 8, 'start': 4606, 'end': 4693, 'descr': 'NA', 'show': true}, {'featType': 4, 'start': 4550, 'end': 4602, 'descr': 'NA', 'show': true}]}, {'name': 'lost PHDs of Trr Capitella telata', 'seq': -1, 'show': true, 'len': 4211, 'descr': 'NA', 'feats': [{'featType': 2, 'start': 428, 'end': 475, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 476, 'end': 523, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 863, 'end': 909, 'descr': 'NA', 'show': true}, {'featType': 2, 'start': 940, 'end': 992, 'descr': 'NA', 'show': true}]}], 'featureType': [{'count': 8, 'color': '#F2E479', 'name': 'RRM 1', 'descr': 'NA', 'legend':true}, {'count': 39, 'color': '#622C7A', 'name': 'SET', 'descr': 'NA', 'legend':true}, {'count': 48, 'color': '#2C337A', 'name': 'PHD', 'descr': 'NA', 'legend':true}, {'count': 5, 'color': '#2C7A69', 'name': 'zf-CXXC', 'descr': 'NA', 'legend':true}, {'count': 23, 'color': '#337A2C', 'name': 'FYRN', 'descr': 'NA', 'legend':true}, {'count': 7, 'color': '#7A5C2C', 'name': 'N-SET', 'descr': 'NA', 'legend':true}, {'count': 2, 'color': '#9E2121', 'name': 'Cadherin', 'descr': 'NA', 'legend':true}, {'count': 1, 'color': '#A8DEFF', 'name': 'SET assoc', 'descr': 'NA', 'legend':true}, {'count': 22, 'color': '#FC7632', 'name': 'FYRC', 'descr': 'NA', 'legend':true}]};
 
 		container.settings = _data_application;
 		container.data = _data;
@@ -351,76 +361,6 @@
 					}
 				});
 
-			var rows = [];
-			for (var i = 0 ; i < _data['featureType'].length ; i += _data_application['legendCols'] ) {
-				rows.push(_data['featureType'].slice(i,i+_data_application['legendCols']));
-			}
-
-			canvas
-				.selectAll('legendRows')
-				.data(rows)
-				.enter()
-				.append('g')
-				.attr('id','legendRows')
-					.selectAll('legendCols')
-					.data(function(d,i) {
-						return d;
-					})
-					.enter()
-					.append('g')
-					.attr('id','legendCols');
-
-			canvas
-				.selectAll('#legendCols')
-				.append('rect')
-				.attr('id','legendColsRect')
-				.on('mouseover', function() {
-					document.body.style.cursor = 'pointer';
-				})
-				.on('mouseout', function() {
-					document.body.style.cursor = 'default';
-				})
-				.on('click',function(d,i) {
-					d3.event.preventDefault();
-					d3.event.stopPropagation();
-
-					if (seeker.env_menuTarget != this) {
-						seeker.env_closeMenus();
-						_mouseOver = [4,d];
-						positionMenu(d3.mouse(document.body));
-						seeker.env_menuTarget = this;
-					} else {
-						seeker.env_closeMenus();
-					}
-				});
-
-			canvas
-				.selectAll('#legendCols')
-				.append('text')
-				.attr('id','legendColsText')
-				.style('font-family','Arial')
-				.style('font-size','10pt')
-				.on('mouseover', function(d,i) {
-					var str = d['name'] + ': ' + d['count'] + ' features total';
-					container.status(str);
-				})
-				.on('mouseout', function(d,i) {
-					container.statusHide();
-				})
-				.on('click', function(d,i) {
-					d3.event.preventDefault();
-					d3.event.stopPropagation();
-
-					if (seeker.env_menuTarget != this) {
-						seeker.env_closeMenus();
-						_mouseOver = [2,i];
-						positionMenu(d3.mouse(document.body));
-						seeker.env_menuTarget = this;
-					} else {
-						seeker.env_closeMenus();
-					}
-				});
-
 			return this;
 		}
 
@@ -507,6 +447,85 @@
 					d3.select(this).style('stroke-width','4px');
 					d3.select(this).style('stroke',_data['featureType'][d['featType']]['color']);
 					document.body.style.cursor = 'hand';
+				});
+
+			d3.selectAll('#legendRows').remove();
+
+			var legendRows = []
+			for (var i = 0 ; i < _data['featureType'].length ; i++ ) {
+				if (_data['featureType'][i]['legend']) {
+					legendRows.push(_data['featureType'][i]);
+				}
+			}
+
+			var rows = [];
+			for (var i = 0 ; i < legendRows.length ; i += _data_application['legendCols'] ) {
+				rows.push(legendRows.slice(i,i+_data_application['legendCols']));
+			}
+
+			canvas
+				.selectAll('legendRows')
+				.data(rows)
+				.enter()
+				.append('g')
+				.attr('id','legendRows')
+					.selectAll('legendCols')
+					.data(function(d,i) {
+						return d;
+					})
+					.enter()
+					.append('g')
+					.attr('id','legendCols');
+
+			canvas
+				.selectAll('#legendCols')
+				.append('rect')
+				.attr('id','legendColsRect')
+				.on('mouseover', function() {
+					document.body.style.cursor = 'pointer';
+				})
+				.on('mouseout', function() {
+					document.body.style.cursor = 'default';
+				})
+				.on('click',function(d,i) {
+					d3.event.preventDefault();
+					d3.event.stopPropagation();
+
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [4,d];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
+				});
+
+			canvas
+				.selectAll('#legendCols')
+				.append('text')
+				.attr('id','legendColsText')
+				.style('font-family','Arial')
+				.style('font-size','10pt')
+				.on('mouseover', function(d,i) {
+					var str = d['name'] + ': ' + d['count'] + ' features total';
+					container.status(str);
+				})
+				.on('mouseout', function(d,i) {
+					container.statusHide();
+				})
+				.on('click', function(d,i) {
+					d3.event.preventDefault();
+					d3.event.stopPropagation();
+
+					if (seeker.env_menuTarget != this) {
+						seeker.env_closeMenus();
+						_mouseOver = [2,i];
+						positionMenu(d3.mouse(document.body));
+						seeker.env_menuTarget = this;
+					} else {
+						seeker.env_closeMenus();
+					}
 				});
 
 			var rows = Math.ceil(_data['featureType'].length / _data_application['legendCols']);
@@ -679,6 +698,22 @@
 			var seqLen = _data['seqs'].length;
 			for ( var i = 0; i < seqLen; i++ ) {
 				seqs[i]['show'] = false;
+			}
+
+			return this;
+		}
+
+		container.showAllLegend = function() {
+			for ( var i = 0 ; i < _data['featureType'].length ; i++ ) {
+				_data['featureType'][i]['legend'] = true;
+			}
+
+			return this;
+		}
+
+		container.hideAllLegend = function() {
+			for ( var i = 0 ; i < _data['featureType'].length ; i++ ) {
+				_data['featureType'][i]['legend'] = false;
 			}
 
 			return this;

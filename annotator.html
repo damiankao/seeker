@@ -31,7 +31,7 @@
       position:absolute;
     }
 
-    #navMenu .seqControl {
+    .menuControl {
       font-size:9pt;
       font-family:Arial;
       color:#262626;
@@ -40,32 +40,45 @@
       border-bottom:3px solid #8A0000;
     }
 
-    #navMenu .seqControl a {
+    .menuControl a {
       font-weight:bold;
       padding:0px 10px 0px 10px;
       border-right:1px solid #363636;
     }
 
-    #navMenu .seqControl a:hover{
+    .menuControl a:hover{
       color:white;
       cursor:pointer;
     }
 
-    #navMenu .seqItems {
+    .menuItems {
       font-size:9pt;
       font-family:Arial;
       color:#262626;
-      padding:5px 7px 5px 15px;
+      padding:2px 7px 5px 15px;
     }
 
-    #navMenu .seqItems:nth-child(odd) {
+    .menuItems:nth-child(odd) {
         background:#A8A8A8;
     }
 
-    #navMenu .seqItems:hover {
+    .menuItems:hover {
         color:white;
         background:#8A0000;
         cursor:default;
+    }
+
+    .menuItems a {
+      font-weight:bold;
+      padding:0px 10px 0px 0px;
+      float:right;
+      position:relative;
+      top:5px;
+    }
+
+    .menuItems a:hover{
+      color:white;
+      cursor:pointer;
     }
 
     body {
@@ -159,7 +172,7 @@
 
   var seqItemControl = d3.select(seqMenu)
     .append('li')
-    .attr('class','seqControl');
+    .attr('class','menuControl');
 
   seqItemControl
     .append('a')
@@ -185,7 +198,7 @@
     .data(anno.data['seqs'])
     .enter()
     .append('li')
-    .attr('class','seqItems')
+    .attr('class','menuItems')
     .on('mouseover',function(d,i) {
       seqFeatureMenuPop(d, [seqMenu.offsetWidth + seqMenu.offsetLeft, seeker.util.windowOffsetTop(this) - seqMenu.scrollTop, seqMenu.offsetLeft]);
     });
@@ -194,22 +207,6 @@
     .html(function(d,i) {
       return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + (i + 1) + ". " + d['name'];
     })
-
-  function updateSeqItems() {
-    seqItems
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input');
-
-        if (anno.data['seqs'][i]['show']) {
-          cb.node().checked = true;
-        } else {
-          cb.node().checked = false;
-        }
-      });
-  }
-
-  updateSeqItems();
-  anno.onUpdate(updateSeqItems);  //update sequence items checkbox on annotator update
 
   seqItems
     .each(function(d,i) {
@@ -250,22 +247,6 @@
     .style('position','absolute')
     .style('display','inline-block');
 
-  function updateSeqFeatures() {
-    d3.select(seqFeatureMenu)
-      .selectAll('#seqFeatureItems')
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input').node();
-
-        if (d['show']) {
-          cb.checked = true
-        } else {
-          cb.checked = false;
-        }
-      });
-  }
-
-  anno.onUpdate(updateSeqFeatures);  //update sequence items checkbox on annotator update
-
   function seqFeatureMenuPop(dat, coord) {
     var p = d3.select(seqFeatureMenu);
 
@@ -280,7 +261,7 @@
 
     var seqFeatureControl = p
       .append('li')
-      .attr('class','seqControl');
+      .attr('class','menuControl');
 
     seqFeatureControl
       .append('a')
@@ -313,7 +294,7 @@
       .html(function(d,i) {
         return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + anno.data['featureType'][d['featType']]['name'];
       })
-      .attr('class','seqItems')
+      .attr('class','menuItems')
       .attr('id','seqFeatureItems');
 
     p
@@ -401,21 +382,7 @@
         .style('border-left','3px solid black');
     }
 
-    updateSeqFeatureItems();
-  }
-
-  function updateSeqFeatureItems() {
-    d3.select(seqFeatureMenu)
-      .selectAll('#seqFeatureItems')
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input');
-
-        if (d['show']) {
-          cb.node().checked = true;
-        } else {
-          cb.node().checked = false;
-        }
-      });
+    updateMenu();
   }
 
   ////////////////////////////////////////////////////////////////
@@ -426,15 +393,96 @@
   document.body.appendChild(featureMenu);
 
   d3.select(featureMenu)
+    .style('top',-10000)
+    .style('left',d3.select('#menu_features').node().offsetLeft + 400)
+    .attr('id','navMenu')
+    .style('display','inline-block')
+    .on('mousedown',function() {
+      d3.event.preventDefault();
+    });
+
+  var featureMenuControl = d3.select(featureMenu)
     .append('li')
-    .attr('id','featureControl');
+    .attr('class','menuControl');
+
+  featureMenuControl
+    .append('a')
+    .style('border-left','1px solid #363636')
+    .text('show all legend')
+    .on('click',function() {
+      d3.event.stopPropagation();
+      anno.showAllLegend();
+      anno.update();
+    });
+
+  featureMenuControl
+    .append('a')
+    .text('hide all legend')
+    .on('click',function() {
+      d3.event.stopPropagation();
+      anno.hideAllLegend();
+      anno.update();
+    });
 
   d3.select(featureMenu)
     .selectAll('featureItems')
     .data(anno.data['featureType'])
     .enter()
     .append('li')
-    .attr('id','featureItems');
+    .attr('class','menuItems')
+    .attr('id','featureItems')
+    .html(function(d,i) {
+      return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + d['name'] + "<a id='feat_showAll'>show all</a><a id='feat_hideAll'>hide all</a>";
+    })
+    .on('click',function(d,i) {
+      d3.event.stopPropagation();
+
+      var cb = d3.select(this).select('input').node();
+
+      if (cb.checked) {
+        cb.checked = false;
+        d['legend'] = false;
+      } else {
+        cb.checked = true;
+        d['legend'] = true;
+      }
+
+      anno.update();
+    });
+
+  d3.selectAll('#featureItems')
+    .each(function(d,i) {
+      var cb = d3.select(this).select('input');
+      var showFeat = d3.select(this).select('#feat_showAll');
+      var hideFeat = d3.select(this).select('#feat_hideAll');
+
+      cb
+        .on('click',function() {
+          d3.event.stopPropagation();
+          if (this.checked) {
+
+            d['legend'] = true;
+          } else {
+            d['legend'] = false;
+          }
+
+          anno.update();
+        });
+
+      showFeat
+        .on('click',function() {
+          d3.event.stopPropagation();
+          anno.showFeatureType(i);
+          anno.update();
+        });
+
+      hideFeat
+        .on('click',function() {
+          d3.event.stopPropagation();
+          anno.hideFeatureType(i);
+          anno.update();
+        });
+    });
 
   ////////////////////////////////////////////////////////////////
   //input menu item///////////////////////////////////////////////
@@ -454,10 +502,64 @@
       } else {
         seeker.env_closeMenus();
       }
+    });
+
+  d3.select('#menu_features')
+    .on('click',function() {
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      if (seeker.env_menuTarget != this) {
+        seeker.env_closeMenus();
+        featureMenu.style.display = 'inline-block';
+        featureMenu.style.top = menu.node().offsetHeight -4;
+        seeker.env_menuTarget = this;
+      } else {
+        seeker.env_closeMenus();
+      }
     })
 
   d3.select('#menu_export')
     .on('click',anno.preview);
+
+
+  function updateMenu() {
+    d3.select(seqFeatureMenu)
+      .selectAll('#seqFeatureItems')
+      .each(function(d,i) {
+        var cb = d3.select(this).select('input').node();
+
+        if (d['show']) {
+          cb.checked = true
+        } else {
+          cb.checked = false;
+        }
+      });
+
+    seqItems
+      .each(function(d,i) {
+        var cb = d3.select(this).select('input').node();
+
+        if (anno.data['seqs'][i]['show']) {
+          cb.checked = true;
+        } else {
+          cb.checked = false;
+        }
+      });
+
+    d3.selectAll('#featureItems')
+    .each(function(d,i) {
+      var cb = d3.select(this).select('input').node();
+
+      if (d['legend']) {
+        cb.checked = true;
+      } else {
+        cb.checked = false;
+      }
+    });
+  }
+
+  anno.onUpdate(updateMenu);  //update sequence items checkbox on annotator update
 
   //misc
   seqMenu.style.width = seqMenu.offsetWidth + 20;  //account for scroll bar
@@ -476,8 +578,10 @@
   seeker.env_menuTarget = seqMenu;
   seeker.env_menus.push(seqMenu);
   seeker.env_menus.push(seqFeatureMenu);
+  seeker.env_menus.push(featureMenu);
 
   layout();
+  updateMenu();
   </script>
   </body>
 </html>
