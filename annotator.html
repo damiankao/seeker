@@ -31,12 +31,38 @@
       position:absolute;
     }
 
+    #navMenu {
+      list-style:none;
+      background:#B7C8E8;
+      margin:0;
+      padding:0px 0px 0px 0px;
+      position:absolute;
+      overflow:auto;
+      border-bottom:3px solid #8A0000;
+    }
+
+    #optionMenu {
+      position:absolute;
+      background:#9FADC7;
+      z-index:2000;
+    }
+
+    #optionMenuLabels {
+      font-size:12pt;
+      font-weight:bold;
+      font-family:Arial;
+      color:#8A0000;
+      position:absolute;
+      background:#888DB3;
+      padding:25px 20px 20px 35px;
+    }
+
     .menuControl {
       font-size:9pt;
       font-family:Arial;
       color:#262626;
-      padding:8px 15px 2px 15px;
-      background:#919191;
+      padding:3px 15px 2px 15px;
+      background:#C9C9C9;
       border-bottom:3px solid #8A0000;
     }
 
@@ -55,11 +81,11 @@
       font-size:9pt;
       font-family:Arial;
       color:#262626;
-      padding:2px 7px 5px 15px;
+      padding:0px 7px 4px 15px;
     }
 
     .menuItems:nth-child(odd) {
-        background:#A8A8A8;
+        background:#9FADC7;
     }
 
     .menuItems:hover {
@@ -134,7 +160,7 @@
   stat
     .setPosition(function() {
       var winDim = seeker.util.winDimensions();
-      return [winDim[0] / 2 - this.offsetWidth / 2, 35]
+      return [winDim[0] / 2 - this.offsetWidth / 2, 7]
     });
 
   anno.setStatus(stat);
@@ -488,6 +514,180 @@
   //input menu item///////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
+
+  ////////////////////////////////////////////////////////////////
+  //options menu item/////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
+  //check box: legend on top, sequence numbered
+  //color picker: spine color
+  //sliders:
+  ////legend x position - 0, width of the window - margin * 2
+  ////legend width - 0, width of the window - margin * 2
+  ////legend height - 0, height of the window
+  ////legend columns - 0, 20
+  ////legend color square size - 0, 50
+  ////spacing between legened and sequence - 0, half height of the window
+  ////spine width - 0, 50
+  ////feature width - 0, 50
+  ////max sequence length - 0, width of the window  - margin * 2
+  ////spacing between each sequence - 0, height of the window
+  ////sequence label x position - 0, width of the window - margin * 2
+  ////margin - 0, 200
+
+  var optionsMenu = document.createElement('div');
+  document.body.appendChild(optionsMenu);
+  d3.select(optionsMenu)
+    .attr('id','optionMenu')
+    .style('width',dim[0])
+    .style('height',165)
+    .style('top',menu.node().offsetHeight)
+    .style('left',0);
+
+
+  //spacing options: margin, legend sequence spacing, vertical spacing, label horizontal position, legend horizontal position
+
+  var option_spacingLabel = document.createElement('div');
+  optionsMenu.appendChild(option_spacingLabel);
+
+  d3.select(option_spacingLabel)
+    .attr('id','optionMenuLabels')
+    .style('width',200)
+    .style('height',55)
+    .style('top',0)
+    .style('left',0)
+    .html('Spacing options');
+
+  var option_margin = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,0,55)
+    .setInterval(1,400)
+    .setSliderPos(anno.settings['margin'])
+    .setLabel('figure margin')
+    .onSlide(function() {
+      anno.settings['margin'] = option_margin.getSliderPos();
+      anno.update();
+    });
+
+  var option_legendSpacing = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,0,110)
+    .setInterval(1,300)
+    .setSliderPos(anno.settings['legendSpacing'])
+    .setLabel('legend spacing')
+    .onSlide(function() {
+      anno.settings['legendSpacing'] = option_legendSpacing.getSliderPos();
+      anno.update();
+    });
+
+  var option_seqSpacing = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,0)
+    .setInterval(1,200)
+    .setSliderPos(anno.settings['seqSpacing'])
+    .setLabel('sequence spacing')
+    .onSlide(function() {
+      anno.settings['seqSpacing'] = option_seqSpacing.getSliderPos();
+      anno.update();
+    });
+
+  var option_labelPos = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,55)
+    .setInterval(1,dim[0])
+    .setSliderPos(anno.settings['seqLabelX'])
+    .setLabel('sequence label position')
+    .onSlide(function() {
+      anno.settings['seqLabelX'] = option_labelPos.getSliderPos();
+      anno.update();
+    });
+
+  var option_legendPos = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,110)
+    .setInterval(1,dim[0])
+    .setSliderPos(anno.settings['legendX'])
+    .setLabel('legend position')
+    .onSlide(function() {
+      anno.settings['legendX'] = option_legendPos.getSliderPos();
+      anno.update();
+    });
+
+
+  //sequence options: spine width, spine color, feature width, max length, numbered sequences,
+  //legend options: legend on top, legend width, legened height, legend columns, legened square size
+  
+  var option_seqLabel = document.createElement('div');
+  optionsMenu.appendChild(option_seqLabel);
+
+  d3.select(option_seqLabel)
+    .attr('id','optionMenuLabels')
+    .style('width',200)
+    .style('height',55)
+    .style('top',0)
+    .style('left',400)
+    .html('Sequence options');
+
+  var option_margin = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,0,55)
+    .setInterval(1,400)
+    .setSliderPos(anno.settings['margin'])
+    .setLabel('figure margin')
+    .onSlide(function() {
+      anno.settings['margin'] = option_margin.getSliderPos();
+      anno.update();
+    });
+
+  var option_legendSpacing = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,0,110)
+    .setInterval(1,300)
+    .setSliderPos(anno.settings['legendSpacing'])
+    .setLabel('legend spacing')
+    .onSlide(function() {
+      anno.settings['legendSpacing'] = option_legendSpacing.getSliderPos();
+      anno.update();
+    });
+
+  var option_seqSpacing = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,0)
+    .setInterval(1,200)
+    .setSliderPos(anno.settings['seqSpacing'])
+    .setLabel('sequence spacing')
+    .onSlide(function() {
+      anno.settings['seqSpacing'] = option_seqSpacing.getSliderPos();
+      anno.update();
+    });
+
+  var option_labelPos = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,55)
+    .setInterval(1,dim[0])
+    .setSliderPos(anno.settings['seqLabelX'])
+    .setLabel('sequence label position')
+    .onSlide(function() {
+      anno.settings['seqLabelX'] = option_labelPos.getSliderPos();
+      anno.update();
+    });
+
+  var option_legendPos = new seeker.slider()
+    .attachTo(optionsMenu)
+    .layout(200,55,200,110)
+    .setInterval(1,dim[0])
+    .setSliderPos(anno.settings['legendX'])
+    .setLabel('legend position')
+    .onSlide(function() {
+      anno.settings['legendX'] = option_legendPos.getSliderPos();
+      anno.update();
+    });
+
+
+
+
+
+
+
   //hook up functions to menu bar
   d3.select('#menu_sequences')
     .on('click',function() {
@@ -497,7 +697,7 @@
       if (seeker.env_menuTarget != this) {
         seeker.env_closeMenus();
         seqMenu.style.display = 'inline-block';
-        seqMenu.style.top = menu.node().offsetHeight -4;
+        seqMenu.style.top = menu.node().offsetHeight - 3;
         seeker.env_menuTarget = this;
       } else {
         seeker.env_closeMenus();
@@ -512,7 +712,7 @@
       if (seeker.env_menuTarget != this) {
         seeker.env_closeMenus();
         featureMenu.style.display = 'inline-block';
-        featureMenu.style.top = menu.node().offsetHeight -4;
+        featureMenu.style.top = menu.node().offsetHeight - 3;
         seeker.env_menuTarget = this;
       } else {
         seeker.env_closeMenus();
@@ -521,6 +721,8 @@
 
   d3.select('#menu_export')
     .on('click',anno.preview);
+
+
 
 
   function updateMenu() {

@@ -250,7 +250,6 @@
 		return this;
 	}
 
-
 	seeker.textNode = function(parent, val, x, y) {
 		var p = document.createElement('p');
 		p.innerHTML = val;
@@ -263,21 +262,132 @@
 		return p;
 	}
 
-	seeker.textNode.prototype.text = function(val) {
-		p.innerHTML = val;
-
-		return this;
-	}
-
-	seeker.textNode.prototype.xy = function(x,y) {
-		p.style.top = y;
-		p.style.left = x;
-
-		return this
-	}
-
 	seeker.navigation = function() {
 
+	}
+
+	seeker.slider = function() {
+		var container = new seeker.container();
+		container.node.setAttribute('id','slider');
+
+		var numberBox = document.createElement('input');
+		numberBox.setAttribute('id','slider_numberBox');
+		var spine = document.createElement('div');
+		spine.setAttribute('id','slider_spine');
+		var marker = document.createElement('div');
+		marker.setAttribute('id','slider_marker');
+		var label = document.createElement('label');
+
+		container.node.appendChild(numberBox);
+		container.node.appendChild(spine);
+		container.node.appendChild(marker);
+		container.node.appendChild(label);
+
+		var _start;
+		var _end;
+		var _maxX;
+		var _minX;
+
+		container.setInterval = function(start,end) {
+			_start = start;
+			_end = end;
+			_minX = spine.offsetLeft + 2;
+			_maxX = spine.offsetLeft + spine.offsetWidth - 2 - marker.offsetWidth
+
+			return container;
+		}
+
+		var margin = 10;
+		var _callback;
+		var _current;
+
+		d3.select(marker)
+			.on('mousedown', function() {
+				d3.event.preventDefault();
+				d3.event.stopPropagation();
+				d3.select(document.body)
+					.on('mousemove', function() {
+						var x = d3.mouse(container.node)[0];
+
+						if (x < _minX) {
+							x = _minX;
+						} else if (x > _maxX) {
+							x = _maxX;
+						}
+
+						var spinePos = x - _minX;
+						_current = Math.round(spinePos / (spine.offsetWidth - 4 - marker.offsetWidth) * (_end - _start + 1));
+						numberBox.value = _current;
+
+						marker.style.left = x;
+						if (_callback) {
+							_callback();
+						}
+					})
+
+				d3.select(document.body)
+					.on('mouseup', function() {
+						d3.select(document.body)
+							.on('mousemove', null)
+							.on('mouseup', null);
+					})
+			});
+
+		container.onSlide = function(f) {
+			_callback = f;
+
+			return container;
+		}
+
+		container.getSliderPos = function() {
+			return _current;
+		}
+
+		container.layout = function(w,h,x,y) {
+			container.whxy(w,h,x,y);
+			d3.select(numberBox)
+				.style('width','45')
+				.style('top',h - numberBox.offsetHeight - margin)
+				.style('left',margin)
+
+			d3.select(spine)
+				.style('top',h - margin - (numberBox.offsetHeight / 2))
+				.style('left',numberBox.offsetWidth + margin + 5)
+				.style('width',w - (numberBox.offsetWidth + margin * 2 + 5));
+
+			d3.select(marker)
+				.style('top',spine.offsetTop - 6)
+				.style('left',numberBox.offsetWidth + margin + 7);
+
+			d3.select(label)
+				.style('top',margin)
+				.style('position','absolute')
+				.attr('id','textA')
+				.style('left',margin + 10);
+
+			numberBox.value = 0;
+
+			_minX = spine.offsetLeft + 2;
+			_maxX = spine.offsetLeft + spine.offsetWidth - 2 - marker.offsetWidth
+
+			return container;
+		}
+
+		container.setSliderPos = function(pos) {
+			_current = pos;
+			numberBox.value = _current;
+			marker.style.left = _current / (_end - _start + 1) * (spine.offsetWidth - 4 - marker.offsetWidth) + spine.offsetLeft;
+			
+			return container;
+		}
+
+		container.setLabel = function(val) {
+			label.innerHTML = val;
+
+			return container;
+		}
+
+		return container;
 	}
 
 })();

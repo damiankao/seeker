@@ -116,6 +116,7 @@ div.annotator #seqLabels:hover{
 #textA {
     font-family:Arial;
     font-size:10pt;
+    font-weight:bold;
 }
 
 #navigation {
@@ -147,7 +148,7 @@ div.annotator #seqLabels:hover{
     position:fixed;
     background:#FFF9C9;
     border:1px solid #BDBDBD;
-    padding:2px 15px 2px 15px;
+    padding:1px 15px 1px 15px;
     font-weight:bold;
     font-family:Arial;
     font-size:9pt;
@@ -157,12 +158,34 @@ div.annotator #seqLabels:hover{
     z-index:10000;
 }
 
-#navMenu {
-    list-style:none;
-    background:#C9C9C9;
-    margin:0;
-    padding:0px 0px 0px 0px;
+#slider {
+    position:relative;
+    background:#888DB3;
+    display:block;
+}
+
+#slider_spine {
+    height:2;
+    background:#757575;
     position:absolute;
-    overflow:auto;
-    border-bottom:3px solid #919191;
+}
+
+#slider_marker {
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    width:10;
+    height:14;
+    background:#8A0000;
+    position:absolute;
+}
+
+#slider_marker:hover {
+    cursor:pointer;
+}
+
+#slider_numberBox {
+    border:1px solid #8D97E3;
+    position:absolute;
+    padding:1px 5px 1px 5px;
 }

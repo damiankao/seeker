@@ -199,7 +199,7 @@
 			"spineColor":'#9C9C9C',    //color of the spine
 			"featWidth":10,            //width of the features on the spine
 			"seqLength":900,           //length of the entire sequence
-			"seqSpacing":20,           //spacing between each sequence
+			"seqSpacing":10,           //spacing between each sequence
 			"seqLabelX":10,            //left spacing of each sequence label
 			"seqNumbered":true,        //prefix each sequence by a number
 			"margin":40,               //margins of the canvas element
