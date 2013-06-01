@@ -250,18 +250,6 @@
 		return this;
 	}
 
-	seeker.textNode = function(parent, val, x, y) {
-		var p = document.createElement('p');
-		p.innerHTML = val;
-		p.setAttribute('id','textA')
-		p.style.position = 'absolute';
-		p.style.top = y;
-		p.style.left = x;
-		parent.appendChild(p);
-
-		return p;
-	}
-
 	seeker.navigation = function() {
 
 	}
@@ -331,6 +319,14 @@
 							.on('mousemove', null)
 							.on('mouseup', null);
 					})
+			});
+
+		d3.select(numberBox)
+			.on('change',function() {
+				container.setSliderPos(parseInt(numberBox.value));
+				if (_callback) {
+					_callback();
+				}
 			});
 
 		container.onSlide = function(f) {

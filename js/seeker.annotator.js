@@ -166,7 +166,16 @@
 			.attr('id','annotator_preview')
 			.style('border','1px solid #BABABA');
 
-		var panel_text = new seeker.textNode(panel_preview.node, 'Right click on the below SVG image and choose "save image as" to save the image to your computer.',0,0);
+		panel_text = document.createElement('label');
+		panel_preview.node.appendChild(panel_text);
+
+		panel_text.innerHTML = 'Right click on the below SVG image and choose "save image as" to save the image to your computer.';
+
+		panel_text.style.fontFamily = 'Arial';
+		panel_text.style.fontSize = '10pt'
+		panel_text.style.color = 'white';
+		panel_text.style.fontWeight = 'normal';
+		panel_text.style.position = 'absolute';
 
 		var panel_preview_close = new seeker.button(0);
 		panel_preview_close
@@ -277,8 +286,8 @@
 
 			panel_preview.whxy(winDim[0],winDim[1],0,0);
 			panel_preview.d3()
-				.style('background','white')
-				.style('opacity',0.9)
+				.style('background','#313841')
+				.style('opacity',0.95)
 				.style('z-index',10000)
 				.style('display','none');
 
@@ -596,7 +605,7 @@
 			panel_preview_close.node.style.top = winDim[1] * 3/4 + 20;
 			panel_preview_close.node.style.left = winDim[0] / 2 - panel_preview_close.node.offsetWidth / 2;
 
-			panel_text.style.top = winDim[1] * 1/4 - 40;
+			panel_text.style.top = winDim[1] * 1/4 - 25;
 			panel_text.style.left = winDim[0] / 2 - 290;
 
 			panel_preview.d3()
@@ -610,7 +619,8 @@
 				.style('left', winDim[0] * 1/10)
 				.style('position','absolute')
 				.style('overflow-x','hidden')
-				.style('overflow-y','auto');
+				.style('overflow-y','auto')
+				.style('background','white');
 
 			var html = canvas
 				.attr("title", "annotations")
