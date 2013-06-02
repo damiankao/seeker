@@ -230,34 +230,11 @@
         this.h = 0;
         this.s = 1;
         this.v = 1;
-
-        if (!callback) {
-            // call of the form ColorPicker(element, funtion(hex, hsv, rgb) { ... }), i.e. the no-hassle call.
-
-            var element = slideElement;
-            element.innerHTML = colorpickerHTMLSnippet;
-            
-            this.slideElement = element.getElementsByClassName('slide')[0];
-            this.pickerElement = element.getElementsByClassName('picker')[0];
-            var slideIndicator = element.getElementsByClassName('slide-indicator')[0];
-            var pickerIndicator = element.getElementsByClassName('picker-indicator')[0];
-            
-            ColorPicker.fixIndicators(slideIndicator, pickerIndicator);
-
-            this.callback = function(hex, hsv, rgb, pickerCoordinate, slideCoordinate) {
-
-                ColorPicker.positionIndicators(slideIndicator, pickerIndicator, slideCoordinate, pickerCoordinate);
-                
-                pickerElement(hex, hsv, rgb);
-            };
-            
-        } else {
         
-            this.callback = callback;
-            this.pickerElement = pickerElement;
-            this.slideElement = slideElement;
-        }
-
+        this.callback = callback;
+        this.pickerElement = pickerElement;
+        this.slideElement = slideElement;
+        
         if (type == 'SVG') {
 
             // Generate uniq IDs for linearGradients so that we don't have the same IDs within one document.

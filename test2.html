@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <link href="css/theme.css" rel="stylesheet"  type="text/css">
+    <script type="text/javascript" src="ext/d3.v2.js"></script>
+    <script type="text/javascript" src="ext/mousetrap.min.js"></script>
+    <script type="text/javascript" src="ext/colorpicker.js"></script>
+    <script type="text/javascript" src="js/seeker.util.js"></script>
+    <script type="text/javascript" src="js/seeker.control.js"></script>
+    <script type="text/javascript" src="js/seeker.annotator.js"></script>
+    <style>
+
+    </style>
+  </head>
+  <body>
+  <script>
+  var d = [['one',function() {console.log('1')}],['two',function() {console.log('2')}],['three',function() {console.log('3')}]];
+  var m = new seeker.menu()
+    .attachTo(document.body)
+    .style('display','block')
+    .data(d)
+    .update()
+    .place([800,300]);
+
+  var d2 = [{'name':'one','show':true,count:5},{'name':'two','show':false,count:3},{'name':'three','show':true,'count':2}];
+  var c = [['show all',function() {console.log('1')}],['hide all',function() {console.log('2')}],['third command',function() {console.log('3')}]];
+  var cm = new seeker.complexMenu()
+    .attachTo(document.body)
+    .data(d2)
+    .controlData(c)
+    .setTemplate(function(listObj) {
+      var i = listObj.index;
+
+      var cb = new seeker.checkbox()
+        .data(d2[i],'show')
+        .attachTo(listObj)
+        .whxy(-1,-1,0,0)
+        .bindLabel(d2[i],'name')
+        .update();
+
+    })
+    .setUpdate(function(listObj) {
+      var i = listObj.index;
+    })
+    .init()
+    .update();
+
+  var s = new seeker.status()
+    .attachTo(document.body)
+    .setPos(function() {
+      return [500,200];
+    })
+    .update('test');
+
+  var db = ['close',function() {console.log('close')}];
+  var b = new seeker.button()
+    .attachTo(document.body)
+    .setType('std')
+    .data(db)
+    .whxy(-1,-1,600, 50)
+    .update();
+
+  var sd = {'name':'slider','margin':5};
+  var sl = new seeker.slider()
+    .attachTo(document.body)
+    .data(sd,'margin')
+    .whxy(400,-1,600,100)
+    .setInterval(5,40)
+    .bindLabel(sd,'name')
+    .update();
+
+  var cb = new seeker.checkbox()
+    .attachTo(document.body)
+    .data(d2[2],'show')
+    .whxy(-1,-1,20, 400)
+    .setText(d2[2]['name'])
+    .update();
+
+  var colpicker = new seeker.colorpicker()
+    .attachTo(document.body)
+    .place([20,200]);
+
+  </script>
+  </body>
+</html>

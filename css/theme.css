@@ -26,8 +26,212 @@ div.annotator #seqLabels:hover{
     -moz-transform: rotate(45deg);
 }
 
-#colorpicker {
+#menu, #tooltip {
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    list-style:none;
+    background:#313841;
+    margin:0;
+    padding:8px 0px 8px 0px;
+    display:inline-block;
+    position:absolute;
+}
+
+#menu > li, #tooltip, #complexMenu > #complexMenuItems > li {
+    font-size:11pt;
+    font-family:Arial;
+    color:#BDC3AF;
+    padding:3px 15px 3px 15px;
+}
+
+#menu > li:hover, #complexMenu > #complexMenuItems > li:hover {
+    color:white;
+    cursor:pointer;
+}
+
+#complexMenu {
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    background:#38B87C;
+    margin:0;
+    padding:0px 0px 5px 0px;
+    display:inline-block;
+    position:absolute;
+}
+
+#complexMenu > #complexMenuItems {
+    list-style-type:none;
+    margin:0;
+    padding:8px 0px 8px 0px;
+    background:#313841;
+}
+
+#complexMenu > #complexMenuControl {
+    list-style-type:none;
+    margin:0;
+    padding:8px 3px 5px 3px;
+}
+
+#complexMenu > #complexMenuControl > li {
+    font-size:11pt; 
+    font-family:Arial;
+    color:white;
+    display:inline;
+    padding:0px 8px 0px 8px;
+}
+
+#complexMenu > #complexMenuControl > li:hover {
+    cursor:pointer;
+    opacity:0.80;
+}
+
+#button {
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    border-radius: 3px;
+    padding:7px 15px 7px 15px;
+    text-decoration:none;
+    font-family:Arial;
+    font-size:11pt;
+    color:white;
+    position:absolute;
+}
+
+#button:hover {
+    cursor:pointer;
+    opacity:0.85;
+}
+
+#status {
+    position:fixed;
+    background:#38B87C;
+    padding:2px 25px 2px 25px;
+    font-family:Arial;
+    font-size:0.75em;
+    color:white;
+    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
+    z-index:10000;
+}
+
+#slider {
+    position:absolute;
+    background:#313841;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    border-radius: 3px;
+    padding:15px 15px 15px 15px;
+}
+
+#slider > #spine {
+    height:5px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    background:#E0E0E0;
+    position:absolute;
+    display:inline;
+}
+
+#slider > #marker {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -khtml-border-radius: 6px;
+    border-radius: 6px;
+    width:10;
+    height:14;
+    background:#BDC3AF;
+    position:absolute;
+    display:inline;
+}
+
+#slider > #marker:hover {
+    cursor:pointer;
+}
+
+#slider > #spine:hover {
+    cursor:pointer;
+}
+
+#slider > #label {
+    font-family:Arial;
+    font-size:11pt;
+    color:white;
+    display:block;
+    padding:0px 0px 5px 0px;
+}
+
+#slider > #tbox {
+    border:0px;
+    width:40px;
+    display:inline;
+    padding:0px 5px 0px 5px;
+}
+
+#checkbox {
+    background:#313841;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    border-radius: 3px;
     position:relative;
+}
+
+#checkbox > #cb {
+    width:11px;
+    height:11px;
+    border:2px solid #5FBD8F;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    opacity:0.8;
+    position:absolute;
+}
+
+#checkbox > #cbChecked {
+    width:11px;
+    height:11px;
+    border:2px solid #5FBD8F;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAaCAYAAACgoey0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAX9JREFUeNpi+P//PwMNsS4QbwBiLnQ5WlqqAsRP/0PARiBmoYfFkkB8+z8qWALEjLS0mB+IL/3HDibSymJQXB7/jx/UgNSCvU4lwAbEG4DYkwi1WUxUspQZiOcRaSkIWOAKMk0Sg3jaf+IBOIVjMyQWiH8DsR+RljaTYOkBWJ5GNwRk2R+ooh9A7ETA0jwSLL0ATfEYqRpkyVc0xR+A2AyHpdFA/I9IS0F5WhRbAWIEtQQbeAXE6lhC5jeRlj4GYgVsRaYK1HBCmmWgmuyxhAwu8BpaXjNgs/gYkYbcAGIXPCGDDkCOM8eVPkCEFhE+JhX8BGJnfAkTxgC57BOVLAXlihBC2RA9Vf+k0FJQKk8nJv+jCwQi5WNyQAWxpR02wRQS8icy6CKlmMUlUUGipfOQK3lKLAbhdhIKfWZS6258kiAfzCZg6V4gZiOn0UBIAcgn63BYehK50Ke2xQxQH+3FUoqJUtJMIlYhLxAfxVJu09xiWENuMxCrUaNhCBBgAOAVfjALa5TLAAAAAElFTkSuQmCC) no-repeat center;
+    background-size:8px 8px;
+    position:absolute;
+}
+
+#checkbox > #cbChecked:hover {
+    border:2px solid #5FBD8F;
+    cursor:pointer;
+    opacity:0.8;
+}
+
+#checkbox > #cb:hover {
+    border:2px solid #5FBD8F;
+    cursor:pointer;
+    opacity:1;
+}
+
+#checkbox > #label {
+    font-family:Arial;
+    font-size:11pt;
+    color:white;
+    position:absolute;
+    left:5;
+}
+
+#colorpicker {
+    position:absolute;
     z-index:2000;
     width:90px;
     height:80px;
@@ -38,7 +242,7 @@ div.annotator #seqLabels:hover{
     border-radius: 6px;
 }
 
-#picker {
+#colorpicker > #picker {
     width: 60px; 
     height: 60px;
     position:absolute;
@@ -46,63 +250,12 @@ div.annotator #seqLabels:hover{
     left:10;
 }
 
-#slide {
+#colorpicker > #colorslider {
     width: 10px; 
     height: 60px;
     position:absolute;
     top:10;
     left:70;
-}
-
-#menu, #tooltip {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    -khtml-border-radius: 6px;
-    border-radius: 6px;
-    list-style:none;
-    background:#313841;
-    margin:0;
-    padding:8px 0px 8px 0px;
-    display:inline-block;
-    position:relative;
-}
-
-#menu > li, #tooltip {
-    font-size:11pt;
-    font-family:Arial;
-    color:#BDC3AF;
-    padding:3px 15px 3px 15px;
-}
-
-#menu > li:hover {
-    
-    color:white;
-    cursor:pointer;
-}
-
-#buttonA {
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    -khtml-border-radius: 2px;
-    padding:7px 15px 7px 15px;
-    background:#B73C3B;
-    text-decoration:none;
-    font-family:Arial;
-    font-size:11pt;
-    color:white;
-    position:absolute;
-}
-
-#buttonA:hover {
-    color:white;
-    background:#F34541;
-}
-
-#textA {
-    font-family:Arial;
-    font-size:0.7em;
-    font-weight:bold;
-    color:#313841;
 }
 
 #navigation {
@@ -123,53 +276,4 @@ div.annotator #seqLabels:hover{
 #navigation > li:hover {
     color:white;
     cursor:pointer;
-}
-
-#status {
-    position:fixed;
-    background:#38B87C;
-    padding:2px 25px 2px 25px;
-    font-family:Arial;
-    font-size:0.75em;
-    color:white;
-    box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    z-index:10000;
-}
-
-#slider {
-    position:relative;
-    background:#F9F9F8;
-    display:block;
-}
-
-#slider_spine {
-    height:6;
-    background:#E0E0E0;
-    position:absolute;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    -khtml-border-radius: 5px;
-}
-
-#slider_marker {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    -khtml-border-radius: 6px;
-    width:10;
-    height:14;
-    background:#BDC3AF;
-    position:absolute;
-}
-
-#slider_marker:hover {
-    cursor:pointer;
-}
-
-#slider_numberBox {
-    border:0px;
-    background:#E0E0E0;
-    position:absolute;
-    padding:1px 5px 1px 5px;
 }
