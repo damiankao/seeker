@@ -69,6 +69,7 @@ div.annotator #seqLabels:hover{
     margin:0;
     padding:8px 0px 8px 0px;
     background:#313841;
+    overflow-y:auto;
 }
 
 #complexMenu > #complexMenuControl {
@@ -250,6 +251,7 @@ div.annotator #seqLabels:hover{
     position:absolute;
     top:10;
     left:10;
+    cursor:crosshair;
 }
 
 #colorpicker > #colorslider {
@@ -258,6 +260,7 @@ div.annotator #seqLabels:hover{
     position:absolute;
     top:10;
     left:70;
+    cursor:crosshair;
 }
 
 #optionBox {
