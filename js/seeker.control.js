@@ -5,6 +5,22 @@
 
 	Introduction:
 	DOM elements like menus, navigation bars, tooltips are included in this file.
+
+	Data binding:
+	Some of these elements can be bound to a data object. When bound, an array, __onChange and function
+	__update() is added to the data object if it doesn't already exist. THe update function of the view
+	element is then pushed into the __onChange array. When the scalars in the data object is updated, the 
+	__update() function ca be called to update the view element bound to the scalars. 
+
+	View objects can only be bound to the current hierchical level of the object in question. If the object
+	contains another object, any changes made in the child object will not call the parent update function,
+	instead it will call its own update function. While it is technically possible to "bubble up" the update
+	function to parental objects, it is usually a computational waste. 
+
+	When a view element that has its update function bound to a data object is destroyed, the DOM node is 
+	detached. On the next __update() function, any __onChange function that returns a node not in the DOM, 
+	is spliced out of the __onChange array. No references to the view element or the node should remain 
+	and will be subsequently garbage collected. 
 	*/
 
 	seeker.element = function(e) {
@@ -83,10 +99,13 @@
 
 	seeker.element.prototype.show = function() {
 		this.node.style.display = 'block';
+		return this;
+
 	}
 
 	seeker.element.prototype.hide = function() {
 		this.node.style.display = 'none';
+		return this;
 	}
 
 	seeker.element.prototype.toggle = function() {
@@ -95,6 +114,40 @@
 	    } else {
 	    	this.hide();
 	    }
+	    return this;
+	}
+
+	seeker.element.prototype.fade = function(from, to, d,e) {
+		this.d3()
+			.style('opacity',from)
+				.transition().duration(d).ease(e)
+					.style('opacity',to);
+
+		return this;
+	}
+
+	seeker.element.prototype.move = function(xa, ya, xb, yb, d,e) {
+		this.d3()
+			.style('top',ya)
+			.style('left',xa)
+			.transition().duration(d).ease(e)
+				.style('top',yb)
+				.style('left',xb);
+
+		return this;
+	}
+
+	seeker.element.prototype.moveFade = function(from,to,xa,ya,xb,yb,d,e) {
+		this.d3()
+			.style('opacity',from)
+			.style('top',ya)
+			.style('left',xa)
+			.transition().duration(d).ease(e)
+				.style('top',yb)
+				.style('left',xb)
+				.style('opacity',to);
+
+		return this;
 	}
 
 	seeker.popup = function(e) {
@@ -171,6 +224,17 @@
 			return this;
 		}
 
+		if (!seeker.env_popups) {
+			seeker.env_popups = [];
+			seeker.env_closePopups = function() {
+				var num = seeker.env_popups.length;
+				while (num--) {
+					seeker.env_popups[num].hide();
+				}
+			}
+		}
+		seeker.env_popups.push(e);
+
 		return e;
 	}
 
@@ -198,6 +262,12 @@
 			} 
 
 			_data.__onChange.push(list.update);
+
+			return list;
+		}
+
+		list.addOnChange = function(f) {
+			_data.__onChange.push(f);
 
 			return list;
 		}
@@ -291,6 +361,12 @@
 			} 
 
 			_data.__onChange.push(container.update);
+
+			return container;
+		}
+
+		container.addOnChange = function(f) {
+			_data.__onChange.push(f);
 
 			return container;
 		}
@@ -478,6 +554,12 @@
 			return container;
 		}
 
+		container.addOnChange = function(f) {
+			_data.__onChange.push(f);
+
+			return container;
+		}
+
 		container.update = function() {
 			container
 				.html(_data[_key]);
@@ -526,6 +608,12 @@
 			return container;
 		}
 
+		container.addOnChange = function(f) {
+			_data.__onChange.push(f);
+
+			return container;
+		}
+
 		container.check = function() {
 			cb.id('cbChecked');
 
@@ -553,12 +641,17 @@
 		container.bindLabel = function(d, k) {
 			label
 				.data(d,k)
-				.update();
+				.update()
+				.addOnChange(container.update);
 
 			return container;
 		}
 
 		container.update = function() {
+			label
+				.style('top',_margin - 1)
+				.style('left',cb.node.offsetWidth + 5 + _margin);
+
 			container
 				.style('height',cb.node.offsetHeight + _margin * 2)
 				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
@@ -566,10 +659,6 @@
 			cb
 				.style('top',_margin)
 				.style('left',_margin);
-
-			label
-				.style('top',_margin - 1)
-				.style('left',cb.node.offsetWidth + 5 + _margin);
 
 			if (_data[_key]) {
 				container.check();
@@ -594,12 +683,157 @@
 		return container;
 	}
 
-	seeker.radio = function() {
+	seeker.option = function() {
+		var _selection = [];
+		var _margin = 10;
 
-	}
+		var container = new seeker.element('div')
+			.id('optionBox');
 
-	seeker.switch = function() {
+		var menu = new seeker.menu()
+			.attachTo(container)
+			.data(_selection)
+			.style('background','#38B87C')
+			.style('color','white');
+		menu.arrow
+			.style('background','#38B87C');
 
+		var label = new seeker.textbox()
+			.id('label')
+			.attachTo(container);
+
+		var selection = new seeker.element('div')
+			.id('optionSelection')
+			.attachTo(container);
+
+		var downArrow = new seeker.element('div')
+			.attachTo(container)
+			.id('downArrow');
+
+		var _data;
+		var _key;
+
+		container.data = function(d, k) {
+			_data = d;
+			_key = k;
+
+			if (!_data.__onChange) {
+				_data.__onChange = [];
+				_data.__update = function() {
+					var i = this.__onChange.length;
+					while (i--) {
+						var obj = this.__onChange[i]().node;
+						if (!seeker.util.inDOM(obj)) {
+							this.__onChange.splice(i,1)
+						}
+					}
+				}
+			} 
+
+			_data.__onChange.push(container.update);
+
+			return container;
+		}
+
+		container.addOnChange = function(f) {
+			_data.__onChange.push(f);
+
+			return container;
+		}
+
+		container.setText = function(val) {
+			label.html(val);
+
+			return container;
+		}
+
+		container.bindLabel = function(d, k) {
+			label
+				.data(d,k)
+				.update()
+				.addOnChange(container.update);
+
+			return container;
+		}
+
+		container.setSelection = function(d) {
+			_selection = [];
+
+			for ( var i = 0 ; i < d.length ; i++ ) {
+				_selection.push([d[i],function() {
+					_data[_key] = this[0];
+					menu.hide()
+					_data.__update();
+				}]);
+			}
+
+			menu
+				.data(_selection)
+				.update();
+
+			return container;
+		}
+
+		container.update = function() {
+			menu
+				.style('display','block')
+				.style('left',-10000);
+
+			label
+				.style('top',_margin)
+				.style('left',_margin);
+
+			var w = label.node.offsetWidth > menu.node.offsetWidth + 10 ? label.node.offsetWidth : menu.node.offsetWidth + 10;
+
+			selection
+				.style('width',w - 10)
+				.style('top',label.node.offsetHeight + 5 + _margin)
+				.style('left',_margin)
+				.html(_data[_key]);
+
+			container
+				.style('width',w + _margin * 2)
+				.style('height',label.node.offsetHeight + 5 + selection.node.offsetHeight + _margin * 2);
+
+			menu
+				.style('width',w);
+
+			downArrow
+				.style('top',selection.node.offsetTop + selection.node.offsetHeight / 2 - 3)
+				.style('left',selection.node.offsetLeft + selection.node.offsetWidth - 18);
+
+			menu.arrow
+				.style('left',container.node.offsetWidth - 37);
+
+			return container;
+		}
+
+		var click = function(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+
+			if (menu.node.style.left == '-10000px') {
+				menu.style('display','none');
+			}
+
+			menu.toggle();
+			menu
+				.moveFade(0,1,selection.node.offsetLeft, selection.node.offsetTop,selection.node.offsetLeft,selection.node.offsetTop + selection.node.offsetHeight + 13,120,'cubic-in-out');
+
+			//menu.place([0,selection.node.offsetTop + selection.node.offsetHeight / 2 + 2]);
+		}
+
+		selection.node.onclick = click;
+		downArrow.node.onclick = click;
+
+		container.setMargin = function(val) {
+			_margin = val;
+			container.update();
+
+			return container;
+		}
+
+		return container;
 	}
 
 	seeker.slider = function() {
@@ -727,6 +961,12 @@
 
 			val = Math.round(spinePos / spineWidth * length);
 			
+			if (val + _start < _start) {
+				val = 0;
+			} else if (val + _start > _end) {
+				val = _end - _start;
+			}
+
 			_data[_key] = val + _start;
 			_data.__update();
 		}

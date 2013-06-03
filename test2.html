@@ -71,13 +71,22 @@
   var cb = new seeker.checkbox()
     .attachTo(document.body)
     .data(d2[2],'show')
-    .whxy(-1,-1,20, 400)
-    .setText(d2[2]['name'])
+    .whxy(-1,-1,20, 300)
+    .bindLabel(d2[2],'name')
     .update();
 
   var colpicker = new seeker.colorpicker()
     .attachTo(document.body)
     .place([20,200]);
+
+  var obd = {'name':'long','opt':'optAAAAAAAA'}
+  var ob = new seeker.option()
+    .attachTo(document.body)
+    .data(obd,'opt')
+    .setSelection(['optAAAAAAAA','optBBBBBBBB','optCCCCCCCC','optDDDDDDDD'])
+    .whxy(-1,-1,200,100)
+    .bindLabel(obd,'name')
+    .update();
 
   </script>
   </body>
