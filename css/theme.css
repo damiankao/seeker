@@ -46,9 +46,13 @@ div.annotator #seqLabels:hover{
     padding:3px 15px 3px 15px;
 }
 
-#menu > li:hover, #complexMenu > #complexMenuItems > li:hover {
+#menu > li:hover {
     color:white;
     cursor:pointer;
+}
+
+#complexMenu > #complexMenuItems > li:hover {
+    cursor:default;
 }
 
 #complexMenu {
@@ -99,7 +103,8 @@ div.annotator #seqLabels:hover{
     font-family:Arial;
     font-size:11pt;
     color:white;
-    position:absolute;
+    display:inline-block;
+    position:relative;
 }
 
 #button:hover {
@@ -117,17 +122,25 @@ div.annotator #seqLabels:hover{
     box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     -webkit-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
     -moz-box-shadow: 1px 4px 10px rgba(0, 0, 0, .3);
-    z-index:10000;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    -khtml-border-radius: 2px;
+    border-radius: 2px;
+
+}
+
+#status:hover {
+    cursor:default;
 }
 
 #slider {
-    position:absolute;
+    position:relative;
     background:#313841;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     -khtml-border-radius: 3px;
     border-radius: 3px;
-    padding:15px 15px 15px 15px;
+    padding:10px 10px 10px 10px;
 }
 
 #slider > #spine {

@@ -4,7 +4,7 @@
 	E-mail: damian.kao@gmail.com
 
 	Introduction:
-	DOM elements like menus, navigation bars, tooltips are included in this file.
+	DOM controls are included in this file. All view elements are inherited from the seeker.element class.
 	*/
 
 	seeker.element = function(e) {
