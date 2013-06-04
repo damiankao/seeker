@@ -6,6 +6,33 @@
 	introduction:
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
+
+	data:
+	The bound data is:
+	obj = {
+		'seq':[
+			{
+				'name':'',
+				'visible':true,
+				'circular':false,
+				'length':100,
+				'feat':[
+					'name':'',
+					'start':1
+					'end':100
+					'visible':true
+				]
+			}
+		],
+		'feat':[
+			{
+			'name':'',
+			'color':'',
+			'legend':true,
+			'count':1
+			}
+		]
+	}
 	*/
 
 	seeker.annotator = function() {
@@ -15,7 +42,120 @@
 		var _seqData;
 		var _featureData;
 		var _palette;
-		var _settings = {};
+		var _settings = {
+			'legend_show':'top',
+			'legend_xPos':0,
+			'legend_width':620,
+			'legend_height':40,
+			'legend_cols':5,
+			'legend_underSpacing':30,
+			'legend_colorSize':15,
+
+			'seq_spineWidth':5,
+			'seq_spineColor':'#9C9C9C',
+			'seq_featWidth':10,
+			'seq_maxLength':0,
+			'seq_underSpacing':10,
+			'seq_xPos':10,
+			'seq_numbered':true,
+
+			'margin':40
+		};
+
+		var _data;
+
+		container.data = function(d) {
+			_data = d;
+
+			return container;
+		}
+
+		container.setting = function(s, v) {
+			_settings[s] = v;
+
+			return container;
+		}
+
+		container.update = function() {
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.annotator_sequence = function() {
+		var group = new document.createElement('g');
+		var label = new document.createElement('text');
+		var element = new document.createElement('line');
+
+		group.appendChild(label);
+		group.appendChild(element);
+
+		var _data;
+		var _feat;
+
+		group.data = function(d,f) {
+			_data = d;
+			_feat = f;
+
+			seeker.util.attachModel(_data);
+			seeker.util.attachModel(_feat);
+			_data.__onChange.push(group.update);
+			_data.__onLengthChange.push(group.init);
+
+			return group
+		}
+
+		group.update = function() {
+
+		}
+
+		return group;
+	}
+
+	seeker.annotator_feature = function() {
+		var group = document.createElement('g');
+		var label = document.createElement('text');
+		var feat = document.createElement('line');
+
+		group.appendChild(label);
+		group.appendChild(feat);
+
+		var _data;
+		var _feat;
+
+		group.data = function(d,f) {
+			_data = d;
+			_feat = f;
+
+			seeker.util.attachModel(_data);
+			_data.__onChange.push(group.update);
+			_data.__onLengthChange.push(group.init);
+
+			if (!_feat.__onChange) {
+				_feat.__onChange = [];
+				_feat.__update = function() {
+					var i = this.__onChange.length;
+					while (i--) {
+						var obj = this.__onChange[i]().node;
+						if (!seeker.util.inDOM(obj)) {
+							this.__onChange.splice(i,1)
+						}
+					}
+				}
+			} 
+
+			_feat.__onChange.push(list.update);
+		}
+
+		group.update = function() {
+
+		}
+
+		return group;
+	}
+})();
 
 
 
@@ -26,11 +166,8 @@
 
 
 
-
-
-
-
-
+(function() {
+	seeker.annotator_old = function() {
 ////////////////////////////////////////////////////////////////////////////////////////
 /////// VIEW ELEMENTS //////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@
 		}
 	}
 
+	//check if element is currently attached to DOM
 	seeker.util.inDOM = function(element) {
 	    while (element = element.parentNode) {
 	        if (element == document) {
@@ -47,5 +48,56 @@
 	        }
 	    }
 	    return false;
+	}
+
+	//attaches binding functions to a data objects
+	seeker.util.attachModel = function(obj) {
+		if (!obj.__seeker) {
+			obj.__seeker = true;
+			obj.__onChange = [];
+			obj.__onLengthChange = [];
+
+			obj.__update = function() {
+				var i = this.__onChange.length;
+				while (i--) {
+					var obj = this.__onChange[i]().node;
+					if (!seeker.util.inDOM(obj)) {
+						this.__onChange.splice(i,1)
+					}
+				}
+			}
+
+			obj.__lengthUpdate = function() {
+				var i = this.__onLengthChange.length;
+				while (i--) {
+					var obj = this.__onLengthChange[i]().node;
+					if (!seeker.util.inDOM(obj)) {
+						this.__onLengthChange.splice(i,1)
+					}
+				}
+			}
+
+			if( Object.prototype.toString.call( obj ) === '[object Array]' ) {
+				obj.__append = function(a) {
+					obj.push(a);
+					obj.__lengthUpdate();
+					return obj;
+				}
+
+				obj.__splice = function(i, n) {
+					obj.splice(i,n);
+					obj.__lengthUpdate();
+					return obj;
+				}
+			} else {
+				obj.__set = function(i, v) {
+					obj[i] = v;
+					obj.__update();
+					return obj;
+				}
+			}
+		}
+
+		return obj;
 	}
 })();

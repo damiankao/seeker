@@ -86,7 +86,7 @@ div.annotator #seqLabels:hover{
     font-size:11pt; 
     font-family:Arial;
     color:white;
-    display:inline;
+    display:inline-block;
     padding:0px 8px 0px 8px;
 }
 

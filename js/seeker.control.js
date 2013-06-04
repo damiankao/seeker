@@ -4,9 +4,7 @@
 	E-mail: damian.kao@gmail.com
 
 	Introduction:
-<<<<<<< HEAD
 	DOM controls are included in this file. All view elements are inherited from the seeker.element class.
-=======
 	DOM elements like menus, navigation bars, tooltips are included in this file.
 
 	Data binding:
@@ -24,7 +22,27 @@
 	detached. On the next __update() function, any __onChange function that returns a node not in the DOM, 
 	is spliced out of the __onChange array. No references to the view element or the node should remain 
 	and will be subsequently garbage collected. 
->>>>>>> 2d81147f10b6091913c3a3a8447230ba092d54ad
+
+	Components:
+		base classes:
+			element: base element for all controls.
+			popup: arrowed container element that responds intelligently to window edges. 
+
+		data array binding classes:
+			menu: Simple menu. Input is an array of array['menu item name',click function]
+			complexMenu: Complex menu with a button list header and template driven items. The input require
+				are the object data and template function for creating each menu item.
+
+		single data binding classes: input is a scalar-type data of an object
+			textbox
+			checkbox
+			slider: numerical slider
+			option: drop down menu of possible options
+			button
+
+		none data binding classes:
+			colorpicker
+			status
 	*/
 
 	seeker.element = function(e) {
@@ -256,19 +274,7 @@
 		list.data = function(val) {
 			_data = val;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(list.update);
 
 			return list;
@@ -288,7 +294,7 @@
 					li.onclick = function(evt) {
 						evt.stopPropagation();
 						evt.preventDefault();
-						_data[this.index][1]();
+						_data[this.index]['click']();
 					};
 					_listObjs.push(li);
 					list.append(_listObjs[i]);
@@ -302,7 +308,10 @@
 			}
 
 			for ( var i = 0 ; i < _listObjs.length ; i++ ) {
-				_listObjs[i].innerHTML = _data[i][0];
+				var label = new seeker.textbox()
+					.attachTo(_listObjs[i])
+					.data(_data[i],'name')
+					.update();
 			}
 
 			return list;
@@ -335,19 +344,7 @@
 		container.controlData = function(val) {
 			_controlData = val;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_controlData);
 			_data.__onChange.push(container.update);
 
 			return container;
@@ -356,19 +353,9 @@
 		container.data = function(val) {
 			_data = val;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(container.update);
+			_data.__onLengthChange.push(container.init);
 
 			return container;
 		}
@@ -399,7 +386,7 @@
 					li.onclick = function(evt) {
 						evt.stopPropagation();
 						evt.preventDefault();
-						_controlData[this.index][1]();
+						_controlData[this.index]['click']();
 					};
 					_controlListObjs.push(li);
 					controlList.append(_controlListObjs[i]);
@@ -413,7 +400,10 @@
 			}
 
 			for ( var i = 0 ; i < _controlListObjs.length ; i++ ) {
-				_controlListObjs[i].innerHTML = _controlData[i][0];
+				var label = new seeker.textbox()
+					.attachTo(_controlListObjs[i])
+					.data(_controlData[i],'name')
+					.update();
 			}
 
 			if (_listObjs.length < _data.length) {
@@ -443,8 +433,10 @@
 		}
 
 		container.update = function() {
-			for ( var i = 0 ; i < _listObjs.length ; i++ ) {
-				_update(_listObjs[i]);
+			if (_update) {
+				for ( var i = 0 ; i < _listObjs.length ; i++ ) {
+					_update(_listObjs[i]);
+				}
 			}
 
 			var winDim = seeker.util.winDimensions();
@@ -559,19 +551,7 @@
 			_data = d;
 			_key = k;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(container.update);
 
 			return container;
@@ -613,19 +593,7 @@
 			_data = d;
 			_key = k;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(container.update);
 
 			return container;
@@ -694,12 +662,10 @@
 
 		container.node.onclick = function(evt) {
 			if (_data[_key]) {
-				_data[_key] = false;
+				_data.__set(_key,false);
 			} else {
-				_data[_key] = true;
+				_data.__set(_key,true);
 			}
-
-			_data.__update();
 		}
 
 
@@ -740,19 +706,7 @@
 			_data = d;
 			_key = k;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(container.update);
 
 			return container;
@@ -783,11 +737,10 @@
 			_selection = [];
 
 			for ( var i = 0 ; i < d.length ; i++ ) {
-				_selection.push([d[i],function() {
-					_data[_key] = this[0];
+				_selection.push({'name':d[i],'click':function() {
+					_data.__set(_key,this['name']);
 					menu.hide()
-					_data.__update();
-				}]);
+				}});
 			}
 
 			menu
@@ -806,7 +759,7 @@
 				.style('top',_margin)
 				.style('left',_margin);
 
-			var w = label.node.offsetWidth > menu.node.offsetWidth + 10 ? label.node.offsetWidth : menu.node.offsetWidth + 10;
+			var w = label.node.offsetWidth > menu.node.offsetWidth ? label.node.offsetWidth : menu.node.offsetWidth;
 
 			selection
 				.style('width',w - 10)
@@ -819,7 +772,7 @@
 				.style('height',label.node.offsetHeight + 5 + selection.node.offsetHeight + _margin * 2);
 
 			menu
-				.style('width',w);
+				.style('width',parseInt(container.node.style.width) - _margin * 2);
 
 			downArrow
 				.style('top',selection.node.offsetTop + selection.node.offsetHeight / 2 - 3)
@@ -883,19 +836,7 @@
 			_data = d;
 			_key = k;
 
-			if (!_data.__onChange) {
-				_data.__onChange = [];
-				_data.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
-
+			seeker.util.attachModel(_data);
 			_data.__onChange.push(container.update);
 
 			return container;
@@ -959,8 +900,7 @@
 
 				val = Math.round(spinePos / spineWidth * length);
 				
-				_data[_key] = val + _start;
-				_data.__update();
+				_data.__set(_key, val + _start);
 
 				document.body.onmouseup = function(evt) {
 					document.body.onmousemove = null;
@@ -988,13 +928,11 @@
 				val = _end - _start;
 			}
 
-			_data[_key] = val + _start;
-			_data.__update();
+			_data.__set(_key, val + _start);
 		}
 
 		numberBox.node.onchange = function() {
-			_data[_key] = this.value;
-			_data.__update();
+			_data.__set(_key, this.value);
 		}
 
 		return container;
