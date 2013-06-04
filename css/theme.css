@@ -37,13 +37,14 @@ div.annotator #seqLabels:hover{
     padding:8px 0px 8px 0px;
     display:inline-block;
     position:absolute;
+    color:#BDC3AF;
 }
 
 #menu > li, #tooltip, #complexMenu > #complexMenuItems > li {
     font-size:11pt;
     font-family:Arial;
-    color:#BDC3AF;
     padding:3px 15px 3px 15px;
+    text-align:center;
 }
 
 #menu > li:hover {
@@ -72,6 +73,7 @@ div.annotator #seqLabels:hover{
     margin:0;
     padding:8px 0px 8px 0px;
     background:#313841;
+    overflow-y:auto;
 }
 
 #complexMenu > #complexMenuControl {
@@ -241,6 +243,7 @@ div.annotator #seqLabels:hover{
     color:white;
     position:absolute;
     left:5;
+    white-space:nowrap;
 }
 
 #colorpicker {
@@ -261,6 +264,7 @@ div.annotator #seqLabels:hover{
     position:absolute;
     top:10;
     left:10;
+    cursor:crosshair;
 }
 
 #colorpicker > #colorslider {
@@ -269,6 +273,51 @@ div.annotator #seqLabels:hover{
     position:absolute;
     top:10;
     left:70;
+    cursor:crosshair;
+}
+
+#optionBox {
+    position:relative;
+    background:#313841;
+    font-family:Arial;
+    font-size:11pt;
+    color:white;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+}
+
+#optionBox > #label {
+    position:absolute;
+    white-space:nowrap;
+}
+
+#optionBox > #optionSelection {
+    position:absolute;
+    display:inline;
+    background:#38B87C;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    padding:2px 2px 2px 8px;
+}
+
+#optionBox > #optionSelection:hover {
+    cursor:pointer;
+}
+
+#optionBox > #downArrow {
+    position:absolute;
+    width: 0; 
+    height: 0;
+    border: 6px solid transparent;
+    border-top-color: white;
+}
+
+#optionBox > #downArrow:hover {
+    cursor:pointer;
 }
 
 #navigation {

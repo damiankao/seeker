@@ -21,7 +21,7 @@
     .update()
     .place([800,300]);
 
-  var d2 = [{'name':'one','show':true,count:5},{'name':'two','show':false,count:3},{'name':'three','show':true,'count':2}];
+  var d2 = [{'name':'one','show':true,count:5},{'name':'two','show':false,count:3},{'name':'three','show':true,'count':2},{'name':'one','show':true,count:5}];
   var c = [['show all',function() {console.log('1')}],['hide all',function() {console.log('2')}],['third command',function() {console.log('3')}]];
   var cm = new seeker.complexMenu()
     .attachTo(document.body)
@@ -73,11 +73,22 @@
     .data(d2[2],'show')
     .whxy(-1,-1,600, 400)
     .setText(d2[2]['name'])
+    .whxy(-1,-1,20, 300)
+    .bindLabel(d2[2],'name')
     .update();
 
   var colpicker = new seeker.colorpicker()
     .attachTo(document.body)
     .place([20,200]);
+
+  var obd = {'name':'long','opt':'optAAAAAAAA'}
+  var ob = new seeker.option()
+    .attachTo(document.body)
+    .data(obd,'opt')
+    .setSelection(['optAAAAAAAA','optBBBBBBBB','optCCCCCCCC','optDDDDDDDD'])
+    .whxy(-1,-1,200,100)
+    .bindLabel(obd,'name')
+    .update();
 
   </script>
   </body>
