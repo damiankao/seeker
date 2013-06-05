@@ -155,8 +155,8 @@
 
 		if (objLength < dataLength) {
 			for ( var i = objLength ; i < dataLength ; i++ ) {
-				var element = document.createElement(e);
-				element.index = i;					
+				var element = new e;
+				element.index = i;
 				objs.push(element);
 				parent.append(objs[i]);
 			}
@@ -172,5 +172,18 @@
 		for ( var i = 0 ; i < objLength ; i++ ) {
 			update(objs[i]);
 		}
+	}
+
+	seeker.util.countArray = function(a, k, val) {
+		var count = 0;
+		var num = a.length;
+
+		while( num-- ) {
+			if (a[num][k] == val) {
+				count++;
+			}
+		}
+
+		return count;
 	}
 })();

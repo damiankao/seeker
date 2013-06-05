@@ -8,844 +8,109 @@
     <script type="text/javascript" src="js/seeker.control.js"></script>
     <script type="text/javascript" src="js/seeker.annotator.js"></script>
     <style>
-    #topBar {
-      display:inline;
-      position:absolute;
-      top:0;
-      left:0;
-      background:#313841;
-      padding:4px 10px 3px 400px;
-      border-bottom:4px solid #BDC3AF;
-      overflow:hidden;
-      z-index:500;
-    }
 
-    #logo {
-      top:2;
-      left:60;
-      font-family:Arial;
-      font-size:17pt;
-      letter-spacing:3px;
-      font-weight:bold;
-      color:BDC3AF;
-      position:absolute;
-    }
-
-    #navMenu {
-      list-style:none;
-      background:#B7C8E8;
-      margin:0;
-      padding:0px 0px 0px 0px;
-      position:absolute;
-      overflow:auto;
-      border-bottom:3px solid #8A0000;
-      z-index:2000;
-    }
-
-    #optionMenu {
-      position:absolute;
-      background:#F9F9F8;
-      z-index:1000;
-    }
-
-    #optionMenuLabel {
-      -moz-border-radius: 4px;
-      -webkit-border-radius: 4px;
-      -khtml-border-radius: 4px;
-      font-size:9pt;
-      font-family:Arial;
-      color:white;
-      padding:10px 10px 10px 10px;
-      font-weight:bold;
-      font-size:11pt;
-      background:#313841;
-      position:absolute;
-      text-align:center;
-    }
-
-    .menuControl {
-      font-size:9pt;
-      font-family:Arial;
-      color:#262626;
-      padding:3px 15px 2px 15px;
-      background:#C9C9C9;
-      border-bottom:3px solid #8A0000;
-    }
-
-    .menuControl a {
-      font-weight:bold;
-      padding:0px 10px 0px 10px;
-      border-right:1px solid #363636;
-    }
-
-    .menuControl a:hover{
-      color:white;
-      cursor:pointer;
-    }
-
-    .menuItems {
-      font-size:9pt;
-      font-family:Arial;
-      color:#262626;
-      padding:0px 7px 4px 15px;
-    }
-
-    .menuItems:nth-child(odd) {
-        background:#9FADC7;
-    }
-
-    .menuItems:hover {
-        color:white;
-        background:#8A0000;
-        cursor:default;
-    }
-
-    .menuItems a {
-      font-weight:bold;
-      padding:0px 10px 0px 0px;
-      float:right;
-      position:relative;
-      top:5px;
-    }
-
-    .menuItems a:hover{
-      color:white;
-      cursor:pointer;
-    }
-
-    body {
-      overflow:hidden;
-    }
     </style>
   </head>
   <body>
-  </div>
   <script>
-  var dim = seeker.util.winDimensions();
+  var data = {
+    'seq':[
+      {
+        'name':'seq01',
+        'visible':true,
+        'circular':false,
+        'length':2100,
+        'feat':[
+          {
+            'name':'DOM01',
+            'start':1,
+            'end':100,
+            'visible':true,
+            'label':true
+          },
+          {
+            'name':'DOM02',
+            'start':200,
+            'end':600,
+            'visible':true,
+            'label':true
+          },
+        ]
+      },
+      {
+        'name':'seq02',
+        'visible':true,
+        'circular':false,
+        'length':2100,
+        'feat':[
+          {
+            'name':'DOM02',
+            'start':1,
+            'end':100,
+            'visible':true,
+            'label':true
+          },
+          {
+            'name':'DOM01',
+            'start':200,
+            'end':600,
+            'visible':true,
+            'label':true
+          },
+        ]
+      },
+      {
+        'name':'seq03',
+        'visible':true,
+        'circular':false,
+        'length':1600,
+        'feat':[
+          {
+            'name':'DOM03',
+            'start':1,
+            'end':100,
+            'visible':true,
+            'label':true
+          },
+          {
+            'name':'DOM01',
+            'start':200,
+            'end':600,
+            'visible':true,
+            'label':true
+          },
+        ]
+      },
+    ],
+    'feat':[
+      {
+        'name':'DOM01',
+        'color':'red',
+        'legend':true,
+        'count':3
+      },
+      {
+        'name':'DOM02',
+        'color':'blue',
+        'legend':true,
+        'count':2
+      },
+      {
+        'name':'DOM03',
+        'color':'green',
+        'legend':true,
+        'count':1
+      }
+    ]
+  };
 
-  //setup top logo and navigation bar
-  var menu = d3.select(document.body)
-    .append('div')
-    .style('width',dim[0])
-    .attr('id','topBar');
-
-  var logo = menu
-    .append('div')
-    .attr('id','logo')
-    .text('ANNOTATION VIEWER');
-
-  var nav = menu
-    .append('ul')
-    .style('top',0)
-    .attr('id','navigation')
-    .selectAll('menuItems')
-    .data(['input','sequences','features','selection','options','export','?'])
-    .enter()
-    .append('li')
-    .text(function(d) {
-      return d;
-    })
-    .attr('id', function(d) {
-      return 'menu_' + d;
-    })
-    .on('mousedown',function() {
-      d3.event.preventDefault();
-    });
-
-  //setup annotator
   var anno = new seeker.annotator()
     .attachTo(document.body)
-    .layout(dim[0],dim[1] - menu.node().offsetHeight,0,menu.node().offsetHeight)
-    .initialize();
+    .data(data)
+    .updateSettings();
 
-  anno.setProp('seqLength',dim[0] - (anno.settings['margin'] * 2) - 20);
 
-  //setup status pop up
-  var stat = new seeker.status(document.body);
 
-  stat
-    .setPosition(function() {
-      var winDim = seeker.util.winDimensions();
-      return [winDim[0] / 2 - this.offsetWidth / 2, 30]
-    });
-
-  anno.setStatus(stat);
-
-  //colorpicker
-  var colorpicker = new seeker.colorpicker();
-  colorpicker.style.display = 'none';
-
-  anno.setColorpicker(colorpicker);
-  seeker.env_menus.push(colorpicker);
-
-  d3.select('#colorpicker')
-    .style('zIndex',2000);
-
-  //create menus for top navigation bar
-
-  ////////////////////////////////////////////////////////////////
-  //sequence menu item////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////
-
-  var seqMenu = document.createElement('ul');
-  document.body.appendChild(seqMenu);
-
-  d3.select(seqMenu)
-    .style('top',-10000)
-    .style('left',d3.select('#menu_sequences').node().offsetLeft + 400)
-    .attr('id','navMenu')
-    .style('display','inline-block')
-    .on('mousedown',function() {
-      d3.event.preventDefault();
-    })
-    .on('scroll',function() {
-      seqFeatureMenu.style.display = 'none';
-    });
-
-  var seqItemControl = d3.select(seqMenu)
-    .append('li')
-    .attr('class','menuControl');
-
-  seqItemControl
-    .append('a')
-    .style('border-left','1px solid #363636')
-    .text('show all')
-    .on('click',function() {
-      d3.event.stopPropagation();
-      anno.showAllSequence();
-      anno.update();
-    });
-
-  seqItemControl
-    .append('a')
-    .text('hide all')
-    .on('click',function() {
-      d3.event.stopPropagation();
-      anno.hideAllSequence();
-      anno.update();
-    });
-
-  var seqItems = d3.select(seqMenu)
-    .selectAll('seqItems')
-    .data(anno.data['seqs'])
-    .enter()
-    .append('li')
-    .attr('class','menuItems')
-    .on('mouseover',function(d,i) {
-      seqFeatureMenuPop(d, [seqMenu.offsetWidth + seqMenu.offsetLeft, seeker.util.windowOffsetTop(this) - seqMenu.scrollTop, seqMenu.offsetLeft]);
-    });
-
-  seqItems
-    .html(function(d,i) {
-      return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + (i + 1) + ". " + d['name'];
-    })
-
-  seqItems
-    .each(function(d,i) {
-      var cb = d3.select(this).select('input');
-
-      cb
-        .on('click', function() {
-          d3.event.stopPropagation();
-
-          if (this.checked) {
-            d['show'] = true;
-          } else {
-            d['show'] = false;
-          }
-          anno.update();
-        });
-    })
-    .on('click', function(d,i) {
-      d3.event.stopPropagation();
-      var cb = d3.select(this).select('input').node();
-
-      if (cb.checked) {
-        cb.checked = false;
-        d['show'] = false;
-      } else {
-        cb.checked = true;
-        d['show'] = true;
-      }
-      anno.update();
-    });
-
-  var seqFeatureMenu = document.createElement('ul');
-  document.body.appendChild(seqFeatureMenu);
-
-  d3.select(seqFeatureMenu)
-    .style('top',-1000)
-    .attr('id','navMenu')
-    .style('position','absolute')
-    .style('display','inline-block');
-
-  function seqFeatureMenuPop(dat, coord) {
-    var p = d3.select(seqFeatureMenu);
-
-    p
-      .style('display','inline-block')
-      .style('width',null)
-      .style('height',null)
-      .on('mousedown',function() {
-        d3.event.preventDefault();
-      })
-      .selectAll('li').remove();
-
-    var seqFeatureControl = p
-      .append('li')
-      .attr('class','menuControl');
-
-    seqFeatureControl
-      .append('a')
-      .style('border-left','1px solid #363636')
-      .text('show all')
-      .on('click',function() {
-        d3.event.stopPropagation();
-        for ( var i = 0; i < dat['feats'].length ; i++ ) {
-          dat['feats'][i]['show'] = true;
-        }
-        anno.update();
-      });
-
-    seqFeatureControl
-      .append('a')
-      .text('hide all')
-      .on('click',function() {
-        d3.event.stopPropagation();
-        for ( var i = 0; i < dat['feats'].length ; i++ ) {
-          dat['feats'][i]['show'] = false;
-        }
-        anno.update();
-      });
-
-    p
-      .selectAll('seqFeatures')
-      .data(dat['feats'])
-      .enter()
-      .append('li')
-      .html(function(d,i) {
-        return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + anno.data['featureType'][d['featType']]['name'];
-      })
-      .attr('class','menuItems')
-      .attr('id','seqFeatureItems');
-
-    p
-      .selectAll('#seqFeatureItems')
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input');
-
-        cb
-          .on('click', function() {
-            d3.event.stopPropagation();
-
-            if (this.checked) {
-              d['show'] = true;
-            } else {
-              d['show'] = false;
-            }
-            anno.update();
-          });
-      })
-      .on('click',function(d,i) {
-        d3.event.stopPropagation();
-        var cb = d3.select(this).select('input').node();
-
-        if (cb.checked) {
-          cb.checked = false;
-          d['show'] = false;
-        } else {
-          cb.checked = true;
-          d['show'] = true;
-        }
-        anno.update();
-      });
-
-    var w = p.node().offsetWidth;
-    var h = p.node().offsetHeight;
-    var winDim = seeker.util.winDimensions();
-
-    p
-      .style('width',w + 20);
-
-    if (coord[1] + h > winDim[1] - 20) {
-      var newHeight = winDim[1] - 20 - coord[1];
-      if (newHeight > 150) {
-        p
-          .style('height',newHeight)
-          .style('top', coord[1]);
-      } else {
-        if (h > coord[1]) {
-          newHeight = coord[1];
-        } else {
-          newHeight = h;
-        }
-
-        p
-          .style('height',newHeight)
-          .style('top', coord[1] - newHeight + 22);
-      }
-    } else {
-      p
-        .style('top',coord[1]);
-    }
-
-    if (coord[0] + w > winDim[0] - 20) {
-      var newWidth = winDim[0] - w - coord[0] - 20;
-      if (newWidth > 200) {
-        p
-          .style('width',newWidth)
-          .style('left',coord[0])
-          .style('border-left','3px solid black');
-      } else {
-        if (w > coord[0] - 20) {
-          newWidth = coord[0] - 20;
-        } else {
-          newWidth = w;
-        }
-
-        p
-          .style('width',newWidth)
-          .style('left', coord[2] - newWidth - 3)
-          .style('border-right','3px solid black')
-      }
-    } else {
-      p
-        .style('left',coord[0])
-        .style('border-left','3px solid black');
-    }
-
-    updateMenu();
-  }
-
-  ////////////////////////////////////////////////////////////////
-  //features menu item////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////
-
-  var featureMenu = document.createElement('ul');
-  document.body.appendChild(featureMenu);
-
-  d3.select(featureMenu)
-    .style('top',-10000)
-    .style('left',d3.select('#menu_features').node().offsetLeft + 400)
-    .attr('id','navMenu')
-    .style('display','inline-block')
-    .on('mousedown',function() {
-      d3.event.preventDefault();
-    });
-
-  var featureMenuControl = d3.select(featureMenu)
-    .append('li')
-    .attr('class','menuControl');
-
-  featureMenuControl
-    .append('a')
-    .style('border-left','1px solid #363636')
-    .text('show all legend')
-    .on('click',function() {
-      d3.event.stopPropagation();
-      anno.showAllLegend();
-      anno.update();
-    });
-
-  featureMenuControl
-    .append('a')
-    .text('hide all legend')
-    .on('click',function() {
-      d3.event.stopPropagation();
-      anno.hideAllLegend();
-      anno.update();
-    });
-
-  d3.select(featureMenu)
-    .selectAll('featureItems')
-    .data(anno.data['featureType'])
-    .enter()
-    .append('li')
-    .attr('class','menuItems')
-    .attr('id','featureItems')
-    .html(function(d,i) {
-      return "<input type='checkbox' style='top:3px;position:relative;left:-5px'>" + d['name'] + "<a id='feat_showAll'>show all</a><a id='feat_hideAll'>hide all</a>";
-    })
-    .on('click',function(d,i) {
-      d3.event.stopPropagation();
-
-      var cb = d3.select(this).select('input').node();
-
-      if (cb.checked) {
-        cb.checked = false;
-        d['legend'] = false;
-      } else {
-        cb.checked = true;
-        d['legend'] = true;
-      }
-
-      anno.update();
-    });
-
-  d3.selectAll('#featureItems')
-    .each(function(d,i) {
-      var cb = d3.select(this).select('input');
-      var showFeat = d3.select(this).select('#feat_showAll');
-      var hideFeat = d3.select(this).select('#feat_hideAll');
-
-      cb
-        .on('click',function() {
-          d3.event.stopPropagation();
-          if (this.checked) {
-
-            d['legend'] = true;
-          } else {
-            d['legend'] = false;
-          }
-
-          anno.update();
-        });
-
-      showFeat
-        .on('click',function() {
-          d3.event.stopPropagation();
-          anno.showFeatureType(i);
-          anno.update();
-        });
-
-      hideFeat
-        .on('click',function() {
-          d3.event.stopPropagation();
-          anno.hideFeatureType(i);
-          anno.update();
-        });
-    });
-
-  ////////////////////////////////////////////////////////////////
-  //input menu item///////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////
-
-
-  ////////////////////////////////////////////////////////////////
-  //options menu item/////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////
-  //check box: legend on top, sequence numbered
-  //color picker: spine color
-  //sliders:
-  ////legend x position - 0, width of the window - margin * 2
-  ////legend width - 0, width of the window - margin * 2
-  ////legend height - 0, height of the window
-  ////legend columns - 0, 20
-  ////legend color square size - 0, 50
-  ////spacing between legened and sequence - 0, half height of the window
-  ////spine width - 0, 50
-  ////feature width - 0, 50
-  ////max sequence length - 0, width of the window  - margin * 2
-  ////spacing between each sequence - 0, height of the window
-  ////sequence label x position - 0, width of the window - margin * 2
-  ////margin - 0, 200
-
-  var optionsMenu = document.createElement('div');
-  document.body.appendChild(optionsMenu);
-  d3.select(optionsMenu)
-    .attr('id','optionMenu')
-    .style('width',dim[0])
-    .style('height',175)
-    .style('top',-4000)
-    .style('border-bottom','2px solid #BDC3AF')
-    .style('left',0);
-
-
-  //spacing options: margin, legend sequence spacing, vertical spacing, label horizontal position, legend horizontal position
-  var option_spacingLabel = document.createElement('div');
-  optionsMenu.appendChild(option_spacingLabel);
-  d3.select(option_spacingLabel)
-    .html('Spacing options')
-    .attr('id','optionMenuLabel')
-    .style('top',10)
-    .style('left',10)
-    .style('width',130);
-
-  var option_margin = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,10,55)
-    .setInterval(1,400)
-    .setSliderPos(anno.settings['margin'])
-    .setLabel('figure margin')
-    .onSlide(function() {
-      anno.settings['margin'] = option_margin.getSliderPos();
-      anno.update();
-    });
-
-  var option_legendSpacing = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,10,110)
-    .setInterval(1,300)
-    .setSliderPos(anno.settings['legendSpacing'])
-    .setLabel('legend spacing')
-    .onSlide(function() {
-      anno.settings['legendSpacing'] = option_legendSpacing.getSliderPos();
-      anno.update();
-    });
-
-  var option_seqSpacing = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,160,0)
-    .setInterval(1,200)
-    .setSliderPos(anno.settings['seqSpacing'])
-    .setLabel('sequence spacing')
-    .onSlide(function() {
-      anno.settings['seqSpacing'] = option_seqSpacing.getSliderPos();
-      anno.update();
-    });
-
-  var option_labelPos = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,160,55)
-    .setInterval(1,dim[0])
-    .setSliderPos(anno.settings['seqLabelX'])
-    .setLabel('sequence label position')
-    .onSlide(function() {
-      anno.settings['seqLabelX'] = option_labelPos.getSliderPos();
-      anno.update();
-    });
-
-  var option_legendPos = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,160,110)
-    .setInterval(1,dim[0])
-    .setSliderPos(anno.settings['legendX'])
-    .setLabel('legend position')
-    .onSlide(function() {
-      anno.settings['legendX'] = option_legendPos.getSliderPos();
-      anno.update();
-    });
-
-
-  //sequence options: spine width, spine color, feature width, max length, numbered sequences,
-  
-  var option_sequenceLabel = document.createElement('div');
-  optionsMenu.appendChild(option_sequenceLabel);
-  d3.select(option_sequenceLabel)
-    .html('Sequence options')
-    .attr('id','optionMenuLabel')
-    .style('top',10)
-    .style('left',350)
-    .style('width',130);
-
-  var option_spineWidth = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,350,55)
-    .setInterval(1,50)
-    .setSliderPos(anno.settings['spineWidth'])
-    .setLabel('spine width')
-    .onSlide(function() {
-      anno.settings['spineWidth'] = option_spineWidth.getSliderPos();
-      anno.update();
-    });
-
-  var option_spineColor;
-
-  var option_featureWidth = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,500,0)
-    .setInterval(1,50)
-    .setSliderPos(anno.settings['featWidth'])
-    .setLabel('feature width')
-    .onSlide(function() {
-      anno.settings['featWidth'] = option_featureWidth.getSliderPos();
-      anno.update();
-    });
-
-  var option_seqLength = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,500,55)
-    .setInterval(1,dim[0] * 2)
-    .setSliderPos(anno.settings['seqLength'])
-    .setLabel('max length')
-    .onSlide(function() {
-      anno.settings['seqLength'] = option_seqLength.getSliderPos();
-      anno.update();
-    });
-
-  var option_numberedSeq;
-
-  //legend options: legend on top, legend width, legened height, legend columns, legened square size
-  var option_legendLabel = document.createElement('div');
-  optionsMenu.appendChild(option_legendLabel);
-  d3.select(option_legendLabel)
-    .html('Legend options')
-    .attr('id','optionMenuLabel')
-    .style('top',10)
-    .style('left',680)
-    .style('width',130);
-
-  var option_legendTop;
-
-  var option_legendWidth = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,680,110)
-    .setInterval(1,dim[0] * 2)
-    .setSliderPos(anno.settings['legendWidth'])
-    .setLabel('legend width')
-    .onSlide(function() {
-      anno.settings['legendWidth'] = option_legendWidth.getSliderPos();
-      anno.update();
-    });
-
-  var option_legendHeight = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,830,0)
-    .setInterval(1,dim[1])
-    .setSliderPos(anno.settings['legendHeight'])
-    .setLabel('legend height')
-    .onSlide(function() {
-      anno.settings['legendHeight'] = option_legendHeight.getSliderPos();
-      anno.update();
-    });
-
-  var option_legendCols = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,830,55)
-    .setInterval(1,20)
-    .setSliderPos(anno.settings['legendCols'])
-    .setLabel('legend columns')
-    .onSlide(function() {
-      anno.settings['legendCols'] = option_legendCols.getSliderPos();
-      anno.update();
-    });
-
-  var option_legendSize = new seeker.slider()
-    .attachTo(optionsMenu)
-    .layout(150,55,830,110)
-    .setInterval(1,200)
-    .setSliderPos(anno.settings['legendSize'])
-    .setLabel('legend size')
-    .onSlide(function() {
-      anno.settings['legendSize'] = option_legendSize.getSliderPos();
-      anno.update();
-    });
-
-
-  //hook up functions to menu bar
-  d3.select('#menu_sequences')
-    .on('click',function() {
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      if (seeker.env_menuTarget != this) {
-        seeker.env_closeMenus();
-        seqMenu.style.display = 'inline-block';
-        seqMenu.style.top = menu.node().offsetHeight - 3;
-        seeker.env_menuTarget = this;
-      } else {
-        seeker.env_closeMenus();
-      }
-    });
-
-  d3.select('#menu_features')
-    .on('click',function() {
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      if (seeker.env_menuTarget != this) {
-        seeker.env_closeMenus();
-        featureMenu.style.display = 'inline-block';
-        featureMenu.style.top = menu.node().offsetHeight - 3;
-        seeker.env_menuTarget = this;
-      } else {
-        seeker.env_closeMenus();
-      }
-    })
-
-  d3.select('#menu_options')
-    .on('click',function() {
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      seeker.env_closeMenus();
-
-      if (optionsMenu.style.top == '-4000px') {
-
-        optionsMenu.style.display = 'none';
-      }
-
-      if (optionsMenu.style.display == 'none') {
-        optionsMenu.style.top = menu.node().offsetHeight;
-        optionsMenu.style.display = 'block';
-        anno
-          .layout(dim[0],dim[1] - menu.node().offsetHeight - 175,0,menu.node().offsetHeight + 175)
-          .initialize()
-          .update();
-      } else {
-        optionsMenu.style.display = 'none';
-        anno
-          .layout(dim[0],dim[1] - menu.node().offsetHeight,0,menu.node().offsetHeight)
-          .initialize()
-          .update();
-      }
-    })
-
-  d3.select('#menu_export')
-    .on('click',anno.preview);
-
-
-
-
-  function updateMenu() {
-    d3.select(seqFeatureMenu)
-      .selectAll('#seqFeatureItems')
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input').node();
-
-        if (d['show']) {
-          cb.checked = true
-        } else {
-          cb.checked = false;
-        }
-      });
-
-    seqItems
-      .each(function(d,i) {
-        var cb = d3.select(this).select('input').node();
-
-        if (anno.data['seqs'][i]['show']) {
-          cb.checked = true;
-        } else {
-          cb.checked = false;
-        }
-      });
-
-    d3.selectAll('#featureItems')
-    .each(function(d,i) {
-      var cb = d3.select(this).select('input').node();
-
-      if (d['legend']) {
-        cb.checked = true;
-      } else {
-        cb.checked = false;
-      }
-    });
-  }
-
-  anno.onUpdate(updateMenu);  //update sequence items checkbox on annotator update
-
-  //misc
-  seqMenu.style.width = seqMenu.offsetWidth + 20;  //account for scroll bar
-  function layout() {
-    seqMenu.style.overflowX = 'hidden';
-    if (seqMenu.offsetHeight > dim[1] - menu.node().offsetHeight) {
-      seqMenu.style.height = dim[1] - menu.node().offsetHeight - 50;
-    }
-
-    if (seqMenu.offsetWidth + seqMenu.offsetLeft > dim[0]) {
-      seqMenu.style.overflowX = 'auto';
-      seqMenu.style.width = dim[0] - seqMenu.offsetLeft - 20;
-    }
-  }
-
-  seeker.env_menuTarget = seqMenu;
-  seeker.env_menus.push(seqMenu);
-  seeker.env_menus.push(seqFeatureMenu);
-  seeker.env_menus.push(featureMenu);
-
-  layout();
-  updateMenu();
   </script>
   </body>
 </html>

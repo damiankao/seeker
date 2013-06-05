@@ -264,6 +264,25 @@
 		return e;
 	}
 
+	seeker.svgElement = function(e) {
+		var g = document.createElementNS("http://www.w3.org/2000/svg", e);
+		g.setAttr = function(a, val) {
+			g.setAttribute(a,val);
+
+			return g;
+		}
+
+		g.setStyle = function(s, val) {
+			g.style[s] = val;
+
+			return g;
+		}
+
+		g.append = g.appendChild;
+
+		return g;
+	}
+
 	//scalar binding elements
 	seeker.textbox = function() {
 		var container = new seeker.element('div')
@@ -621,6 +640,12 @@
 		}
 
 		list.update = function() {
+			var o = function() {
+				var container = document.createElement('li');
+				
+				return container;
+			}
+
 			var f = function(obj) {
 				var label = new seeker.textbox()
 					.attachTo(obj)
@@ -632,7 +657,7 @@
 				}
 			}
 
-			seeker.util.updateCollectionDOM(list._data, _listObjs, 'li', list, f);
+			seeker.util.updateCollectionDOM(list._data, _listObjs, o, list, f);
 
 			return list;
 		}
@@ -677,6 +702,12 @@
 		}
 
 		container.update = function() {
+			var o = function() {
+				var container = document.createElement('li');
+				
+				return container;
+			}
+
 			var fControl = function(obj) {
 				var label = new seeker.textbox()
 					.attachTo(obj)
@@ -685,7 +716,7 @@
 				obj.onclick = _controlData[obj.index]['click'];
 			}
 
-			seeker.util.updateCollectionDOM(_controlData, _controlListObjs, 'li', controlList, fControl);
+			seeker.util.updateCollectionDOM(_controlData, _controlListObjs, o, controlList, fControl);
 
 			var f = function(obj) {
 				while (obj.firstChild) {
@@ -695,7 +726,7 @@
 				_template(obj);
 			}
 
-			seeker.util.updateCollectionDOM(container._data, _listObjs, 'li', list, f);
+			seeker.util.updateCollectionDOM(container._data, _listObjs, o, list, f);
 
 			var winDim = seeker.util.winDimensions();
 			var pos = container.node.offsetTop + container.node.offsetHeight;
