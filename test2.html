@@ -14,15 +14,16 @@
   <body>
   <script>
   var app = {
-    
+
   };
 
 
-  var d = [{'name':'one','click':function() {console.log('1')}},{'name':'two','click':function() {console.log('2')}},{'name':'three','click':function() {console.log('3')}}];
+  var d = [{'name':'one','click':function() {console.log(this.index)}},{'name':'two','click':function() {console.log('2')}},{'name':'three','click':function() {console.log('3')}}];
   var m = new seeker.menu()
     .attachTo(document.body)
     .style('display','block')
     .data(d)
+    .setClick('click')
     .update()
     .place([800,300]);
 
@@ -53,7 +54,6 @@
         .update();
 
     })
-    .init()
     .update();
 
   var s = new seeker.status()

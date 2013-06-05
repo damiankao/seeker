@@ -54,42 +54,44 @@
 	seeker.util.attachModel = function(obj) {
 		if (!obj.__seeker) {
 			obj.__seeker = true;
-			obj.__onChange = [];
-			obj.__onLengthChange = [];
-
-			obj.__update = function() {
-				var i = this.__onChange.length;
-				while (i--) {
-					var obj = this.__onChange[i]().node;
-					if (!seeker.util.inDOM(obj)) {
-						this.__onChange.splice(i,1)
-					}
-				}
-			}
-
-			obj.__lengthUpdate = function() {
-				var i = this.__onLengthChange.length;
-				while (i--) {
-					var obj = this.__onLengthChange[i]().node;
-					if (!seeker.util.inDOM(obj)) {
-						this.__onLengthChange.splice(i,1)
-					}
-				}
-			}
 
 			if( Object.prototype.toString.call( obj ) === '[object Array]' ) {
+				obj.__onChange = [];
+
+				obj.__update = function() {
+					var i = this.__onChange.length;
+					while (i--) {
+						var obj = this.__onChange[i]().node;
+						if (!seeker.util.inDOM(obj)) {
+							this.__onChange.splice(i,1)
+						}
+					}
+				}
+
 				obj.__append = function(a) {
 					obj.push(a);
-					obj.__lengthUpdate();
+					obj.__update();
 					return obj;
 				}
 
 				obj.__splice = function(i, n) {
 					obj.splice(i,n);
-					obj.__lengthUpdate();
+					obj.__update();
 					return obj;
 				}
 			} else {
+				obj.__onChange = [];
+
+				obj.__update = function() {
+					var i = this.__onChange.length;
+					while (i--) {
+						var obj = this.__onChange[i]().node;
+						if (!seeker.util.inDOM(obj)) {
+							this.__onChange.splice(i,1)
+						}
+					}
+				}
+
 				obj.__set = function(i, v) {
 					obj[i] = v;
 					obj.__update();
@@ -99,5 +101,76 @@
 		}
 
 		return obj;
+	}
+
+	seeker.util.attachScalarBinding = function(obj) {
+		//attach functions to view objects that binds to scalars
+
+		obj.onUpdate = function(f) {
+			obj._data.__onChange.push(f);
+
+			return obj;
+		}
+
+		obj.getScalar = function() {
+			return obj._data[obj._key];
+		}
+
+		obj.data = function(d,k) {
+			obj._data = d;
+			obj._key = k;
+
+			seeker.util.attachModel(obj._data);
+			obj.onUpdate(obj.update);
+
+			return obj;
+		}
+	}
+
+	seeker.util.attachCollectionBinding = function(obj) {
+		//attach functions to view objects that binds to collections
+
+		obj.onUpdate = function(f) {
+			obj._data.__onChange.push(f);
+
+			return obj;
+		}
+
+		obj.data = function(d) {
+			obj._data = d;
+
+			seeker.util.attachModel(obj._data);
+			obj.onUpdate(obj.update);
+
+			return obj;
+		}
+	}
+
+	seeker.util.updateCollectionDOM = function(data, objs, e, parent, update) {
+		//make enough view objects for each data object, append to parent node and update
+		//used in update functions of collection binding elements
+
+		var dataLength = data.length;
+		var objLength = objs.length;
+
+		if (objLength < dataLength) {
+			for ( var i = objLength ; i < dataLength ; i++ ) {
+				var element = document.createElement(e);
+				element.index = i;					
+				objs.push(element);
+				parent.append(objs[i]);
+			}
+		} else if (objLength > dataLength) {
+			var num = objLength - dataLength;
+			var removed = objs.splice(dataLength, num);
+			for ( var i = 0 ; i < removed.length ; i++ ) {
+				parent.node.removeChild(removed[i]);
+			}
+		}
+
+		objLength = objs.length;
+		for ( var i = 0 ; i < objLength ; i++ ) {
+			update(objs[i]);
+		}
 	}
 })();

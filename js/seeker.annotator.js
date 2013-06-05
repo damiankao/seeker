@@ -27,10 +27,10 @@
 		],
 		'feat':[
 			{
-			'name':'',
-			'color':'',
-			'legend':true,
-			'count':1
+				'name':'',
+				'color':'',
+				'legend':true,
+				'count':1
 			}
 		]
 	}
@@ -39,9 +39,7 @@
 	seeker.annotator = function() {
 		var container = new seeker.element('div');
 		var canvas = new seeker.element('svg');
-		
-		var _seqData;
-		var _featureData;
+
 		var _palette;
 		var _settings = {
 			'legend_show':'top',
@@ -62,24 +60,39 @@
 
 			'margin':40
 		};
-
 		seeker.util.attachModel(_settings);
 
-		var _data;
+		var _seq;
+		var _feat;
+
 		var _groups;
 
 		container.data = function(d) {
-			_data = d;
+			_seq = d['seq'];
+			_feat = d['feat'];
 
-			seeker.util.attachModel(_data['seq']);
-			seeker.util.attachModel(_data['feat']);
+			seeker.util.attachModel(_seq);
+			seeker.util.attachModel(_feat);
 
-			_data['seq'].__onLengthChange.push(container.init);
+			_seq.__onChange.push(container.updateSeq);
+			_feat.__onChange.push(container.updateLegend);
+			_settings.__onChange.push(container.updateSettings);
 
 			return container;
 		}
 
-		container.init = function(d) {
+		container.updateSeq = function() {
+			//update sequence groups
+
+		}
+
+		container.updateLegend = function() {
+			//update legend
+
+		}
+
+		container.updateSettings = function() {
+			//update setting options panel
 
 		}
 
@@ -94,31 +107,32 @@
 		group.appendChild(label);
 		group.appendChild(element);
 
-		var _data;
+		var _seq;
 		var _feat;
 		var _settings;
 		var _groups;
 
 		group.data = function(d, f, s) {
-			_data = d;
+			_seq = d;
 			_feat = f;
 			_settings = s;
 
-			seeker.util.attachModel(_data);
+			seeker.util.attachModel(_seq);
 			seeker.util.attachModel(_data['feat']);
 
-			_data.__onChange.push(group.update);
+			_seq.__onChange.push(group.update);
 			_settings.__onChange.push(group.update);
-			_data['feat'].__onLengthChange.push(group.init);
+			_data['feat'].__onChange.push(group.updateFeat);
 
 			return group
 		}
 
-		group.init = function() {
-
+		group.update = function() {
+			//update label and spine
 		}
 
-		group.update = function() {
+		group.updateFeat = function() {
+			//update feature elements on sequence
 
 		}
 
@@ -138,18 +152,14 @@
 		var _settings;
 
 		group.data = function(d, f, s) {
-			_data = d;
+			_seaFeat = d;
 			_feat = f;
 			_settings = s;
 
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(group.update);
+			seeker.util.attachModel(_seqFeat);
+			_seqFeat.__onChange.push(group.update);
 			_feat.__onChange.push(group.update);
 			_settings.__onChange.push(group.update);
-		}
-
-		group.init = function() {
-
 		}
 
 		group.update = function() {
@@ -161,6 +171,22 @@
 
 	seeker.annotator_legend = function() {
 		var group = document.createElement('g');
+
+		var _feat;
+		var _settings;
+
+		group.data = function(d, s) {
+			_feat = d;
+			_settings = s;
+
+			seeker.util.attachModel(_feat);
+			_feat.__onChange.push(group.update);
+			_settings.__onChange.push(group.update);
+		}
+
+		group.update = function() {
+
+		}
 
 		return group;
 	}

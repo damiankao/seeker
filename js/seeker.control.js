@@ -5,13 +5,12 @@
 
 	Introduction:
 	DOM controls are included in this file. All view elements are inherited from the seeker.element class.
-	DOM elements like menus, navigation bars, tooltips are included in this file.
 
 	Data binding:
-	Some of these elements can be bound to a data object. When bound, an array, __onChange and function
-	__update() is added to the data object if it doesn't already exist. THe update function of the view
+	Some of these elements can be bound to a data object. When bound, __onChange array and __update()
+	function is added to the data object if it doesn't already exist. The update function of the view
 	element is then pushed into the __onChange array. When the scalars in the data object is updated, the 
-	__update() function ca be called to update the view element bound to the scalars. 
+	__update() function can be called to update the view element bound to the scalars. 
 
 	View objects can only be bound to the current hierchical level of the object in question. If the object
 	contains another object, any changes made in the child object will not call the parent update function,
@@ -28,23 +27,24 @@
 			element: base element for all controls.
 			popup: arrowed container element that responds intelligently to window edges. 
 
-		data array binding classes:
-			menu: Simple menu. Input is an array of array['menu item name',click function]
-			complexMenu: Complex menu with a button list header and template driven items. The input require
-				are the object data and template function for creating each menu item.
-
-		single data binding classes: input is a scalar-type data of an object
+		scalar binding views:
 			textbox
 			checkbox
 			slider: numerical slider
 			option: drop down menu of possible options
 			button
 
-		none data binding classes:
+		collection binding views:
+			menu: Simple menu. Input is an array of array['menu item name',click function]
+			complexMenu: Complex menu with a button list header and template driven items. The input require
+				are the object data and template function for creating each menu item.
+
+		static views:
 			colorpicker
 			status
 	*/
 
+	//base elements
 	seeker.element = function(e) {
 		this.node = document.createElement(e);
 		if (e != 'input') {
@@ -264,55 +264,375 @@
 		return e;
 	}
 
+	//scalar binding elements
+	seeker.textbox = function() {
+		var container = new seeker.element('div')
+			.id('textbox');
+
+		seeker.util.attachScalarBinding(container);
+		
+		container.update = function() {
+			container
+				.html(container.getScalar());
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.checkbox = function() {
+		var container = new seeker.element('div')
+			.id('checkbox');
+
+		var cb = new seeker.element('div')
+			.id('cb')
+			.attachTo(container);
+
+		var label = new seeker.textbox()
+			.attachTo(container)
+			.id('label');
+			
+		var _margin = 4;
+
+		seeker.util.attachScalarBinding(container);
+
+		container.check = function() {
+			cb.id('cbChecked');
+
+			return container;
+		}
+
+		container.uncheck = function() {
+			cb.id('cb');
+
+			return container;
+		}
+
+		container.margin = function(val) {
+			_margin = val;
+
+			return container;
+		}
+
+		container.setText = function(val) {
+			label.html(val);
+
+			return container;
+		}
+
+		container.bindLabel = function(d, k) {
+			label
+				.data(d,k)
+				.update()
+				.onUpdate(container.update);
+
+			return container;
+		}
+
+		container.update = function() {
+			label
+				.style('top',_margin - 1)
+				.style('left',cb.node.offsetWidth + 5 + _margin);
+
+			container
+				.style('height',cb.node.offsetHeight + _margin * 2)
+				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
+
+			cb
+				.style('top',_margin)
+				.style('left',_margin);
+
+			if (container.getScalar()) {
+				container.check();
+			} else {
+				container.uncheck();
+			}
+
+			return container;
+		}
+
+		container.node.onclick = function(evt) {
+			if (container.getScalar()) {
+				container._data.__set(container._key,false);
+			} else {
+				container._data.__set(container._key,true);
+			}
+		}
+
+
+		return container;
+	}
+
+	seeker.option = function() {
+		var _selection = [];
+		var _margin = 10;
+
+		var container = new seeker.element('div')
+			.id('optionBox');
+
+		var menu = new seeker.menu()
+			.attachTo(container)
+			.data(_selection)
+			.style('background','#38B87C')
+			.style('color','white');
+		menu.arrow
+			.style('background','#38B87C');
+
+		var label = new seeker.textbox()
+			.id('label')
+			.attachTo(container);
+
+		var selection = new seeker.element('div')
+			.id('optionSelection')
+			.attachTo(container);
+
+		var downArrow = new seeker.element('div')
+			.attachTo(container)
+			.id('downArrow');
+
+		seeker.util.attachScalarBinding(container);
+
+		container.setText = function(val) {
+			label.html(val);
+
+			return container;
+		}
+
+		container.bindLabel = function(d, k) {
+			label
+				.data(d,k)
+				.update()
+				.onUpdate(container.update);
+
+			return container;
+		}
+
+		container.setSelection = function(d) {
+			_selection = [];
+
+			for ( var i = 0 ; i < d.length ; i++ ) {
+				_selection.push({'name':d[i],'click':function() {
+					container._data.__set(container._key,_selection[this.index]['name']);
+					menu.hide()
+				}});
+			}
+
+			menu
+				.data(_selection)
+				.setClick('click')
+				.update();
+
+			return container;
+		}
+
+		container.update = function() {
+			menu
+				.style('display','block')
+				.style('left',-10000);
+
+			label
+				.style('top',_margin)
+				.style('left',_margin);
+
+			var w = label.node.offsetWidth > menu.node.offsetWidth ? label.node.offsetWidth : menu.node.offsetWidth;
+
+			selection
+				.style('width',w - 10)
+				.style('top',label.node.offsetHeight + 5 + _margin)
+				.style('left',_margin)
+				.html(container.getScalar());
+
+			container
+				.style('width',w + _margin * 2)
+				.style('height',label.node.offsetHeight + 5 + selection.node.offsetHeight + _margin * 2);
+
+			menu
+				.style('width',parseInt(container.node.style.width) - _margin * 2);
+
+			downArrow
+				.style('top',selection.node.offsetTop + selection.node.offsetHeight / 2 - 3)
+				.style('left',selection.node.offsetLeft + selection.node.offsetWidth - 18);
+
+			menu.arrow
+				.style('left',container.node.offsetWidth - 37);
+
+			return container;
+		}
+
+		var click = function(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+
+			if (menu.node.style.left == '-10000px') {
+				menu.style('display','none');
+			}
+
+			menu.toggle();
+			menu
+				.moveFade(0,1,selection.node.offsetLeft, selection.node.offsetTop,selection.node.offsetLeft,selection.node.offsetTop + selection.node.offsetHeight + 13,120,'cubic-in-out');
+		}
+
+		selection.node.onclick = click;
+		downArrow.node.onclick = click;
+
+		container.setMargin = function(val) {
+			_margin = val;
+			container.update();
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.slider = function() {
+		var container = new seeker.element('div')
+			.id('slider');
+		var numberBox = new seeker.element('input')
+			.id('tbox');
+		var spine = new seeker.element('div')
+			.id('spine');
+		var marker = new seeker.element('div')
+			.id('marker');
+		var label = new seeker.textbox()
+			.id('label');
+
+		label.attachTo(container);
+		numberBox.attachTo(container);
+		spine.attachTo(container);
+		marker.attachTo(container);
+
+		var _start;
+		var _end;
+
+		seeker.util.attachScalarBinding(container);
+
+		container.setText = function(val) {
+			label.html(val);
+
+			return container;
+		}
+
+		container.bindLabel = function(d, k) {
+			label
+				.data(d,k)
+				.update();
+
+			return container;
+		}
+
+		container.setInterval = function(s,e) {
+			_start = s;
+			_end = e;
+
+			return container;
+		}
+
+		container.update = function() {
+			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 10;
+			var spinePos = (spineWidth - 16) * ((container.getScalar() - _start) / (_end - _start));
+			var spineLeft = parseInt(numberBox.node.offsetLeft) + parseInt(numberBox.node.offsetWidth) + 10;
+
+			spine
+				.style('width',spineWidth)
+				.style('left',spineLeft)
+				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 2);
+
+			marker
+				.style('left',spineLeft + 3 + spinePos)
+				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 8);
+
+			numberBox.node.value = container.getScalar();
+
+			return container;
+		}
+
+		marker.node.onmousedown = function(evt) {
+			evt.preventDefault();
+			evt.stopPropagation();
+
+			document.body.onmousemove = function(evt) {
+				var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
+				var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+				var length = _end - _start;
+				var val;
+
+				if (spinePos < 0) {
+					spinePos = 0;
+				} else if (spinePos > spineWidth) {
+					spinePos = spineWidth;
+				}
+
+				val = Math.round(spinePos / spineWidth * length);
+				
+				container._data.__set(container._key, val + _start);
+
+				document.body.onmouseup = function(evt) {
+					document.body.onmousemove = null;
+					document.body.onmouseup = null;
+
+					seeker.util.mouseCoord(evt)[0]
+				}
+			} 
+		}
+
+		spine.node.onclick = function(evt) {
+			evt.preventDefault();
+			evt.stopPropagation();
+
+			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
+			var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+			var length = _end - _start;
+			var val;
+
+			val = Math.round(spinePos / spineWidth * length);
+			
+			if (val + _start < _start) {
+				val = 0;
+			} else if (val + _start > _end) {
+				val = _end - _start;
+			}
+
+			container._data.__set(container._key, val + _start);
+		}
+
+		numberBox.node.onchange = function() {
+			container._data.__set(container._key, this.value);
+		}
+
+		return container;
+	}
+
+	//collection binding elements
 	seeker.menu = function() {
 		var list = new seeker.popup('ul')
 			.id('menu');
 
-		var _data = [];
 		var _listObjs = [];
+		var _click;
 
-		list.data = function(val) {
-			_data = val;
+		seeker.util.attachCollectionBinding(list);
 
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(list.update);
-
-			return list;
-		}
-
-		list.addOnChange = function(f) {
-			_data.__onChange.push(f);
+		list.setClick = function(k) {
+			_click = k;
 
 			return list;
 		}
 
 		list.update = function() {
-			if (_listObjs.length < _data.length) {
-				for ( var i = _listObjs.length ; i < _data.length ; i++ ) {
-					var li = document.createElement('li');
-					li.index = i;
-					li.onclick = function(evt) {
-						evt.stopPropagation();
-						evt.preventDefault();
-						_data[this.index]['click']();
-					};
-					_listObjs.push(li);
-					list.append(_listObjs[i]);
-				}
-			} else if (_listObjs.length > _data.length) {
-				var num = _listObjs.length - _data.length;
-				var removed = _listObjs.splice(_data.length, num);
-				for ( var i = 0 ; i < removed.length ; i++ ) {
-					list.node.removeChild(removed[i]);
+			var f = function(obj) {
+				var label = new seeker.textbox()
+					.attachTo(obj)
+					.data(list._data[obj.index],'name')
+					.update();
+
+				if (_click) {
+					obj.onclick = list._data[obj.index][_click];
 				}
 			}
 
-			for ( var i = 0 ; i < _listObjs.length ; i++ ) {
-				var label = new seeker.textbox()
-					.attachTo(_listObjs[i])
-					.data(_data[i],'name')
-					.update();
-			}
+			seeker.util.updateCollectionDOM(list._data, _listObjs, 'li', list, f);
 
 			return list;
 		}
@@ -333,10 +653,8 @@
 			.id('complexMenuControl');
 
 		var _template;
-
-		var _data = [];
-		var _listObjs = [];
 		var _update;
+		var _listObjs = [];
 
 		var _controlData = [];
 		var _controlListObjs = [];
@@ -345,26 +663,12 @@
 			_controlData = val;
 
 			seeker.util.attachModel(_controlData);
-			_data.__onChange.push(container.update);
+			_controlData.__onChange.push(container.update);
 
 			return container;
 		}
 
-		container.data = function(val) {
-			_data = val;
-
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(container.update);
-			_data.__onLengthChange.push(container.init);
-
-			return container;
-		}
-
-		container.addOnChange = function(f) {
-			_data.__onChange.push(f);
-
-			return container;
-		}
+		seeker.util.attachCollectionBinding(container);
 
 		container.setTemplate = function(f) {
 			_template = f;
@@ -372,72 +676,26 @@
 			return container;
 		}
 
-		container.setUpdate = function(f) {
-			_update = f;
-
-			return container;
-		}
-
-		container.init = function() {
-			if (_controlListObjs.length < _controlData.length) {
-				for ( var i = _controlListObjs.length ; i < _controlData.length ; i++ ) {
-					var li = document.createElement('li');
-					li.index = i;
-					li.onclick = function(evt) {
-						evt.stopPropagation();
-						evt.preventDefault();
-						_controlData[this.index]['click']();
-					};
-					_controlListObjs.push(li);
-					controlList.append(_controlListObjs[i]);
-				}
-			} else if (_controlListObjs.length > _controlData.length) {
-				var num = _controlListObjs.length - _controlData.length;
-				var removed = _controlListObjs.splice(_controlData.length, num);
-				for ( var i = 0 ; i < removed.length ; i++ ) {
-					controlList.node.removeChild(removed[i]);
-				}
-			}
-
-			for ( var i = 0 ; i < _controlListObjs.length ; i++ ) {
-				var label = new seeker.textbox()
-					.attachTo(_controlListObjs[i])
-					.data(_controlData[i],'name')
-					.update();
-			}
-
-			if (_listObjs.length < _data.length) {
-				for ( var i = _listObjs.length ; i < _data.length ; i++ ) {
-					var li = document.createElement('li');
-					li.index = i;
-					_listObjs.push(li);
-					list.append(_listObjs[i]);
-				}
-			} else if (_listObjs.length > _data.length) {
-				var num = _listObjs.length - _data.length;
-				var removed = _listObjs.splice(_data.length, num);
-				for ( var i = 0 ; i < removed.length ; i++ ) {
-					list.node.removeChild(removed[i]);
-				}
-			}
-
-			for ( var i = 0 ; i < _listObjs.length ; i++ ) {
-				var listObj = _listObjs[i];
-				while (listObj.firstChild) {
-				    listObj.removeChild(listObj.firstChild);
-				}
-				_template(listObj);
-			}
-
-			return container;
-		}
-
 		container.update = function() {
-			if (_update) {
-				for ( var i = 0 ; i < _listObjs.length ; i++ ) {
-					_update(_listObjs[i]);
-				}
+			var fControl = function(obj) {
+				var label = new seeker.textbox()
+					.attachTo(obj)
+					.data(_controlData[obj.index],'name')
+					.update();
+				obj.onclick = _controlData[obj.index]['click'];
 			}
+
+			seeker.util.updateCollectionDOM(_controlData, _controlListObjs, 'li', controlList, fControl);
+
+			var f = function(obj) {
+				while (obj.firstChild) {
+				    obj.removeChild(obj.firstChild);
+				}
+
+				_template(obj);
+			}
+
+			seeker.util.updateCollectionDOM(container._data, _listObjs, 'li', list, f);
 
 			var winDim = seeker.util.winDimensions();
 			var pos = container.node.offsetTop + container.node.offsetHeight;
@@ -453,7 +711,7 @@
 				list
 					.style('height',null);
 			}
-
+			
 			return container;
 		}
 
@@ -465,6 +723,7 @@
 		return container;
 	}
 
+	//static elements
 	seeker.status = function() {
 		var container = new seeker.element('div')
 			.attr('id','status');
@@ -535,404 +794,6 @@
 		container.update = function() {
 			container
 				.html(_data[0]);
-		}
-
-		return container;
-	}
-
-	seeker.textbox = function() {
-		var container = new seeker.element('div')
-			.id('textbox');
-
-		var _data;
-		var _key;
-
-		container.data = function(d, k) {
-			_data = d;
-			_key = k;
-
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(container.update);
-
-			return container;
-		}
-
-		container.addOnChange = function(f) {
-			_data.__onChange.push(f);
-
-			return container;
-		}
-
-		container.update = function() {
-			container
-				.html(_data[_key]);
-
-			return container;
-		}
-
-		return container;
-	}
-
-	seeker.checkbox = function() {
-		var container = new seeker.element('div')
-			.id('checkbox');
-
-		var cb = new seeker.element('div')
-			.id('cb')
-			.attachTo(container);
-
-		var label = new seeker.textbox()
-			.attachTo(container)
-			.id('label');
-			
-		var _data;
-		var _key;
-		var _margin = 4;
-
-		container.data = function(d, k) {
-			_data = d;
-			_key = k;
-
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(container.update);
-
-			return container;
-		}
-
-		container.addOnChange = function(f) {
-			_data.__onChange.push(f);
-
-			return container;
-		}
-
-		container.check = function() {
-			cb.id('cbChecked');
-
-			return container;
-		}
-
-		container.uncheck = function() {
-			cb.id('cb');
-
-			return container;
-		}
-
-		container.margin = function(val) {
-			_margin = val;
-
-			return container;
-		}
-
-		container.setText = function(val) {
-			label.html(val);
-
-			return container;
-		}
-
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update()
-				.addOnChange(container.update);
-
-			return container;
-		}
-
-		container.update = function() {
-			label
-				.style('top',_margin - 1)
-				.style('left',cb.node.offsetWidth + 5 + _margin);
-
-			container
-				.style('height',cb.node.offsetHeight + _margin * 2)
-				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
-
-			cb
-				.style('top',_margin)
-				.style('left',_margin);
-
-			if (_data[_key]) {
-				container.check();
-			} else {
-				container.uncheck();
-			}
-
-			return container;
-		}
-
-		container.node.onclick = function(evt) {
-			if (_data[_key]) {
-				_data.__set(_key,false);
-			} else {
-				_data.__set(_key,true);
-			}
-		}
-
-
-		return container;
-	}
-
-	seeker.option = function() {
-		var _selection = [];
-		var _margin = 10;
-
-		var container = new seeker.element('div')
-			.id('optionBox');
-
-		var menu = new seeker.menu()
-			.attachTo(container)
-			.data(_selection)
-			.style('background','#38B87C')
-			.style('color','white');
-		menu.arrow
-			.style('background','#38B87C');
-
-		var label = new seeker.textbox()
-			.id('label')
-			.attachTo(container);
-
-		var selection = new seeker.element('div')
-			.id('optionSelection')
-			.attachTo(container);
-
-		var downArrow = new seeker.element('div')
-			.attachTo(container)
-			.id('downArrow');
-
-		var _data;
-		var _key;
-
-		container.data = function(d, k) {
-			_data = d;
-			_key = k;
-
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(container.update);
-
-			return container;
-		}
-
-		container.addOnChange = function(f) {
-			_data.__onChange.push(f);
-
-			return container;
-		}
-
-		container.setText = function(val) {
-			label.html(val);
-
-			return container;
-		}
-
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update()
-				.addOnChange(container.update);
-
-			return container;
-		}
-
-		container.setSelection = function(d) {
-			_selection = [];
-
-			for ( var i = 0 ; i < d.length ; i++ ) {
-				_selection.push({'name':d[i],'click':function() {
-					_data.__set(_key,this['name']);
-					menu.hide()
-				}});
-			}
-
-			menu
-				.data(_selection)
-				.update();
-
-			return container;
-		}
-
-		container.update = function() {
-			menu
-				.style('display','block')
-				.style('left',-10000);
-
-			label
-				.style('top',_margin)
-				.style('left',_margin);
-
-			var w = label.node.offsetWidth > menu.node.offsetWidth ? label.node.offsetWidth : menu.node.offsetWidth;
-
-			selection
-				.style('width',w - 10)
-				.style('top',label.node.offsetHeight + 5 + _margin)
-				.style('left',_margin)
-				.html(_data[_key]);
-
-			container
-				.style('width',w + _margin * 2)
-				.style('height',label.node.offsetHeight + 5 + selection.node.offsetHeight + _margin * 2);
-
-			menu
-				.style('width',parseInt(container.node.style.width) - _margin * 2);
-
-			downArrow
-				.style('top',selection.node.offsetTop + selection.node.offsetHeight / 2 - 3)
-				.style('left',selection.node.offsetLeft + selection.node.offsetWidth - 18);
-
-			menu.arrow
-				.style('left',container.node.offsetWidth - 37);
-
-			return container;
-		}
-
-		var click = function(evt) {
-			evt.stopPropagation();
-			evt.preventDefault();
-
-			if (menu.node.style.left == '-10000px') {
-				menu.style('display','none');
-			}
-
-			menu.toggle();
-			menu
-				.moveFade(0,1,selection.node.offsetLeft, selection.node.offsetTop,selection.node.offsetLeft,selection.node.offsetTop + selection.node.offsetHeight + 13,120,'cubic-in-out');
-		}
-
-		selection.node.onclick = click;
-		downArrow.node.onclick = click;
-
-		container.setMargin = function(val) {
-			_margin = val;
-			container.update();
-
-			return container;
-		}
-
-		return container;
-	}
-
-	seeker.slider = function() {
-		var container = new seeker.element('div')
-			.id('slider');
-		var numberBox = new seeker.element('input')
-			.id('tbox');
-		var spine = new seeker.element('div')
-			.id('spine');
-		var marker = new seeker.element('div')
-			.id('marker');
-		var label = new seeker.textbox()
-			.id('label');
-
-		label.attachTo(container);
-		numberBox.attachTo(container);
-		spine.attachTo(container);
-		marker.attachTo(container);
-
-		var _data;
-		var _key;
-		var _start;
-		var _end;
-
-		container.data = function(d, k) {
-			_data = d;
-			_key = k;
-
-			seeker.util.attachModel(_data);
-			_data.__onChange.push(container.update);
-
-			return container;
-		}
-
-		container.setText = function(val) {
-			label.html(val);
-
-			return container;
-		}
-
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update();
-
-			return container;
-		}
-
-		container.setInterval = function(s,e) {
-			_start = s;
-			_end = e;
-
-			return container;
-		}
-
-		container.update = function() {
-			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 10;
-			var spinePos = (spineWidth - 16) * ((_data[_key] - _start) / (_end - _start));
-			var spineLeft = parseInt(numberBox.node.offsetLeft) + parseInt(numberBox.node.offsetWidth) + 10;
-
-			spine
-				.style('width',spineWidth)
-				.style('left',spineLeft)
-				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 2);
-
-			marker
-				.style('left',spineLeft + 3 + spinePos)
-				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 8);
-
-			numberBox.node.value = _data[_key];
-
-			return container;
-		}
-
-		marker.node.onmousedown = function(evt) {
-			evt.preventDefault();
-			evt.stopPropagation();
-
-			document.body.onmousemove = function(evt) {
-				var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-				var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
-				var length = _end - _start;
-				var val;
-
-				if (spinePos < 0) {
-					spinePos = 0;
-				} else if (spinePos > spineWidth) {
-					spinePos = spineWidth;
-				}
-
-				val = Math.round(spinePos / spineWidth * length);
-				
-				_data.__set(_key, val + _start);
-
-				document.body.onmouseup = function(evt) {
-					document.body.onmousemove = null;
-					document.body.onmouseup = null;
-
-					seeker.util.mouseCoord(evt)[0]
-				}
-			} 
-		}
-
-		spine.node.onclick = function(evt) {
-			evt.preventDefault();
-			evt.stopPropagation();
-
-			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-			var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
-			var length = _end - _start;
-			var val;
-
-			val = Math.round(spinePos / spineWidth * length);
-			
-			if (val + _start < _start) {
-				val = 0;
-			} else if (val + _start > _end) {
-				val = _end - _start;
-			}
-
-			_data.__set(_key, val + _start);
-		}
-
-		numberBox.node.onchange = function() {
-			_data.__set(_key, this.value);
 		}
 
 		return container;

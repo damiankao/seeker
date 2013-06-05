@@ -1,17 +1,3 @@
-div.annotator {
-    background:white;
-}
-
-div.annotator #legendColsText:hover {
-    font-weight:bold;
-    cursor:pointer;
-}
-
-div.annotator #seqLabels:hover{
-    cursor:pointer;
-    font-weight:bold;
-}
-
 #arrow {
     content: ' ';
     display: block;
@@ -317,25 +303,5 @@ div.annotator #seqLabels:hover{
 }
 
 #optionBox > #downArrow:hover {
-    cursor:pointer;
-}
-
-#navigation {
-    list-style:none;
-    position:relative;
-    margin:0;
-    border:0;
-}
-
-#navigation > li {
-    display:inline;
-    font-size:10pt;
-    font-family:Arial;
-    color:#DBDBDB;
-    padding:0px 10px 0px 10px;
-}
-
-#navigation > li:hover {
-    color:white;
     cursor:pointer;
 }
