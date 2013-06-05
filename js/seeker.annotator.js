@@ -18,9 +18,10 @@
 				'length':100,
 				'feat':[
 					'name':'',
-					'start':1
-					'end':100
-					'visible':true
+					'start':1,
+					'end':100,
+					'visible':true,
+					'label':true
 				]
 			}
 		],
@@ -62,23 +63,24 @@
 			'margin':40
 		};
 
+		seeker.util.attachModel(_settings);
+
 		var _data;
+		var _groups;
 
 		container.data = function(d) {
 			_data = d;
 
+			seeker.util.attachModel(_data['seq']);
+			seeker.util.attachModel(_data['feat']);
+
+			_data['seq'].__onLengthChange.push(container.init);
+
 			return container;
 		}
 
-		container.setting = function(s, v) {
-			_settings[s] = v;
+		container.init = function(d) {
 
-			return container;
-		}
-
-		container.update = function() {
-
-			return container;
 		}
 
 		return container;
@@ -94,17 +96,26 @@
 
 		var _data;
 		var _feat;
+		var _settings;
+		var _groups;
 
-		group.data = function(d,f) {
+		group.data = function(d, f, s) {
 			_data = d;
 			_feat = f;
+			_settings = s;
 
 			seeker.util.attachModel(_data);
-			seeker.util.attachModel(_feat);
+			seeker.util.attachModel(_data['feat']);
+
 			_data.__onChange.push(group.update);
-			_data.__onLengthChange.push(group.init);
+			_settings.__onChange.push(group.update);
+			_data['feat'].__onLengthChange.push(group.init);
 
 			return group
+		}
+
+		group.init = function() {
+
 		}
 
 		group.update = function() {
@@ -124,34 +135,32 @@
 
 		var _data;
 		var _feat;
+		var _settings;
 
-		group.data = function(d,f) {
+		group.data = function(d, f, s) {
 			_data = d;
 			_feat = f;
+			_settings = s;
 
 			seeker.util.attachModel(_data);
 			_data.__onChange.push(group.update);
-			_data.__onLengthChange.push(group.init);
+			_feat.__onChange.push(group.update);
+			_settings.__onChange.push(group.update);
+		}
 
-			if (!_feat.__onChange) {
-				_feat.__onChange = [];
-				_feat.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]().node;
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
-						}
-					}
-				}
-			} 
+		group.init = function() {
 
-			_feat.__onChange.push(list.update);
 		}
 
 		group.update = function() {
 
 		}
+
+		return group;
+	}
+
+	seeker.annotator_legend = function() {
+		var group = document.createElement('g');
 
 		return group;
 	}
