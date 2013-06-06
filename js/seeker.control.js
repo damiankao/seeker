@@ -46,7 +46,14 @@
 
 	//base elements
 	seeker.element = function(e) {
-		this.node = document.createElement(e);
+		this.node;
+
+		if (arguments[1]) {
+			this.node = document.createElementNS("http://www.w3.org/2000/svg", e);
+		} else {
+			this.node = document.createElement(e);
+		}
+
 		if (e != 'input') {
 			this.node.onmousedown = function(evt) {
 				evt.preventDefault();
@@ -56,6 +63,19 @@
 				evt.stopPropagation();
 			}
 		}
+
+		if (e == 'line') {
+			this.draw = function(x1,y1,x2,y2) {
+				this
+					.attr('x1',x1)
+					.attr('y1',y1)
+					.attr('x2',x2)
+					.attr('y2',y2);
+
+				return this;
+			}
+		}
+
 		return this;
 	}
 
@@ -85,6 +105,11 @@
 
 	seeker.element.prototype.html = function(val) {
 		this.node.innerHTML = val;
+		return this;
+	}
+
+	seeker.element.prototype.textContent = function(val) {
+		this.node.textContent = val;
 		return this;
 	}
 
@@ -141,6 +166,39 @@
 	    	this.hide();
 	    }
 	    return this;
+	}
+
+	seeker.element.prototype.on = function(e, f) {
+		this.node['on' + e] = f;
+
+		return this;
+	}
+
+	seeker.element.prototype.mouseCoord = function(evt) {
+		var absCoord = seeker.util.mouseCoord(event);
+		var totalOffsetX = 0;
+		var totalOffsetY = 0;
+		var currentElement = this.node;
+
+		do{
+			if (currentElement == document.body) {
+				break;
+			}
+
+			if (currentElement.translate_x) {
+				totalOffsetX += currentElement.translate_x;
+	        	totalOffsetY += currentElement.translate_y;
+	        } else if (currentElement.getAttribute('x')) {
+	        	totalOffsetX += parseInt(currentElement.getAttribute('x'));
+	        	totalOffsetY += parseInt(currentElement.getAttribute('y'));
+			} else {
+				totalOffsetX += parseInt(currentElement.offsetLeft) - parseInt(currentElement.scrollLeft);
+	        	totalOffsetY += parseInt(currentElement.offsetTop) - parseInt(currentElement.scrollTop);
+			}
+	    }
+	    while(currentElement = currentElement.parentNode)
+
+	    return [absCoord[0] - totalOffsetX, absCoord[1] - totalOffsetY];
 	}
 
 	seeker.element.prototype.fade = function(from, to, d,e) {
@@ -262,25 +320,6 @@
 		seeker.env_popups.push(e);
 
 		return e;
-	}
-
-	seeker.svgElement = function(e) {
-		var g = document.createElementNS("http://www.w3.org/2000/svg", e);
-		g.setAttr = function(a, val) {
-			g.setAttribute(a,val);
-
-			return g;
-		}
-
-		g.setStyle = function(s, val) {
-			g.style[s] = val;
-
-			return g;
-		}
-
-		g.append = g.appendChild;
-
-		return g;
 	}
 
 	//scalar binding elements

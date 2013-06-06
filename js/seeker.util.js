@@ -18,19 +18,6 @@
 		}
 	}
 
-	seeker.util.windowOffsetTop = function(elem) {
-		{
-		    var offsetTop = 0;
-		    do {
-		      if ( !isNaN( elem.offsetTop ) )
-		      {
-		          offsetTop += elem.offsetTop;
-		      }
-		    } while( elem = elem.offsetParent );
-		    return offsetTop;
-		}
-	}
-
 	seeker.util.mouseCoord = function(event) {
 		if ( event.pageX == null && event.clientX != null ) {
 		  var doc = document.documentElement, body = document.body;
@@ -85,7 +72,11 @@
 				obj.__update = function() {
 					var i = this.__onChange.length;
 					while (i--) {
-						var obj = this.__onChange[i]().node;
+						var obj = this.__onChange[i]();
+						if (obj.node) {
+							obj = obj.node;
+						}
+
 						if (!seeker.util.inDOM(obj)) {
 							this.__onChange.splice(i,1)
 						}
@@ -95,6 +86,7 @@
 				obj.__set = function(i, v) {
 					obj[i] = v;
 					obj.__update();
+
 					return obj;
 				}
 			}
@@ -162,9 +154,14 @@
 			}
 		} else if (objLength > dataLength) {
 			var num = objLength - dataLength;
+
 			var removed = objs.splice(dataLength, num);
 			for ( var i = 0 ; i < removed.length ; i++ ) {
-				parent.node.removeChild(removed[i]);
+				if (removed[i].node) {
+					parent.node.removeChild(removed[i].node);
+				} else {
+					parent.node.removeChild(removed[i]);
+				}
 			}
 		}
 

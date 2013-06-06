@@ -7,103 +7,13 @@
     <script type="text/javascript" src="js/seeker.util.js"></script>
     <script type="text/javascript" src="js/seeker.control.js"></script>
     <script type="text/javascript" src="js/seeker.annotator.js"></script>
+    <script type="text/javascript" src="data.js"></script>
     <style>
 
     </style>
   </head>
   <body>
   <script>
-  var data = {
-    'seq':[
-      {
-        'name':'seq01',
-        'visible':true,
-        'circular':false,
-        'length':2100,
-        'feat':[
-          {
-            'name':'DOM01',
-            'start':1,
-            'end':100,
-            'visible':true,
-            'label':true
-          },
-          {
-            'name':'DOM02',
-            'start':200,
-            'end':600,
-            'visible':true,
-            'label':true
-          },
-        ]
-      },
-      {
-        'name':'seq02',
-        'visible':true,
-        'circular':false,
-        'length':2100,
-        'feat':[
-          {
-            'name':'DOM02',
-            'start':1,
-            'end':100,
-            'visible':true,
-            'label':true
-          },
-          {
-            'name':'DOM01',
-            'start':200,
-            'end':600,
-            'visible':true,
-            'label':true
-          },
-        ]
-      },
-      {
-        'name':'seq03',
-        'visible':true,
-        'circular':false,
-        'length':1600,
-        'feat':[
-          {
-            'name':'DOM03',
-            'start':1,
-            'end':100,
-            'visible':true,
-            'label':true
-          },
-          {
-            'name':'DOM01',
-            'start':200,
-            'end':600,
-            'visible':true,
-            'label':true
-          },
-        ]
-      },
-    ],
-    'feat':[
-      {
-        'name':'DOM01',
-        'color':'red',
-        'legend':true,
-        'count':3
-      },
-      {
-        'name':'DOM02',
-        'color':'blue',
-        'legend':true,
-        'count':2
-      },
-      {
-        'name':'DOM03',
-        'color':'green',
-        'legend':true,
-        'count':1
-      }
-    ]
-  };
-
   var anno = new seeker.annotator()
     .attachTo(document.body)
     .data(data)

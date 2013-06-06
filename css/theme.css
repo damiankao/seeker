@@ -1,3 +1,8 @@
+body {
+    padding:0;
+    margin:0;
+}
+
 #arrow {
     content: ' ';
     display: block;
@@ -304,4 +309,10 @@
 
 #optionBox > #downArrow:hover {
     cursor:pointer;
+}
+
+#annotator { 
+    font-family:Arial;
+    font-size:11pt;
+    overflow:auto;
 }
