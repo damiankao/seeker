@@ -22,14 +22,15 @@
 			'annotator': {
 				'margin':40,
 				'seq_underSpacing':30,
-				'legend_underSpacing':30,
+				'legend_underSpacing':50,
 				'legend_show':'top',
 				'legend_xPos':0,
 				'legend_width':620,
 				'legend_height':40,
 				'legend_cols':5,
 				'seq_maxLength':900,
-				'seq_scale':null
+				'seq_scale':null,
+				'legend_colorSize':15,
 			},
 			'sequence': {
 				'seq_spineWidth':5,
@@ -39,15 +40,11 @@
 			},
 			'feature': {
 				'seq_featWidth':10,
-			},
-			'legend': {
-				'legend_colorSize':15,
 			}
 		};
 		seeker.util.attachModel(_settings.annotator);
 		seeker.util.attachModel(_settings.sequence);
 		seeker.util.attachModel(_settings.feature);
-		seeker.util.attachModel(_settings.legend);
 
 		var _allSeq;
 		var _allFeat;
@@ -68,9 +65,14 @@
 			_allFeat.__onChange.push(container.updateLegend);
 
 			_settings.annotator.__onChange.push(container.updateSettings);
-			_settings.sequence.__onChange.push(container.updateSettings);
-			_settings.feature.__onChange.push(container.updateSettings);
-			_settings.legend.__onChange.push(container.updateSettings);
+ 
+			return container;
+		}
+
+		container.rescale = function() {
+			_settings.annotator.seq_scale = d3.scale.linear()
+			    .domain([0, d3.max(_allSeq,function(d) {return d['length'];})])
+			    .range([0, _settings.annotator.seq_maxLength]);
 
 			return container;
 		}
@@ -103,12 +105,12 @@
 					g.node.translate_x = startX;
 					g.node.translate_y = startY;
 					g
-						.style('display','block')
+						.show()
 						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')');
 					startY += g.node.getBBox().height + _settings.annotator.seq_underSpacing;
 				} else {
 					g
-						.style('display','none');
+						.hide();
 				}
 			}
 
@@ -119,36 +121,50 @@
 
 		}
 
-		container.rescale = function() {
-			_settings.annotator.seq_scale = d3.scale.linear()
-			    .domain([0, d3.max(_allSeq,function(d) {return d['length'];})])
-			    .range([0, _settings.annotator.seq_maxLength]);
-
-			return container;
-		}
-
 		container.updateLegend = function() {
 			//update legend
 
 			var f = function(obj) {
 				obj
-					.data(_allFeat[obj.index], _settings);
+					.data(_allFeat[obj.index], _settings)
+					.update();
+
+				seeker.util.attachModel(_allFeat[obj.index]);
+				_allFeat[obj.index].__onChange.push(container.updateLegend);
 			}
 
 			seeker.util.updateCollectionDOM(_allFeat, _legendGroups, seeker.annotator_legend, canvas, f);
 
-			for ( var i = 0 ; i < _legendGroups.length ; i++ ) {
-				var g = _legendGroups[i];
+			if (_settings.annotator.legend_show != 'none') {
+				var startX = _settings.annotator.margin + _settings.annotator.legend_xPos;
+				var startY = _settings.annotator.margin;
 				
-			}
+				var visible = seeker.util.countArray(_allFeat,'legend',true);
+				var cols = _settings.annotator.legend_cols;
+				var rows = Math.ceil(visible / cols);
+				var w = _settings.annotator.legend_width / cols;
+				var h = _settings.annotator.legend_height / rows;
 
-			var startY;
-			var startX = _settings.annotator.margin;
-
-			if (_settings.annotator.legend_show == 'none' || _settings.annotator.legend_show == 'bottom') {
-				startY = _settings.annotator.margin + groupHeight * seeker.util.countArray(_allSeq,'show',true);
+				var i = 0;
+				for ( var r = 0 ;r < rows ; r++ ) {
+					for ( var c = 0 ; c < cols ; c++ ) {
+						if (i == _allFeat.length) {
+							break;
+						}
+						if (_allFeat[i].legend) {
+							_legendGroups[i]
+								.attr('transform','translate(' + (startX + c * w) + ',' + (startY + r * h) + ')');
+						} else {
+							_legendGroups[i].hide();
+							c--;
+						}
+						i++;
+					}
+				}
 			} else {
-				startY = _settings.annotator.margin;
+				for ( var i = 0 ; i < _legendGroups.length ; i++ ) {
+					_legendGroups[i].hide();
+				}
 			}
 
 			return container;
@@ -201,15 +217,23 @@
 			_settings.view.rescale();
 
 			label
-				.textContent((group.index + 1) + '. ' + _seq['name'])
 				.attr('x',_settings.sequence.seq_labelxPos)
 				.attr('y',0)
+				.style('font-size','10pt')
 				.style('font-weight','bold');
 
 			spine
 				.draw(0,40,_settings.annotator.seq_scale(_seq['length']),40)
 				.style('stroke-width',_settings.sequence.seq_spineWidth)
 				.style('stroke',_settings.sequence.seq_spineColor);
+
+			if (_settings.sequence.seq_numbered) {
+				label
+					.textContent((group.index + 1) + '. ' + _seq['name']);
+			} else {
+				label
+					.textContent(_seq['name']);
+			}
 
 			return group;
 		}
@@ -236,7 +260,7 @@
 					g.node.translate_y = 0;
 					g
 						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')')
-						.style('display','block');
+						.show();
 
 					if (d.label) {
 						var labelEnd = g.getLabelEndpoint();
@@ -265,7 +289,7 @@
 					}
 				} else {
 					g
-						.style('display','none');
+						.hide();
 				}
 			}
 
@@ -337,7 +361,6 @@
 			_settings = s;
 
 			seeker.util.attachModel(_feat);
-			seeker.util.attachModel(_settings.feature);
 			seeker.util.attachModel(_feat['ref']);
 
 			_feat['ref'].__onChange.push(group.update);
@@ -367,7 +390,7 @@
 					.textContent(_feat['ref']['name'])
 					.attr('x',featureLength / 2 - parseInt(label.node.getBBox().width) / 2)
 					.style('font-size','8pt')
-					.style('display','block');
+					.show();
 
 				if (_level == 0) {
 					label
@@ -379,7 +402,7 @@
 				}
 			} else {
 				label
-					.style('display','none');
+					.hide();
 			}
 
 			return group;
@@ -398,6 +421,11 @@
 
 	seeker.annotator_legend = function() {
 		var group = new seeker.element('g',true);
+		var colorRectangle = new seeker.element('rect',true);
+		var label = new seeker.element('text',true);
+
+		colorRectangle.attachTo(group);
+		label.attachTo(group);
 
 		var _feat;
 		var _settings;
@@ -407,16 +435,26 @@
 			_settings = s;
 
 			seeker.util.attachModel(_feat);
-			seeker.util.attachModel(_settings.legend);
 
 			_feat.__onChange.push(group.update);
-			_settings.legend.__onChange.push(group.update);
 
 			return group;
 		}
 
 		group.update = function() {
+			colorRectangle
+				.attr('width',_settings.annotator.legend_colorSize)
+				.attr('height',_settings.annotator.legend_colorSize)
+				.attr('x',0)
+				.attr('y',0)
+				.attr('fill',_feat['color']);
 
+			label
+				.attr('x', _settings.annotator.legend_colorSize + 5)
+				.attr('y', _settings.annotator.legend_colorSize / 2)
+				.style('font-size','10pt')
+				.attr('baseline-shift','-33%')
+				.textContent(_feat['name']);
 
 			return group;
 		}

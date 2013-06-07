@@ -14,10 +14,15 @@
   </head>
   <body>
   <script>
+  var dim = seeker.util.winDimensions();
+
   var anno = new seeker.annotator()
     .attachTo(document.body)
     .data(data)
+    .whxy(dim[0],dim[1],0,0)
     .updateSettings();
+
+  anno.settings.annotator.__set('seq_maxLength', dim[0] - anno.settings.annotator.margin * 2)
 
 
 

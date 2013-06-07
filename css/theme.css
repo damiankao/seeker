@@ -314,5 +314,6 @@ body {
 #annotator { 
     font-family:Arial;
     font-size:11pt;
-    overflow:auto;
+    overflow-y:auto;
+    overflow-x:hidden;
 }
