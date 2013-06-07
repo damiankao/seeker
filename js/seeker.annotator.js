@@ -15,10 +15,85 @@
 		var canvas = new seeker.element('svg',true);
 		canvas.attachTo(container);
 
+		var featureMenu = new seeker.menu()
+			.attachTo(document.body)
+			.data([{'name':'show all','click':function(evt) {
+				var featName = seeker.env_clickTarget.ref.name;
+
+				for ( var i = 0 ; i < _allSeq.length ; i++ ) {
+					for ( var a = 0 ; a < _allSeq[i].feat.length ; a++ ) {
+						if (_allSeq[i].feat[a].ref.name == featName) {
+							_allSeq[i].feat[a].__set('show',true);
+						}
+					}
+				}
+
+				featureMenu.hide();
+			}},{'name':'hide all','click':function(evt) {
+				var featName = seeker.env_clickTarget.ref.name;
+
+				for ( var i = 0 ; i < _allSeq.length ; i++ ) {
+					for ( var a = 0 ; a < _allSeq[i].feat.length ; a++ ) {
+						if (_allSeq[i].feat[a].ref.name == featName) {
+							_allSeq[i].feat[a].__set('show',false);
+						}
+					}
+				}
+
+				featureMenu.hide();
+			}},{'name':'hide this','click':function(evt) {
+				seeker.env_clickTarget.__set('show',false);
+
+				featureMenu.hide();
+			}}])
+			.setClick('click')
+			.style('display','none')
+			.update()
+			.place([100,100]);
+
+		var seqMenu = new seeker.menu()
+			.attachTo(document.body)
+			.data([{'name':'hide sequence','click':function(evt) {
+
+			}},{'name':'show all features','click':function(evt) {
+				
+			}},{'name':'hide all features','click':function(evt) {
+				
+			}}])
+			.setClick('click')
+			.style('display','none')
+			.update();
+
+		var legendMenu = new seeker.menu()
+			.attachTo(document.body)
+			.data([{'name':'hide legend','click':function(evt) {
+
+			}},{'name':'show all','click':function(evt) {
+				
+			}},{'name':'hide all','click':function(evt) {
+				
+			}}])
+			.setClick('click')
+			.style('display','none')
+			.update();
+
+
+		var input;
+		var allSeqMenu;
+		var allSeqFeatMenu;
+		var allFeatMenu;
+		var option;
+		var preview;
+
 		var _palette;
 		var _settings = {
-			'view':container,
-			'svg':canvas,
+			'application':{
+				'container':container,
+				'canvas':canvas,
+				'menu_feature':featureMenu,
+				'menu_sequence':seqMenu,
+				'menu_legend':legendMenu
+			},
 			'annotator': {
 				'margin':40,
 				'seq_underSpacing':30,
@@ -55,6 +130,7 @@
 		container.settings = _settings;
 
 		container.data = function(d) {
+			d.settings = _settings;
 			_allSeq = d['seq'];
 			_allFeat = d['feat'];
 
@@ -77,17 +153,38 @@
 			return container;
 		}
 
+		container.update = function() {
+			container.rescale();
+
+			var f_seq = function(obj) {
+				obj
+					.data(d, _groups)
+					.update();
+			}
+
+			seeker.util.updateCollectionDOM(_allSeq, _groups, seeker.annotator_sequence, canvas, f_seq);
+
+			var f_legend = function(obj) {
+				obj
+					.data(d, _legendGroups)
+					.update();
+			}
+
+			seeker.util.updateCollectionDOM(_allFeat, _legendGroups, seeker.annotator_legend, canvas, f_legend);
+
+			return container;
+		}
+
+		/*
 		container.updateSeq = function() {
 			//update sequence groups
 			container.rescale();
 
 			var f = function(obj) {
 				obj
-					.data(_allSeq, _allFeat, _settings)
+					.data(d, _groups)
 					.update()
 					.updateFeat();
-
-				_allSeq[obj.index].__onChange.push(container.updateSeq);
 			}
 
 			seeker.util.updateCollectionDOM(_allSeq, _groups, seeker.annotator_sequence, canvas, f);
@@ -113,9 +210,6 @@
 						.hide();
 				}
 			}
-
-			canvas
-				.style('height', startY);
 
 			return container;
 
@@ -177,6 +271,7 @@
 
 			return container;
 		}
+		*/
 
 		return container;
 	}
@@ -214,7 +309,7 @@
 
 		group.update = function() {
 			//update label and spine
-			_settings.view.rescale();
+			_settings.application.container.rescale();
 
 			label
 				.attr('x',_settings.sequence.seq_labelxPos)
@@ -238,6 +333,7 @@
 			return group;
 		}
 
+		/*
 		group.updateFeat = function() {
 			//update feature elements on sequence
 			var f = function(obj) {
@@ -297,6 +393,7 @@
 
 			return group;
 		}
+		*/
 
 		return group;
 	}
@@ -345,6 +442,12 @@
 					.draw(0,40,_settings.annotator.seq_scale(_feat['end'] - _feat['start'] + 1),40)
 					.style('stroke-width',_settings.feature.seq_featWidth);
 			})
+			.on('click', function(evt) {
+				seeker.env_clickTarget = _feat;
+				_settings.application.menu_feature
+					.show()
+					.place(seeker.util.mouseCoord(evt));
+			})
 
 		label.attachTo(group);
 		feat.attachTo(group);
@@ -380,29 +483,34 @@
 			//update indivdual feature on sequence
 			var featureLength = _settings.annotator.seq_scale(_feat['end'] - _feat['start'] + 1);
 
-			feat
-				.draw(0,40,featureLength,40)
-				.style('stroke-width',_settings.feature.seq_featWidth)
-				.style('stroke',_feat['ref']['color']);
-
-			if (_feat.label) {
-				label
-					.textContent(_feat['ref']['name'])
-					.attr('x',featureLength / 2 - parseInt(label.node.getBBox().width) / 2)
-					.style('font-size','8pt')
+			if (_feat.show) {
+				feat
+					.draw(0,40,featureLength,40)
+					.style('stroke-width',_settings.feature.seq_featWidth)
+					.style('stroke',_feat['ref']['color'])
 					.show();
 
-				if (_level == 0) {
+				if (_feat.label) {
 					label
-						.attr('y',27);
+						.textContent(_feat['ref']['name'])
+						.attr('x',featureLength / 2 - parseInt(label.node.getBBox().width) / 2)
+						.style('font-size','8pt')
+						.show();
+
+					if (_level == 0) {
+						label
+							.attr('y',27);
+					} else {
+						var startY = 40 + _settings.feature.seq_featWidth / 2;
+						label
+							.attr('y',_level * 15 + startY);
+					}
 				} else {
-					var startY = 40 + _settings.feature.seq_featWidth / 2;
-					label
-						.attr('y',_level * 15 + startY);
+					label.hide();
 				}
 			} else {
-				label
-					.hide();
+				feat.hide()
+				label.hide();
 			}
 
 			return group;

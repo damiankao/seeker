@@ -309,6 +309,7 @@
 		}
 
 		if (!seeker.env_popups) {
+			seeker.env_clickTarget;
 			seeker.env_popups = [];
 			seeker.env_closePopups = function() {
 				var num = seeker.env_popups.length;
