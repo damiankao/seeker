@@ -54,6 +54,8 @@
 			this.node = document.createElement(e);
 		}
 
+		this.node.__seeker = this;
+
 		if (e != 'input') {
 			this.node.onmousedown = function(evt) {
 				evt.preventDefault();
@@ -79,8 +81,137 @@
 		return this;
 	}
 
-	seeker.element.prototype.d3 = function() {
-		return d3.select(this.node);
+	seeker.element.prototype.bind = function(d) {
+		//can bind multiple objects
+		//d is an object where each key/value is an array of [object, key]
+		if (this.data) {
+			this.unbind();
+		}
+
+		this.data = d;
+
+		for (name in this.data) {
+			var obj = this.data[name][0];
+			var key = this.data[name][1];
+
+			if (!obj.__seeker) {
+				if (Object.prototype.toString.call(obj[key]) === '[object Array]' ) {
+
+				} else {
+					obj.__onUpdate = {};
+
+					obj.__update = function() {
+						var args = arguments;
+						var argsLen = args.length;
+
+						var k = [];
+
+						if (args.length > 0) {
+							while ( argsLen-- ) {
+								if (!obj.__onUpdate[args[argsLen]]) {
+									k = [];
+									k.push('all');
+									break;
+								} else {
+									k.push(args[argsLen]);
+								}
+							}
+						}
+
+						var kLen = k.length;
+						while ( kLen-- ) {
+							var update = obj.__onUpdate[k[kLen]];
+							var updateLen = update.length;
+							while ( updateLen-- ) {
+								update[updateLen][0]();
+							}
+						}
+					}
+
+					obj.__set = function(k, v) {
+						obj[k] = v;
+						obj.__update(k);
+
+						return obj;
+					}
+
+					obj.__clean = function() {
+						for (prop in obj.__onUpdate) {
+							if ( obj.__onUpdate[prop].length == 0 ) {
+								delete obj.__onUpdate[prop];
+							}
+						}
+
+						return obj
+					}
+				}
+				obj.__seeker = true;
+			}
+		}
+
+		if (this.postBind) {
+			this.postBind();
+		}
+
+		return this;
+	}
+
+	seeker.element.prototype.set = function(n, val) {
+		if (this.data) {
+			var obj = this.data[n][0];
+			var key = this.data[n][1];
+
+			obj.__set(key,val);
+		}
+
+		return this;
+	}
+
+	seeker.element.prototype.unbind = function() {
+		if (this.data) {
+			for (name in this.data) {
+				var obj = this.data[name][0];
+				var key = this.data[name][1];
+
+				if (obj.__onUpdate[key]) {
+					var update = obj.__onUpdate[key];
+					var updateLen = update.length;
+
+					while ( updateLen-- ) {
+						if ( update[updateLen][1] === this ) {
+							update.splice(updateLen,1);
+						}
+					}
+				}
+			}
+
+			this.data = null;
+		}
+
+		if (this.postUnbind) {
+			this.postUnbind();
+		}
+
+		return this;
+	}
+
+	seeker.element.prototype.onUpdate = function(d, f) {
+		if (this.data) {
+			var obj = this.data[d][0];
+			var key = this.data[d][1];
+
+			if (!obj.__onUpdate[key]) {
+				obj.__onUpdate[key] = [];
+			}
+
+			obj.__onUpdate[key].push([f, this]);
+		}
+
+		return this;
+	}
+
+	seeker.element.prototype.getBound = function(d) {
+		return this.data[d][0][this.data[d][1]];
 	}
 
 	seeker.element.prototype.style = function(s, val) {
@@ -105,11 +236,6 @@
 
 	seeker.element.prototype.html = function(val) {
 		this.node.innerHTML = val;
-		return this;
-	}
-
-	seeker.element.prototype.textContent = function(val) {
-		this.node.textContent = val;
 		return this;
 	}
 
@@ -175,6 +301,7 @@
 	}
 
 	seeker.element.prototype.mouseCoord = function(evt) {
+		//get mouse position relative to clicked node
 		var absCoord = seeker.util.mouseCoord(event);
 		var totalOffsetX = 0;
 		var totalOffsetY = 0;
@@ -199,6 +326,11 @@
 	    while(currentElement = currentElement.parentNode)
 
 	    return [absCoord[0] - totalOffsetX, absCoord[1] - totalOffsetY];
+	}
+
+	//d3 functions
+	seeker.element.prototype.d3 = function() {
+		return d3.select(this.node);
 	}
 
 	seeker.element.prototype.fade = function(from, to, d,e) {
@@ -327,18 +459,22 @@
 	seeker.textbox = function() {
 		var container = new seeker.element('div')
 			.id('textbox');
-
-		seeker.util.attachScalarBinding(container);
 		
 		container.update = function() {
 			container
-				.html(container.getScalar());
+				.html(container.getBound('text'));
 
 			return container;
 		}
 
+		container.postBind = function() {
+			container
+				.onUpdate('text',container.update);
+		}
+
 		return container;
 	}
+
 
 	seeker.checkbox = function() {
 		var container = new seeker.element('div')
@@ -353,8 +489,6 @@
 			.id('label');
 			
 		var _margin = 4;
-
-		seeker.util.attachScalarBinding(container);
 
 		container.check = function() {
 			cb.id('cbChecked');
@@ -380,19 +514,11 @@
 			return container;
 		}
 
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update()
-				.onUpdate(container.update);
-
-			return container;
-		}
-
 		container.update = function() {
 			label
 				.style('top',_margin - 1)
-				.style('left',cb.node.offsetWidth + 5 + _margin);
+				.style('left',cb.node.offsetWidth + 5 + _margin)
+				.update();
 
 			container
 				.style('height',cb.node.offsetHeight + _margin * 2)
@@ -402,7 +528,8 @@
 				.style('top',_margin)
 				.style('left',_margin);
 
-			if (container.getScalar()) {
+
+			if (container.getBound('checkbox')) {
 				container.check();
 			} else {
 				container.uncheck();
@@ -412,17 +539,36 @@
 		}
 
 		container.node.onclick = function(evt) {
-			if (container.getScalar()) {
-				container._data.__set(container._key,false);
+			if (container.getBound('checkbox')) {
+				container.set('checkbox',false);
 			} else {
-				container._data.__set(container._key,true);
+				container.set('checkbox',true);
 			}
 		}
 
+		container.postBind = function() {
+			if (this.data.text) {
+				label
+					.bind({'text':[this.data.text[0],this.data.text[1]]})
+					.update();
+
+				container
+					.onUpdate('text',container.update);
+			}
+
+			container
+				.onUpdate('checkbox',container.update);
+		}
+
+		container.postUnbind = function() {
+			label
+				.unbind();
+		}
 
 		return container;
 	}
 
+/*
 	seeker.option = function() {
 		var _selection = [];
 		var _margin = 10;
@@ -450,19 +596,15 @@
 			.attachTo(container)
 			.id('downArrow');
 
-		seeker.util.attachScalarBinding(container);
-
 		container.setText = function(val) {
 			label.html(val);
 
 			return container;
 		}
 
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update()
-				.onUpdate(container.update);
+		container.setMargin = function(val) {
+			_margin = val;
+			container.update();
 
 			return container;
 		}
@@ -492,7 +634,8 @@
 
 			label
 				.style('top',_margin)
-				.style('left',_margin);
+				.style('left',_margin)
+				.update();
 
 			var w = label.node.offsetWidth > menu.node.offsetWidth ? label.node.offsetWidth : menu.node.offsetWidth;
 
@@ -519,6 +662,17 @@
 			return container;
 		}
 
+		container.postBind = function() {
+
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
 		var click = function(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -535,15 +689,9 @@
 		selection.node.onclick = click;
 		downArrow.node.onclick = click;
 
-		container.setMargin = function(val) {
-			_margin = val;
-			container.update();
-
-			return container;
-		}
-
 		return container;
 	}
+*/
 
 	seeker.slider = function() {
 		var container = new seeker.element('div')
@@ -565,18 +713,8 @@
 		var _start;
 		var _end;
 
-		seeker.util.attachScalarBinding(container);
-
 		container.setText = function(val) {
 			label.html(val);
-
-			return container;
-		}
-
-		container.bindLabel = function(d, k) {
-			label
-				.data(d,k)
-				.update();
 
 			return container;
 		}
@@ -590,8 +728,11 @@
 
 		container.update = function() {
 			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 10;
-			var spinePos = (spineWidth - 16) * ((container.getScalar() - _start) / (_end - _start));
+			var spinePos = (spineWidth - 16) * ((container.getBound('slider') - _start) / (_end - _start));
 			var spineLeft = parseInt(numberBox.node.offsetLeft) + parseInt(numberBox.node.offsetWidth) + 10;
+
+			label
+				.update();
 
 			spine
 				.style('width',spineWidth)
@@ -602,7 +743,30 @@
 				.style('left',spineLeft + 3 + spinePos)
 				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 8);
 
-			numberBox.node.value = container.getScalar();
+			numberBox.node.value = container.getBound('slider');
+
+			return container;
+		}
+
+		container.postBind = function() {
+			if (this.data.text) {
+				label
+					.bind({'text':[this.data.text[0],this.data.text[1]]})
+					.update();
+
+				container
+					.onUpdate('text',container.update);
+			}
+
+			container
+				.onUpdate('slider',container.update);
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+			label
+				.unbind();
 
 			return container;
 		}
@@ -624,8 +788,8 @@
 				}
 
 				val = Math.round(spinePos / spineWidth * length);
-				
-				container._data.__set(container._key, val + _start);
+
+				container.set('slider',val + _start);
 
 				document.body.onmouseup = function(evt) {
 					document.body.onmousemove = null;
@@ -653,7 +817,7 @@
 				val = _end - _start;
 			}
 
-			container._data.__set(container._key, val + _start);
+			container.set('slider',val + _start);
 		}
 
 		numberBox.node.onchange = function() {
@@ -663,6 +827,7 @@
 		return container;
 	}
 
+
 	//collection binding elements
 	seeker.menu = function() {
 		var list = new seeker.popup('ul')
@@ -670,8 +835,6 @@
 
 		var _listObjs = [];
 		var _click;
-
-		seeker.util.attachCollectionBinding(list);
 
 		list.setClick = function(k) {
 			_click = k;
@@ -689,7 +852,7 @@
 			var f = function(obj) {
 				var label = new seeker.textbox()
 					.attachTo(obj)
-					.data(list._data[obj.index],'name')
+					.bind(list._data[obj.index],'name')
 					.update();
 
 				if (_click) {
@@ -702,9 +865,22 @@
 			return list;
 		}
 
+		list.postBind = function() {
+
+
+			return list;
+		}
+
+		list.postUnbind = function() {
+
+
+			return list;
+		}
+
 		return list;
 	}
 
+/*
 	seeker.complexMenu = function() {
 		var container = new seeker.popup('div')
 			.id('complexMenu')
@@ -728,7 +904,7 @@
 			_controlData = val;
 
 			seeker.util.attachModel(_controlData);
-			_controlData.__onChange.push(container.update);
+			_controlData.__onUpdate.push(container.update);
 
 			return container;
 		}
@@ -751,7 +927,7 @@
 			var fControl = function(obj) {
 				var label = new seeker.textbox()
 					.attachTo(obj)
-					.data(_controlData[obj.index],'name')
+					.bind(_controlData[obj.index],'name')
 					.update();
 				obj.onclick = _controlData[obj.index]['click'];
 			}
@@ -768,6 +944,10 @@
 
 			seeker.util.updateCollectionDOM(container._data, _listObjs, o, list, f);
 
+			return container;
+		}
+
+		container.render = function() {
 			var winDim = seeker.util.winDimensions();
 			var pos = container.node.offsetTop + container.node.offsetHeight;
 
@@ -782,7 +962,7 @@
 				list
 					.style('height',null);
 			}
-			
+
 			return container;
 		}
 
@@ -890,4 +1070,5 @@
 
 		return container;
 	}
+*/
 })();

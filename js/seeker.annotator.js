@@ -87,75 +87,39 @@
 
 		var _palette;
 		var _settings = {
-			'application':{
-				'container':container,
-				'canvas':canvas,
-				'menu_feature':featureMenu,
-				'menu_sequence':seqMenu,
-				'menu_legend':legendMenu
-			},
-			'annotator': {
-				'margin':40,
-				'seq_underSpacing':30,
-				'legend_underSpacing':50,
-				'legend_show':'top',
-				'legend_xPos':0,
-				'legend_width':620,
-				'legend_height':40,
-				'legend_cols':5,
-				'seq_maxLength':900,
-				'seq_scale':null,
-				'legend_colorSize':15,
-			},
-			'sequence': {
-				'seq_spineWidth':5,
-				'seq_spineColor':'#9C9C9C',
-				'seq_labelxPos':10,
-				'seq_numbered':true
-			},
-			'feature': {
-				'seq_featWidth':10,
-			}
+			'margin':40,
+			'seq_underSpacing':30,
+			'legend_underSpacing':50,
+			'legend_show':'top',
+			'legend_xPos':0,
+			'legend_width':620,
+			'legend_height':40,
+			'legend_cols':5,
+			'seq_maxLength':900,
+			'seq_scale':null,
+			'legend_colorSize':15,
+			'seq_spineWidth':5,
+			'seq_spineColor':'#9C9C9C',
+			'seq_labelxPos':10,
+			'seq_numbered':true,
+			'seq_featWidth':10
 		};
-		seeker.util.attachModel(_settings.annotator);
-		seeker.util.attachModel(_settings.sequence);
-		seeker.util.attachModel(_settings.feature);
 
-		var _allSeq;
-		var _allFeat;
+		var _seqs;
+		var _feats;
 
 		var _groups = []
 		var _legendGroups = []
 
-		container.settings = _settings;
-
 		container.data = function(d) {
 			d.settings = _settings;
-			_allSeq = d['seq'];
-			_allFeat = d['feat'];
-
-			seeker.util.attachModel(_allSeq);
-			seeker.util.attachModel(_allFeat);
-
-			_allSeq.__onChange.push(container.updateSeq);
-			_allFeat.__onChange.push(container.updateLegend);
-
-			_settings.annotator.__onChange.push(container.updateSettings);
+			_seqs = d['seq'];
+			_feats = d['feat'];
  
 			return container;
 		}
 
-		container.rescale = function() {
-			_settings.annotator.seq_scale = d3.scale.linear()
-			    .domain([0, d3.max(_allSeq,function(d) {return d['length'];})])
-			    .range([0, _settings.annotator.seq_maxLength]);
-
-			return container;
-		}
-
 		container.update = function() {
-			container.rescale();
-
 			var f_seq = function(obj) {
 				obj
 					.data(d, _groups)
@@ -175,20 +139,8 @@
 			return container;
 		}
 
-		/*
-		container.updateSeq = function() {
-			//update sequence groups
-			container.rescale();
-
-			var f = function(obj) {
-				obj
-					.data(d, _groups)
-					.update()
-					.updateFeat();
-			}
-
-			seeker.util.updateCollectionDOM(_allSeq, _groups, seeker.annotator_sequence, canvas, f);
-
+		container.render = function() {
+			//position each sequence element
 			var startY = _settings.annotator.margin + _settings.annotator.legend_height + _settings.annotator.legend_underSpacing;
 			var startX = _settings.annotator.margin;
 
@@ -211,24 +163,7 @@
 				}
 			}
 
-			return container;
-
-		}
-
-		container.updateLegend = function() {
-			//update legend
-
-			var f = function(obj) {
-				obj
-					.data(_allFeat[obj.index], _settings)
-					.update();
-
-				seeker.util.attachModel(_allFeat[obj.index]);
-				_allFeat[obj.index].__onChange.push(container.updateLegend);
-			}
-
-			seeker.util.updateCollectionDOM(_allFeat, _legendGroups, seeker.annotator_legend, canvas, f);
-
+			//position each legend element
 			if (_settings.annotator.legend_show != 'none') {
 				var startX = _settings.annotator.margin + _settings.annotator.legend_xPos;
 				var startY = _settings.annotator.margin;
@@ -264,14 +199,14 @@
 			return container;
 		}
 
-		container.updateSettings = function() {
-			//update setting options panel
-			container.updateSeq();
-			container.updateLegend();
+		container.rescale = function() {
+			_settings.annotator.seq_scale = d3.scale.linear()
+			    .domain([0, d3.max(_allSeq,function(d) {return d['length'];})])
+			    .range([0, _settings.annotator.seq_maxLength]);
 
 			return container;
 		}
-		*/
+
 
 		return container;
 	}
@@ -308,6 +243,21 @@
 		}
 
 		group.update = function() {
+			//update feature elements on sequence
+			var f = function(obj) {
+				obj
+					.data(_seq['feat'][obj.index], _allFeat, _settings)
+					.update();
+
+				_seq['feat'][obj.index].__onChange.push(group.updateFeat);
+			}
+
+			seeker.util.updateCollectionDOM(_seq['feat'], _groups, seeker.annotator_feature, group, f);
+
+			return group;
+		}
+
+		group.render = function() {
 			//update label and spine
 			_settings.application.container.rescale();
 
@@ -329,22 +279,6 @@
 				label
 					.textContent(_seq['name']);
 			}
-
-			return group;
-		}
-
-		/*
-		group.updateFeat = function() {
-			//update feature elements on sequence
-			var f = function(obj) {
-				obj
-					.data(_seq['feat'][obj.index], _allFeat, _settings)
-					.update();
-
-				_seq['feat'][obj.index].__onChange.push(group.updateFeat);
-			}
-
-			seeker.util.updateCollectionDOM(_seq['feat'], _groups, seeker.annotator_feature, group, f);
 
 			var levels = [];
 			var xPos = 0;
@@ -389,11 +323,8 @@
 				}
 			}
 
-			//_settings.annotator.__set('max_level',levels.length);
-
 			return group;
 		}
-		*/
 
 		return group;
 	}

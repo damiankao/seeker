@@ -43,16 +43,41 @@
 			obj.__seeker = true;
 
 			if( Object.prototype.toString.call( obj ) === '[object Array]' ) {
-				obj.__onChange = [];
+				//if it is an array (collection of objects), there are two callable functions.
+				//arrange = arrange collection of child views
+				//update = resize child view array
 
-				obj.__update = function() {
-					var i = this.__onChange.length;
+				obj.__onArrange = [];
+				obj.__onUpdate = [];
+
+				obj.__arrange = function() {
+					var i = this.__onArrange.length;
 					while (i--) {
-						var obj = this.__onChange[i]().node;
+						var obj = this.__onArrange[i]();
+						if (obj.node) {
+							obj = obj.node;
+						}
+
 						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
+							this.__onArrange.splice(i,1)
 						}
 					}
+					return obj;
+				}
+
+				obj.__update = function() {
+					var i = this.__onUpdate.length;
+					while (i--) {
+						var obj = this.__onUpdate[i]();
+						if (obj.node) {
+							obj = obj.node;
+						}
+
+						if (!seeker.util.inDOM(obj)) {
+							this.__onUpdate.splice(i,1)
+						}
+					}
+					return obj;
 				}
 
 				obj.__append = function(a) {
@@ -66,26 +91,44 @@
 					obj.__update();
 					return obj;
 				}
+
 			} else {
-				obj.__onChange = [];
+				obj.__onUpdate = {};
+				obj.__onUpdate['all'] = [];
 
 				obj.__update = function() {
-					var i = this.__onChange.length;
-					while (i--) {
-						var obj = this.__onChange[i]();
-						if (obj.node) {
-							obj = obj.node;
-						}
-
-						if (!seeker.util.inDOM(obj)) {
-							this.__onChange.splice(i,1)
+					var k = [];
+					if (arguments.length == 0) {
+						k.push('all');
+					} else {
+						var i = arguments.length
+						while ( i-- ) {
+							if (!this.__onUpdate[arguments[i]]) {
+								k = [];
+								k.push('all');
+								break
+							} else {
+								k.push(arguments[i]);
+							}
 						}
 					}
+
+					var i = k.length;
+					while ( i-- ) {
+						var arr = this.__onUpdate[k[i]];
+						var n = arr.length;
+
+						while ( n-- ) {
+							arr[n]();
+						}
+					}
+
+					return obj;
 				}
 
 				obj.__set = function(i, v) {
 					obj[i] = v;
-					obj.__update();
+					obj.__update(i);
 
 					return obj;
 				}
@@ -97,25 +140,32 @@
 
 	seeker.util.attachScalarBinding = function(obj) {
 		//attach functions to view objects that binds to scalars
-
-		obj.onUpdate = function(f) {
-			obj._data.__onChange.push(f);
-
-			return obj;
-		}
-
 		obj.getScalar = function() {
 			return obj._data[obj._key];
 		}
 
-		obj.data = function(d,k) {
+		obj.bind = function(d,k) {
 			obj._data = d;
 			obj._key = k;
 
 			seeker.util.attachModel(obj._data);
-			obj.onUpdate(obj.update);
+
+			if (!obj._data.__onUpdate[k]) {
+				obj._data.__onUpdate[k] = [];
+			}
+
+			obj._data.__onUpdate[k].push(obj.update);
+			obj._updateIndex = obj._data.__onUpdate[k].length - 1;
 
 			return obj;
+		}
+
+		obj.unbind = function() {
+			obj._data.__onUpdate[k].splice(obj._updateIndex,1);
+			obj._data.__clean();
+			obj._data = null;
+			obj._key = null;
+			obj._updateIndex = null;
 		}
 	}
 
@@ -123,7 +173,7 @@
 		//attach functions to view objects that binds to collections
 
 		obj.onUpdate = function(f) {
-			obj._data.__onChange.push(f);
+			obj._data.__onUpdate.push(f);
 
 			return obj;
 		}

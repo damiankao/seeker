@@ -6,100 +6,31 @@
     <script type="text/javascript" src="ext/colorpicker.js"></script>
     <script type="text/javascript" src="js/seeker.util.js"></script>
     <script type="text/javascript" src="js/seeker.control.js"></script>
-    <script type="text/javascript" src="js/seeker.annotator.js"></script>
+    
     <style>
 
     </style>
   </head>
   <body>
   <script>
-  var app = {
-
-  };
-
-
-  var d = [{'name':'one','click':function() {console.log(this.index)}},{'name':'two','click':function() {console.log('2')}},{'name':'three','click':function() {console.log('3')}}];
-  var m = new seeker.menu()
+  var data = {'label':'test','show':true,'range':10,'items':[{'name':'command one'},{'name':'command two'},{'name':'command three'}]};
+  var textbox = new seeker.textbox()
+    .bind({'text':[data,'label']})
     .attachTo(document.body)
-    .style('display','block')
-    .data(d)
-    .setClick('click')
+    .update();
+
+
+  var cbox = new seeker.checkbox()
+    .bind({'text':[data,'label'],'checkbox':[data,'show']})
+    .attachTo(document.body)
     .update()
-    .place([800,300]);
+    .whxy(-1,-1,100,100);
 
-  var d2 = [{'name':'one','show':true,count:5},{'name':'two','show':false,count:3},{'name':'three','show':true,'count':2},{'name':'one','show':true,count:5}];
-  var c = [{'name':'show all','click':function() {
-    var num = d2.length;
-    while(num--) {
-      d2[num].__set('show',true);
-    }
-  }},{'name':'hide all','click':function() {
-    var num = d2.length;
-    while(num--) {
-      d2[num].__set('show',false);
-    }
-  }},{'name':'third command','click':function() {console.log('3')}}];
-  var cm = new seeker.complexMenu()
+  var slider = new seeker.slider()
+    .setInterval(5,100)
+    .bind({'text':[data,'label'],'slider':[data,'range']})
     .attachTo(document.body)
-    .data(d2)
-    .controlData(c)
-    .setTemplate(function(listObj) {
-      var i = listObj.index;
-
-      var cb = new seeker.checkbox()
-        .data(d2[i],'show')
-        .attachTo(listObj)
-        .whxy(-1,-1,0,0)
-        .bindLabel(d2[i],'name')
-        .update();
-
-    })
-    .update();
-
-  var s = new seeker.status()
-    .attachTo(document.body)
-    .setPos(function() {
-      return [500,200];
-    })
-    .update('test');
-
-  var db = ['close',function() {console.log('close')}];
-  var b = new seeker.button()
-    .attachTo(document.body)
-    .setType('std')
-    .data(db)
-    .whxy(-1,-1,600, 50)
-    .update();
-
-  var sd = {'name':'slider','margin':5};
-  var sl = new seeker.slider()
-    .attachTo(document.body)
-    .data(sd,'margin')
-    .whxy(200,-1,600,100)
-    .setInterval(5,40)
-    .bindLabel(sd,'name')
-    .update();
-
-  var cb = new seeker.checkbox()
-    .attachTo(document.body)
-    .data(d2[2],'show')
-    .whxy(-1,-1,600, 400)
-    .setText(d2[2]['name'])
-    .whxy(-1,-1,20, 300)
-    .bindLabel(d2[2],'name')
-    .update();
-
-  var colpicker = new seeker.colorpicker()
-    .attachTo(document.body)
-    .place([20,200]);
-
-  var obd = {'name':'long','opt':'optAAAAAAAA'}
-  var ob = new seeker.option()
-    .attachTo(document.body)
-    .data(obd,'opt')
-    .setSelection(['optAAAAAAAA','optBBBBBBBB','optCCCCC','optDDDDDDDD'])
-    .whxy(-1,-1,200,100)
-    .bindLabel(obd,'name')
+    .whxy(200,-1,200,200)
     .update();
 
   </script>
