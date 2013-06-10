@@ -137,7 +137,7 @@
 						var l = indeces.length
 
 						while ( l-- ) {
-							obj[indeces[l]][k] = val;
+							obj[indeces][l].__set(k,val);
 						}
 
 						obj.__update(k);
@@ -153,6 +153,23 @@
 
 						obj.__update(n);
 						return obj;
+					}
+
+					obj.__onArrange = [];
+					obj.__arrange = function() {
+						var l = obj.__onArrange.length;
+
+						while ( l-- ) {
+							obj.__onArrange[l]();
+						}
+
+						return obj;
+					}
+
+					this.onArrange = function(d, f) {
+						d.__onArrange.push([f,this]);
+
+						return this;
 					}
 				} else {
 					//scalar
@@ -225,6 +242,17 @@
 					while ( updateLen-- ) {
 						if ( update[updateLen][1] === this ) {
 							update.splice(updateLen,1);
+						}
+					}
+				}
+
+				if (obj.__onArrange) {
+					var arrange = obj.__onArrange;
+					var arrangeLen = arrange.length;
+
+					while ( arrangeLen-- ) {
+						if ( arrange[arrangeLen][1] == this ) {
+							arrange.splice(arrangeLen,1);
 						}
 					}
 				}
@@ -963,6 +991,7 @@
 		var _template;
 		var _update;
 		var _delete;
+		var _unbind;
 
 		var _listObjs = [];
 		var _controlListObjs = [];
@@ -985,6 +1014,12 @@
 			return container;
 		}
 
+		container.setUnbind = function(f) {
+			_unbind = f;
+
+			return container;
+		}
+
 		container.setControl = function(d) {
 			controlList
 				.bind(d);
@@ -1001,8 +1036,7 @@
 
 			var delObj = function(obj) {
 				obj
-					.detach()
-					.unbind();
+					.detach();
 
 				obj.label
 					.detach()
@@ -1047,6 +1081,26 @@
 			}
 
 			return container;
+		}
+
+		container.postBind = function() {
+			container
+				.onArrange(this.data.items[0], container.update);
+		}
+
+		container.postUnbind = function() {
+			var num = _controlListObjs.length;
+			while ( num-- ) {
+				_controlListObjs[num].label.unbind();
+				controlList.unbind();
+			}
+
+			if (_unbind) {
+				num = _listObjs.length;
+				while ( num-- ) {
+					_unbind(_listObjs[num]);
+				}
+			}
 		}
 
 		controlList

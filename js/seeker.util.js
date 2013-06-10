@@ -211,7 +211,7 @@
 				}
 			}
 		}
-
+		
 		var i = views.length;
 		while ( i-- ) {
 			update(views[i], models[i]);

@@ -13,11 +13,12 @@
   </head>
   <body>
   <script>
-  var data = {'label':'test','show':true,'range':10,'items':[{'name':'command one','click':function() {
+  var data = {'label':'test','show':true,'range':10,'items':[{'name':'cmd01','click':function() {
     data.cb.__setAll('show',false);
-  }},{'name':'command two','click':function() {
+  }},{'name':'cmd02','click':function() {
     data.cb.__setAll('show',true);
-  }},{'name':'command three','click':function() {console.log('3')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}]};
+  }},{'name':'cmd03','click':function() {console.log('3')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}]};
+
   var textbox = new seeker.textbox()
     .bind({'text':[data,'label']})
     .attachTo(document.body)
@@ -75,6 +76,9 @@
       obj.checkbox
         .bind({'text':[d,'name'],'checkbox':[d,'show']})
         .update();
+    })
+    .setUnbind(function(obj) {
+      obj.checkbox.unbind();
     })
     .whxy(-1,-1,10,300)
     .update();
