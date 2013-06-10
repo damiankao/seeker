@@ -188,6 +188,36 @@
 		}
 	}
 
+	seeker.util.updateCollection = function(models, views, add, del, update, parent) {
+		var modelsLength = models.length;
+		var viewsLength = views.length;
+
+		if (viewsLength < modelsLength) {
+			for ( var i = viewsLength ; i < modelsLength ; i++ ) {
+				var element = new add;
+				element.index = i;
+				views.push(element);
+				parent.append(views[i]);
+			}
+		} else if (viewsLength > modelsLength) {
+			var num = viewsLength - modelsLength;
+			var removed = views.splice(modelsLength, num);
+			for ( var i = 0 ; i < removed.length ; i++ ) {
+				if (removed[i].node) {
+					parent.node.removeChild(removed[i].node);
+					del(removed[i]);
+				} else {
+					parent.node.removeChild(removed[i]);
+				}
+			}
+		}
+
+		var i = views.length;
+		while ( i-- ) {
+			update(views[i], models[i]);
+		}
+	}
+
 	seeker.util.updateCollectionDOM = function(data, objs, e, parent, update) {
 		//make enough view objects for each data object, append to parent node and update
 		//used in update functions of collection binding elements
@@ -204,11 +234,11 @@
 			}
 		} else if (objLength > dataLength) {
 			var num = objLength - dataLength;
-
 			var removed = objs.splice(dataLength, num);
 			for ( var i = 0 ; i < removed.length ; i++ ) {
 				if (removed[i].node) {
 					parent.node.removeChild(removed[i].node);
+					remove[i].unbind();
 				} else {
 					parent.node.removeChild(removed[i]);
 				}

@@ -95,73 +95,118 @@
 			var key = this.data[name][1];
 
 			if (!obj.__seeker) {
-				if (Object.prototype.toString.call(obj[key]) === '[object Array]' ) {
+				obj.__onUpdate = {};
 
-				} else {
-					obj.__onUpdate = {};
+				obj.__update = function() {
+					var args = arguments;
+					var argsLen = args.length;
 
-					obj.__update = function() {
-						var args = arguments;
-						var argsLen = args.length;
+					var k = [];
 
-						var k = [];
-
-						if (args.length > 0) {
-							while ( argsLen-- ) {
-								if (!obj.__onUpdate[args[argsLen]]) {
-									k = [];
-									k.push('all');
-									break;
-								} else {
-									k.push(args[argsLen]);
-								}
-							}
-						}
-
-						var kLen = k.length;
-						while ( kLen-- ) {
-							var update = obj.__onUpdate[k[kLen]];
-							var updateLen = update.length;
-							while ( updateLen-- ) {
-								update[updateLen][0]();
+					if (args.length > 0) {
+						while ( argsLen-- ) {
+							if (obj.__onUpdate[args[argsLen]]) {
+								k.push(args[argsLen]);
 							}
 						}
 					}
 
-					obj.__set = function(k, v) {
-						obj[k] = v;
+					var kLen = k.length;
+					while ( kLen-- ) {
+						var update = obj.__onUpdate[k[kLen]];
+						var updateLen = update.length;
+						while ( updateLen-- ) {
+							update[updateLen][0]();
+						}
+					}
+				}
+
+				obj.__clean = function() {
+					for (prop in obj.__onUpdate) {
+						if ( obj.__onUpdate[prop].length == 0 ) {
+							delete obj.__onUpdate[prop];
+						}
+					}
+
+					return obj
+				}
+
+				if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
+					//collection
+					obj.__set = function(k, val, indeces) {
+						var l = indeces.length
+
+						while ( l-- ) {
+							obj[indeces[l]][k] = val;
+						}
+
+						obj.__update(k);
+						return obj;
+					}
+
+					obj.__setAll = function(n, val) {
+						var l = obj.length;
+
+						while ( l-- ) {
+							obj[l].__set(n,val);
+						}
+
+						obj.__update(n);
+						return obj;
+					}
+				} else {
+					//scalar
+					obj.__set = function(k,val) {
+						obj[k] = val;
 						obj.__update(k);
 
 						return obj;
 					}
-
-					obj.__clean = function() {
-						for (prop in obj.__onUpdate) {
-							if ( obj.__onUpdate[prop].length == 0 ) {
-								delete obj.__onUpdate[prop];
-							}
-						}
-
-						return obj
-					}
 				}
-				obj.__seeker = true;
+
+			obj.__seeker = true;
 			}
 		}
 
+		if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
+			//collection
+			this.set = function(n, val, indeces) {
+				if (this.data) {
+					var obj = this.data[n][0];
+					var key = this.data[n][1];
+
+					obj.__set(key, val, indeces);
+				}
+
+				return this;
+			}
+
+			this.setAll = function(n, val) {
+				if (this.data) {
+					var obj = this.data[n][0];
+					var key = this.data[n][1];
+
+					obj.__setAll(key, val);
+				}
+
+				return this;
+			}
+		} else {
+			//scalar
+			this.set = function(n, val) {
+				if (this.data) {
+					var obj = this.data[n][0];
+					var key = this.data[n][1];
+
+					obj.__set(key,val);
+				}
+
+				return this;
+			}
+		}
+			
 		if (this.postBind) {
 			this.postBind();
-		}
-
-		return this;
-	}
-
-	seeker.element.prototype.set = function(n, val) {
-		if (this.data) {
-			var obj = this.data[n][0];
-			var key = this.data[n][1];
-
-			obj.__set(key,val);
 		}
 
 		return this;
@@ -211,7 +256,11 @@
 	}
 
 	seeker.element.prototype.getBound = function(d) {
-		return this.data[d][0][this.data[d][1]];
+		if (Object.prototype.toString.call(this.data[d][0]) === '[object Array]' ) {
+			return this.data[d][0][arguments[1]][this.data[d][1]];
+		} else {
+			return this.data[d][0][this.data[d][1]];
+		}
 	}
 
 	seeker.element.prototype.style = function(s, val) {
@@ -568,7 +617,6 @@
 		return container;
 	}
 
-/*
 	seeker.option = function() {
 		var _selection = [];
 		var _margin = 10;
@@ -578,7 +626,6 @@
 
 		var menu = new seeker.menu()
 			.attachTo(container)
-			.data(_selection)
 			.style('background','#38B87C')
 			.style('color','white');
 		menu.arrow
@@ -613,15 +660,14 @@
 			_selection = [];
 
 			for ( var i = 0 ; i < d.length ; i++ ) {
-				_selection.push({'name':d[i],'click':function() {
-					container._data.__set(container._key,_selection[this.index]['name']);
-					menu.hide()
+				_selection.push({'name':d[i],'click':function(index) {
+					container.set('option',_selection[index].name);
+					menu.hide();
 				}});
 			}
 
 			menu
-				.data(_selection)
-				.setClick('click')
+				.bind({'items':[_selection,'name'],'click':[_selection,'click']})
 				.update();
 
 			return container;
@@ -643,7 +689,7 @@
 				.style('width',w - 10)
 				.style('top',label.node.offsetHeight + 5 + _margin)
 				.style('left',_margin)
-				.html(container.getScalar());
+				.html(container.getBound('option'));
 
 			container
 				.style('width',w + _margin * 2)
@@ -663,12 +709,18 @@
 		}
 
 		container.postBind = function() {
-
+			label
+				.bind({'text':[this.data.option[0], this.data.option[1]]});
 
 			return container;
 		}
 
 		container.postUnbind = function() {
+			label
+				.unbind();
+
+			menu
+				.unbind();
 
 			return container;
 		}
@@ -691,7 +743,6 @@
 
 		return container;
 	}
-*/
 
 	seeker.slider = function() {
 		var container = new seeker.element('div')
@@ -834,45 +885,60 @@
 			.id('menu');
 
 		var _listObjs = [];
-		var _click;
-
-		list.setClick = function(k) {
-			_click = k;
-
-			return list;
-		}
 
 		list.update = function() {
-			var o = function() {
-				var container = document.createElement('li');
-				
-				return container;
-			}
+			//if length not equal, recreate items
+			if (_listObjs.length != this.data.items.length) {
+				var addObj = function() {
+					var li = new seeker.element('li');
+					var label = new seeker.textbox()
+						.attachTo(li);
 
-			var f = function(obj) {
-				var label = new seeker.textbox()
-					.attachTo(obj)
-					.bind(list._data[obj.index],'name')
-					.update();
+					li.label = label;
 
-				if (_click) {
-					obj.onclick = list._data[obj.index][_click];
+					return li;
 				}
+
+				var delObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+
+					obj.label
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					obj.label
+						.bind({'text':[list.data.items[0][obj.index], list.data.items[1]]})
+						.onUpdate('text', list.update)
+						.update();
+
+					obj
+						.on('click', function(evt) {
+							list.getBound('click', obj.index)(obj.index);
+						});
+				}
+
+				seeker.util.updateCollection(list.data.items[0], _listObjs, addObj, delObj, updateObj, list);
 			}
 
-			seeker.util.updateCollectionDOM(list._data, _listObjs, o, list, f);
+			var num = _listObjs.length;
+			while ( num-- ) {
+				_listObjs[num].label.update();
+			}
 
 			return list;
 		}
 
 		list.postBind = function() {
-
+			list.onUpdate('items',list.update);
 
 			return list;
 		}
 
 		list.postUnbind = function() {
-
 
 			return list;
 		}
@@ -880,7 +946,7 @@
 		return list;
 	}
 
-/*
+
 	seeker.complexMenu = function() {
 		var container = new seeker.popup('div')
 			.id('complexMenu')
@@ -890,26 +956,16 @@
 
 		var list = new seeker.element('ul')
 			.id('complexMenuItems');
+
 		var controlList = new seeker.element('ul')
 			.id('complexMenuControl');
 
 		var _template;
 		var _update;
+		var _delete;
+
 		var _listObjs = [];
-
-		var _controlData = [];
 		var _controlListObjs = [];
-
-		container.controlData = function(val) {
-			_controlData = val;
-
-			seeker.util.attachModel(_controlData);
-			_controlData.__onUpdate.push(container.update);
-
-			return container;
-		}
-
-		seeker.util.attachCollectionBinding(container);
 
 		container.setTemplate = function(f) {
 			_template = f;
@@ -917,37 +973,64 @@
 			return container;
 		}
 
-		container.update = function() {
-			var o = function() {
-				var container = document.createElement('li');
-				
-				return container;
-			}
-
-			var fControl = function(obj) {
-				var label = new seeker.textbox()
-					.attachTo(obj)
-					.bind(_controlData[obj.index],'name')
-					.update();
-				obj.onclick = _controlData[obj.index]['click'];
-			}
-
-			seeker.util.updateCollectionDOM(_controlData, _controlListObjs, o, controlList, fControl);
-
-			var f = function(obj) {
-				while (obj.firstChild) {
-				    obj.removeChild(obj.firstChild);
-				}
-
-				_template(obj);
-			}
-
-			seeker.util.updateCollectionDOM(container._data, _listObjs, o, list, f);
+		container.setUpdate = function(f) {
+			_update = f;
 
 			return container;
 		}
 
-		container.render = function() {
+		container.setDelete = function(f) {
+			_delete = f;
+
+			return container;
+		}
+
+		container.setControl = function(d) {
+			controlList
+				.bind(d);
+
+			var addObj = function() {
+				var li = new seeker.element('li');
+				var label = new seeker.textbox()
+					.attachTo(li);
+
+				li.label = label;
+
+				return li;
+			}
+
+			var delObj = function(obj) {
+				obj
+					.detach()
+					.unbind();
+
+				obj.label
+					.detach()
+					.unbind();
+			}
+
+			var updateObj = function(obj) {
+				obj.label
+					.bind({'text':[controlList.data.items[0][obj.index], controlList.data.items[1]]})
+					.onUpdate('text', list.update)
+					.update();
+
+				obj
+					.on('click', function(evt) {
+						controlList.getBound('click', obj.index)(obj.index);
+					});
+			}
+
+			seeker.util.updateCollection(controlList.data.items[0], _controlListObjs, addObj, delObj, updateObj, controlList);
+
+			return container;
+		}
+
+		container.update = function() {
+			if(_listObjs.length != this.data.items[0].length) {
+				seeker.util.updateCollection(this.data.items[0], _listObjs, _template, _delete, _update, list);
+			}
+
 			var winDim = seeker.util.winDimensions();
 			var pos = container.node.offsetTop + container.node.offsetHeight;
 
@@ -1070,5 +1153,4 @@
 
 		return container;
 	}
-*/
 })();

@@ -13,15 +13,18 @@
   </head>
   <body>
   <script>
-  var data = {'label':'test','show':true,'range':10,'items':[{'name':'command one'},{'name':'command two'},{'name':'command three'}]};
+  var data = {'label':'test','show':true,'range':10,'items':[{'name':'command one','click':function() {
+    data.cb.__setAll('show',false);
+  }},{'name':'command two','click':function() {
+    data.cb.__setAll('show',true);
+  }},{'name':'command three','click':function() {console.log('3')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}]};
   var textbox = new seeker.textbox()
     .bind({'text':[data,'label']})
     .attachTo(document.body)
     .update();
 
-
   var cbox = new seeker.checkbox()
-    .bind({'text':[data,'label'],'checkbox':[data,'show']})
+    .bind({'text':[data.cb[0],'name'],'checkbox':[data.cb[0],'show']})
     .attachTo(document.body)
     .update()
     .whxy(-1,-1,100,100);
@@ -30,7 +33,50 @@
     .setInterval(5,100)
     .bind({'text':[data,'label'],'slider':[data,'range']})
     .attachTo(document.body)
-    .whxy(200,-1,200,200)
+    .whxy(200,-1,400,200)
+    .update();
+
+  var menu = new seeker.menu()
+    .attachTo(document.body)
+    .bind({'items':[data.items,'name'],'click':[data.items,'click']})
+    .whxy(-1,-1,300,100)
+    .update();
+
+  var opt = new seeker.option()
+    .attachTo(document.body)
+    .setSelection(['label Change one','label change two','label change three'])
+    .bind({'option':[data, 'label']})
+    .whxy(-1,-1,500,10)
+    .update();
+
+  var cmenu = new seeker.complexMenu()
+    .attachTo(document.body)
+    .setControl({'items':[data.items,'name'],'click':[data.items,'click']})
+    .bind({'items':[data.cb,'name']})
+    .setTemplate(function() {
+      var container = new seeker.element('li');
+      var cbox = new seeker.checkbox()
+        .attachTo(container);
+
+      container.checkbox = cbox;
+
+      return container;
+    })
+    .setDelete(function(obj) {
+      obj.checkbox
+        .detach()
+        .unbind();
+
+      obj
+        .detach()
+        .unbind();
+    })
+    .setUpdate(function(obj, d) {
+      obj.checkbox
+        .bind({'text':[d,'name'],'checkbox':[d,'show']})
+        .update();
+    })
+    .whxy(-1,-1,10,300)
     .update();
 
   </script>
