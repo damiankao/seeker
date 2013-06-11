@@ -6,7 +6,212 @@
 	introduction:
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
+
+	bind:
+	{'seqs':[],'feats':[]}
 	*/
+	seeker.annotator = function() {
+		var container = new seeker.element('div')
+			.id('annotator');
+		var canvas = new seeker.element('svg',true)
+			.attachTo(container);
+
+		var _seqObjs = [];
+		var _legendObjs = [];
+
+		var settings = {};
+
+		container.update = function() {
+			if(_seqObjs.length != this.data.seqs[0].length) {
+				var addObj = function() {
+					var seq = new seeker.annotator_sequence();
+
+					return seq;
+				}
+
+				var deleteObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					var seqData = container.data.seqs[0][obj.index];
+					obj
+						.bind({'name':[seqData,'name'],'length':[seqData,'length'],'visible':[seqData,'show'],'features':[seqData.feat,'ref']})
+						.onUpdate('visible',container.update)
+						.update();
+				}
+
+				seeker.util.updateCollection(this.data.seqs[0], _seqObjs, addObj, deleteObj, updateObj, canvas);
+			}
+
+			if (_legendObjs.length != this.data.feats[0].length) {
+				var addObj = function() {
+					var seq = new seeker.annotator_legend();
+
+					return seq;
+				}
+
+				var deleteObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					var featData = container.data.feats[0][obj.index];
+
+					obj
+						.bind({'name':[featData,'name'],'color':[featData,'color'],'visible':[featData,'legend']})
+						.onUpdate('visible',container.update)
+						.update();
+				}
+
+				seeker.util.updateCollection(this.data.feats[0], _legendObjs, addObj, deleteObj, updateObj, canvas);
+			}
+
+			container.arrangeSequences();
+			container.arrangeLegend();
+
+			return container;
+		}
+
+		container.arrangeSequences = function() {
+
+			return container;
+		}
+
+		container.arrangeLegend = function() {
+
+			return container;
+		}
+
+		container.postBind = function() {
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.annotator_sequence = function() {
+		var container = new seeker.element('g',true);
+		var label = new seeker.element('text',true);
+		var spine = new seeker.element('line',true);
+
+		var _featureObjs = [];
+
+		container.update = function() {
+			if(_featureObjs.length != this.data.features[0].length) {
+				var addObj = function() {
+					var feat = new seeker.annotator_feature();
+
+					return feat;
+				}
+
+				var deleteObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					var featData = container.data.features[0][obj.index];
+
+					obj
+						.bind({'name':[featData,'ref'],'start':[featData,'start'],'end':[featData,'end'],'visible':[featData,'show'],'labeled':[featData,'label']})
+						.update();
+				}
+
+				seeker.util.updateCollection(this.data.features[0], _featureObjs, addObj, deleteObj, updateObj, container);
+			}
+
+			return container;
+		}
+
+		container.postBind = function() {
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.annotator_feature = function() {
+		var container = new seeker.element('g',true);
+		var label = new seeker.element('text',true)
+			.attachTo(container);
+		var feat = new seeker.element('line',true)
+			.attachTo(container);
+
+		container.update = function() {
+			
+			return container;
+		}
+
+		container.postBind = function() {
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.annotator_legend = function() {
+		var container = new seeker.element('g',true);
+		var color = new seeker.element('rect',true)
+			.attachTo(container);
+		var label = new seeker.element('text',true)
+			.attachTo(container);
+
+		container.update = function() {
+				
+			return container;
+		}
+
+		container.postBind = function() {
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 	seeker.annotator = function() {
 		var container = new seeker.element('div')
@@ -500,4 +705,5 @@
 
 		return group;
 	}
+	*/
 })();
