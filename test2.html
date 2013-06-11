@@ -14,46 +14,68 @@
   <body>
   <script>
   var data = {'label':'test','show':true,'range':10,'items':[{'name':'cmd01','click':function() {
-    data.cb.__setAll('show',false);
-  }},{'name':'cmd02','click':function() {
     data.cb.__setAll('show',true);
-  }},{'name':'cmd03','click':function() {console.log('3')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}]};
+  }},{'name':'cmd02','click':function() {
+    data.cb.__setAll('show',false);
+  }},{'name':'cmd03','click':function() {console.log('three')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}],'selection':['label Change one','label change two','label change three']};
 
   var textbox = new seeker.textbox()
-    .bind({'text':[data,'label']})
+    .bind({
+      'text':{'obj':data,'key':'label'}
+    })
     .attachTo(document.body)
     .update();
 
   var cbox = new seeker.checkbox()
-    .bind({'text':[data.cb[0],'name'],'checkbox':[data.cb[0],'show']})
+    .bind({
+      'text':{'obj':data.cb[0],'key':'name'},
+      'checkbox':{'obj':data.cb[0],'key':'show'}
+    })
     .attachTo(document.body)
     .update()
     .whxy(-1,-1,100,100);
 
+
   var slider = new seeker.slider()
     .setInterval(5,100)
-    .bind({'text':[data,'label'],'slider':[data,'range']})
+    .bind({
+      'text':{'obj':data,'key':'label'},
+      'slider':{'obj':data,'key':'range'}
+    })
     .attachTo(document.body)
     .whxy(200,-1,400,200)
     .update();
 
+
   var menu = new seeker.menu()
     .attachTo(document.body)
-    .bind({'items':[data.items,'name'],'click':[data.items,'click']})
+    .bind({
+      'items':{'obj':data.items}
+    })
+    .setLabel('name')
+    .setClick('click')
     .whxy(-1,-1,300,100)
     .update();
 
+
   var opt = new seeker.option()
     .attachTo(document.body)
-    .setSelection(['label Change one','label change two','label change three'])
-    .bind({'option':[data, 'label']})
+    .setSelection(data.selection)
+    .bind({
+      'text':{'obj':data, 'key':'label'},
+      'option':{'obj':data, 'key':'label'}
+    })
     .whxy(-1,-1,500,10)
     .update();
 
   var cmenu = new seeker.complexMenu()
     .attachTo(document.body)
-    .setControl({'items':[data.items,'name'],'click':[data.items,'click']})
-    .bind({'items':[data.cb,'name']})
+    .setControl({
+      'items':{'obj':data.items}
+    },'name','click')
+    .bind({
+      'items':{'obj':data.cb}
+    })
     .setTemplate(function() {
       var container = new seeker.element('li');
       var cbox = new seeker.checkbox()
@@ -74,13 +96,16 @@
     })
     .setUpdate(function(obj, d) {
       obj.checkbox
-        .bind({'text':[d,'name'],'checkbox':[d,'show']})
+        .bind({
+          'text':{'obj':d,'key':'name'},
+          'checkbox':{'obj':d,'key':'show'}
+        })
         .update();
     })
     .setUnbind(function(obj) {
       obj.checkbox.unbind();
     })
-    .whxy(-1,-1,10,300)
+    .whxy(-1,-1,10,200)
     .update();
 
   </script>

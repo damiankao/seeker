@@ -8,7 +8,10 @@
 	input annotation data and manipulate the visualization.
 
 	bind:
-	{'seqs':[],'feats':[]}
+	{
+	'seqs':{'obj':data},
+	'feats':{'obj':data}
+	}
 	*/
 	seeker.annotator = function() {
 		var container = new seeker.element('div')
@@ -16,16 +19,38 @@
 		var canvas = new seeker.element('svg',true)
 			.attachTo(container);
 
+		//function menus
+
+
 		var _seqObjs = [];
 		var _legendObjs = [];
 
-		var settings = {};
+		container.settings = {
+			'annotator':container,
+			'seq_scale':null,
+			'margin':40,
+			'seq_underSpacing':30,
+			'legend_underSpacing':50,
+			'legend_show':'top',
+			'legend_xPos':0,
+			'legend_width':620,
+			'legend_height':40,
+			'legend_cols':5,
+			'seq_maxLength':900,
+			'legend_colorSize':15,
+			'seq_spineWidth':5,
+			'seq_spineColor':'#9C9C9C',
+			'seq_labelxPos':10,
+			'seq_numbered':true,
+			'seq_featWidth':10
+		};
 
 		container.update = function() {
-			if(_seqObjs.length != this.data.seqs[0].length) {
+			container.rescale();
+			if(_seqObjs.length != this.data.seqs.obj.length) {
 				var addObj = function() {
 					var seq = new seeker.annotator_sequence();
-
+					seq.settings = container.settings;
 					return seq;
 				}
 
@@ -36,21 +61,26 @@
 				}
 
 				var updateObj = function(obj) {
-					var seqData = container.data.seqs[0][obj.index];
+					var seqData = container.data.seqs.obj[obj.index];
+
 					obj
-						.bind({'name':[seqData,'name'],'length':[seqData,'length'],'visible':[seqData,'show'],'features':[seqData.feat,'ref']})
-						.onUpdate('visible',container.update)
+						.bind({
+							'name':{'obj':seqData,'key':'name'},
+							'length':{'obj':seqData,'key':'length'},
+							'visible':{'obj':seqData,'key':'show'},
+							'features':{'obj':seqData.feat}
+						})
 						.update();
 				}
 
-				seeker.util.updateCollection(this.data.seqs[0], _seqObjs, addObj, deleteObj, updateObj, canvas);
+				seeker.util.updateCollection(this.data.seqs.obj, _seqObjs, addObj, deleteObj, updateObj, canvas);
 			}
 
-			if (_legendObjs.length != this.data.feats[0].length) {
+			if (_legendObjs.length != this.data.feats.obj.length) {
 				var addObj = function() {
-					var seq = new seeker.annotator_legend();
-
-					return seq;
+					var legend = new seeker.annotator_legend();
+					legend.settings = container.settings;
+					return legend;
 				}
 
 				var deleteObj = function(obj) {
@@ -60,15 +90,18 @@
 				}
 
 				var updateObj = function(obj) {
-					var featData = container.data.feats[0][obj.index];
+					var featData = container.data.feats.obj[obj.index];
 
 					obj
-						.bind({'name':[featData,'name'],'color':[featData,'color'],'visible':[featData,'legend']})
-						.onUpdate('visible',container.update)
+						.bind({
+							'name':{'obj':featData,'key':'name'},
+							'color':{'obj':featData,'key':'color'},
+							'visible':{'obj':featData,'key':'legend'},
+						})
 						.update();
 				}
 
-				seeker.util.updateCollection(this.data.feats[0], _legendObjs, addObj, deleteObj, updateObj, canvas);
+				seeker.util.updateCollection(this.data.feats.obj, _legendObjs, addObj, deleteObj, updateObj, canvas);
 			}
 
 			container.arrangeSequences();
@@ -77,12 +110,77 @@
 			return container;
 		}
 
+		container.rescale = function() {
+			container.settings.seq_scale = d3.scale.linear()
+			    .domain([0, d3.max(this.data.seqs.obj,function(d) {return d['length'];})])
+			    .range([0, container.settings.seq_maxLength]);
+
+			return container;
+		}
+
 		container.arrangeSequences = function() {
+			//position each sequence element
+			var startY = container.settings.margin + container.settings.legend_height + container.settings.legend_underSpacing;
+			var startX = container.settings.margin;
+
+			if (container.settings.legend_show == 'none' || container.settings.legend_show == 'bottom') {
+				startY = container.settings.margin;
+			}
+
+			for ( var i = 0 ; i < _seqObjs.length ; i++ ) {
+				var g = _seqObjs[i];
+				var visible = container.data.seqs.obj[g.index]['show']
+				if (visible) {
+					g.node.translate_x = startX;
+					g.node.translate_y = startY;
+					g
+						.show()
+						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')');
+					startY += g.node.getBBox().height + container.settings.seq_underSpacing;
+				} else {
+					g
+						.hide();
+				}
+			}
+
+			canvas
+				.style('height',startY + container.settings.margin)
 
 			return container;
 		}
 
 		container.arrangeLegend = function() {
+			if (container.settings.legend_show != 'none') {
+				var startX = container.settings.margin + container.settings.legend_xPos;
+				var startY = container.settings.margin;
+				
+				var visible = seeker.util.countArray(container.data.feats.obj,'legend',true);
+				var cols = container.settings.legend_cols;
+				var rows = Math.ceil(visible / cols);
+				var w = container.settings.legend_width / cols;
+				var h = container.settings.legend_height / rows;
+
+				var i = 0;
+				for ( var r = 0 ;r < rows ; r++ ) {
+					for ( var c = 0 ; c < cols ; c++ ) {
+						if (i == container.data.feats.obj.length) {
+							break;
+						}
+						if (container.data.feats.obj[i].legend) {
+							_legendObjs[i]
+								.attr('transform','translate(' + (startX + c * w) + ',' + (startY + r * h) + ')');
+						} else {
+							_legendObjs[i].hide();
+							c--;
+						}
+						i++;
+					}
+				}
+			} else {
+				for ( var i = 0 ; i < _legendObjs.length ; i++ ) {
+					_legendObjs[i].hide();
+				}
+			}
 
 			return container;
 		}
@@ -102,16 +200,18 @@
 
 	seeker.annotator_sequence = function() {
 		var container = new seeker.element('g',true);
-		var label = new seeker.element('text',true);
-		var spine = new seeker.element('line',true);
+		var label = new seeker.element('text',true)
+			.attachTo(container);
+		var spine = new seeker.element('line',true)
+			.attachTo(container);
 
 		var _featureObjs = [];
 
 		container.update = function() {
-			if(_featureObjs.length != this.data.features[0].length) {
+			if(_featureObjs.length != this.data.features.obj.length) {
 				var addObj = function() {
 					var feat = new seeker.annotator_feature();
-
+					feat.settings = container.settings;
 					return feat;
 				}
 
@@ -122,381 +222,37 @@
 				}
 
 				var updateObj = function(obj) {
-					var featData = container.data.features[0][obj.index];
+					var featData = container.data.features.obj[obj.index];
 
 					obj
-						.bind({'name':[featData,'ref'],'start':[featData,'start'],'end':[featData,'end'],'visible':[featData,'show'],'labeled':[featData,'label']})
+						.bind({
+							'name':{'obj':featData.ref,'key':'name'},
+							'color':{'obj':featData.ref,'key':'color'},
+							'start':{'obj':featData,'key':'start'},
+							'end':{'obj':featData,'key':'end'},
+							'visible':{'obj':featData,'key':'show'},
+							'labeled':{'obj':featData,'key':'label'}
+						})
 						.update();
 				}
 
-				seeker.util.updateCollection(this.data.features[0], _featureObjs, addObj, deleteObj, updateObj, container);
+				seeker.util.updateCollection(this.data.features.obj, _featureObjs, addObj, deleteObj, updateObj, container);
 			}
 
+			this.updateSpine()
+			this.updateLabel();
+			this.arrangeLabels();
 			return container;
 		}
 
-		container.postBind = function() {
-
-			return container;
-		}
-
-		container.postUnbind = function() {
-
-			return container;
-		}
-
-		return container;
-	}
-
-	seeker.annotator_feature = function() {
-		var container = new seeker.element('g',true);
-		var label = new seeker.element('text',true)
-			.attachTo(container);
-		var feat = new seeker.element('line',true)
-			.attachTo(container);
-
-		container.update = function() {
-			
-			return container;
-		}
-
-		container.postBind = function() {
-
-			return container;
-		}
-
-		container.postUnbind = function() {
-
-			return container;
-		}
-
-		return container;
-	}
-
-	seeker.annotator_legend = function() {
-		var container = new seeker.element('g',true);
-		var color = new seeker.element('rect',true)
-			.attachTo(container);
-		var label = new seeker.element('text',true)
-			.attachTo(container);
-
-		container.update = function() {
-				
-			return container;
-		}
-
-		container.postBind = function() {
-
-			return container;
-		}
-
-		container.postUnbind = function() {
-
-			return container;
-		}
-
-		return container;
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-	seeker.annotator = function() {
-		var container = new seeker.element('div')
-			.id('annotator');
-
-		var canvas = new seeker.element('svg',true);
-		canvas.attachTo(container);
-
-		var featureMenu = new seeker.menu()
-			.attachTo(document.body)
-			.data([{'name':'show all','click':function(evt) {
-				var featName = seeker.env_clickTarget.ref.name;
-
-				for ( var i = 0 ; i < _allSeq.length ; i++ ) {
-					for ( var a = 0 ; a < _allSeq[i].feat.length ; a++ ) {
-						if (_allSeq[i].feat[a].ref.name == featName) {
-							_allSeq[i].feat[a].__set('show',true);
-						}
-					}
-				}
-
-				featureMenu.hide();
-			}},{'name':'hide all','click':function(evt) {
-				var featName = seeker.env_clickTarget.ref.name;
-
-				for ( var i = 0 ; i < _allSeq.length ; i++ ) {
-					for ( var a = 0 ; a < _allSeq[i].feat.length ; a++ ) {
-						if (_allSeq[i].feat[a].ref.name == featName) {
-							_allSeq[i].feat[a].__set('show',false);
-						}
-					}
-				}
-
-				featureMenu.hide();
-			}},{'name':'hide this','click':function(evt) {
-				seeker.env_clickTarget.__set('show',false);
-
-				featureMenu.hide();
-			}}])
-			.setClick('click')
-			.style('display','none')
-			.update()
-			.place([100,100]);
-
-		var seqMenu = new seeker.menu()
-			.attachTo(document.body)
-			.data([{'name':'hide sequence','click':function(evt) {
-
-			}},{'name':'show all features','click':function(evt) {
-				
-			}},{'name':'hide all features','click':function(evt) {
-				
-			}}])
-			.setClick('click')
-			.style('display','none')
-			.update();
-
-		var legendMenu = new seeker.menu()
-			.attachTo(document.body)
-			.data([{'name':'hide legend','click':function(evt) {
-
-			}},{'name':'show all','click':function(evt) {
-				
-			}},{'name':'hide all','click':function(evt) {
-				
-			}}])
-			.setClick('click')
-			.style('display','none')
-			.update();
-
-
-		var input;
-		var allSeqMenu;
-		var allSeqFeatMenu;
-		var allFeatMenu;
-		var option;
-		var preview;
-
-		var _palette;
-		var _settings = {
-			'margin':40,
-			'seq_underSpacing':30,
-			'legend_underSpacing':50,
-			'legend_show':'top',
-			'legend_xPos':0,
-			'legend_width':620,
-			'legend_height':40,
-			'legend_cols':5,
-			'seq_maxLength':900,
-			'seq_scale':null,
-			'legend_colorSize':15,
-			'seq_spineWidth':5,
-			'seq_spineColor':'#9C9C9C',
-			'seq_labelxPos':10,
-			'seq_numbered':true,
-			'seq_featWidth':10
-		};
-
-		var _seqs;
-		var _feats;
-
-		var _groups = []
-		var _legendGroups = []
-
-		container.data = function(d) {
-			d.settings = _settings;
-			_seqs = d['seq'];
-			_feats = d['feat'];
- 
-			return container;
-		}
-
-		container.update = function() {
-			var f_seq = function(obj) {
-				obj
-					.data(d, _groups)
-					.update();
-			}
-
-			seeker.util.updateCollectionDOM(_allSeq, _groups, seeker.annotator_sequence, canvas, f_seq);
-
-			var f_legend = function(obj) {
-				obj
-					.data(d, _legendGroups)
-					.update();
-			}
-
-			seeker.util.updateCollectionDOM(_allFeat, _legendGroups, seeker.annotator_legend, canvas, f_legend);
-
-			return container;
-		}
-
-		container.render = function() {
-			//position each sequence element
-			var startY = _settings.annotator.margin + _settings.annotator.legend_height + _settings.annotator.legend_underSpacing;
-			var startX = _settings.annotator.margin;
-
-			if (_settings.annotator.legend_show == 'none' || _settings.annotator.legend_show == 'bottom') {
-				startY = _settings.annotator.margin;
-			}
-
-			for ( var i = 0 ; i < _groups.length ; i++ ) {
-				var g = _groups[i];
-				if (_allSeq[i].show) {
-					g.node.translate_x = startX;
-					g.node.translate_y = startY;
-					g
-						.show()
-						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')');
-					startY += g.node.getBBox().height + _settings.annotator.seq_underSpacing;
-				} else {
-					g
-						.hide();
-				}
-			}
-
-			//position each legend element
-			if (_settings.annotator.legend_show != 'none') {
-				var startX = _settings.annotator.margin + _settings.annotator.legend_xPos;
-				var startY = _settings.annotator.margin;
-				
-				var visible = seeker.util.countArray(_allFeat,'legend',true);
-				var cols = _settings.annotator.legend_cols;
-				var rows = Math.ceil(visible / cols);
-				var w = _settings.annotator.legend_width / cols;
-				var h = _settings.annotator.legend_height / rows;
-
-				var i = 0;
-				for ( var r = 0 ;r < rows ; r++ ) {
-					for ( var c = 0 ; c < cols ; c++ ) {
-						if (i == _allFeat.length) {
-							break;
-						}
-						if (_allFeat[i].legend) {
-							_legendGroups[i]
-								.attr('transform','translate(' + (startX + c * w) + ',' + (startY + r * h) + ')');
-						} else {
-							_legendGroups[i].hide();
-							c--;
-						}
-						i++;
-					}
-				}
-			} else {
-				for ( var i = 0 ; i < _legendGroups.length ; i++ ) {
-					_legendGroups[i].hide();
-				}
-			}
-
-			return container;
-		}
-
-		container.rescale = function() {
-			_settings.annotator.seq_scale = d3.scale.linear()
-			    .domain([0, d3.max(_allSeq,function(d) {return d['length'];})])
-			    .range([0, _settings.annotator.seq_maxLength]);
-
-			return container;
-		}
-
-
-		return container;
-	}
-
-	seeker.annotator_sequence = function() {
-		var group = new seeker.element('g',true);
-		var label = new seeker.element('text',true);
-		var spine = new seeker.element('line',true)
-			.style('shape-rendering','crispEdges');
-
-		label.attachTo(group);
-		spine.attachTo(group);
-
-		var _allSeq;
-		var _allFeat;
-		var _seq;
-		var _settings;
-		var _groups = [];
-
-		group.data = function(d, f, s) {
-			_allSeq = d;
-			_allFeat = f;
-			_seq = _allSeq[group.index];
-			_settings = s;
-
-			seeker.util.attachModel(_seq);
-			seeker.util.attachModel(_seq['feat']);
-
-			_seq.__onChange.push(group.update);
-			_settings.sequence.__onChange.push(group.update);
-			_seq['feat'].__onChange.push(group.updateFeat);
-
-			return group
-		}
-
-		group.update = function() {
-			//update feature elements on sequence
-			var f = function(obj) {
-				obj
-					.data(_seq['feat'][obj.index], _allFeat, _settings)
-					.update();
-
-				_seq['feat'][obj.index].__onChange.push(group.updateFeat);
-			}
-
-			seeker.util.updateCollectionDOM(_seq['feat'], _groups, seeker.annotator_feature, group, f);
-
-			return group;
-		}
-
-		group.render = function() {
-			//update label and spine
-			_settings.application.container.rescale();
-
-			label
-				.attr('x',_settings.sequence.seq_labelxPos)
-				.attr('y',0)
-				.style('font-size','10pt')
-				.style('font-weight','bold');
-
-			spine
-				.draw(0,40,_settings.annotator.seq_scale(_seq['length']),40)
-				.style('stroke-width',_settings.sequence.seq_spineWidth)
-				.style('stroke',_settings.sequence.seq_spineColor);
-
-			if (_settings.sequence.seq_numbered) {
-				label
-					.textContent((group.index + 1) + '. ' + _seq['name']);
-			} else {
-				label
-					.textContent(_seq['name']);
-			}
-
+		container.arrangeLabels = function() {
+			//arrange labels for this sequence
 			var levels = [];
 			var xPos = 0;
-			for ( var i = 0 ; i < _groups.length ; i++ ) {
-				var g = _groups[i];
-				var d = _seq['feat'][g.index]
+			for ( var i = 0 ; i < _featureObjs.length ; i++ ) {
+				var g = _featureObjs[i];
+				var d = container.data.features.obj[g.index]
 				if (d.show) {
-					g.node.translate_x = _settings.annotator.seq_scale(d['start']);
-					g.node.translate_y = 0;
-					g
-						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')')
-						.show();
-
 					if (d.label) {
 						var labelEnd = g.getLabelEndpoint();
 						var labelStart = g.getLabelStartpoint();
@@ -527,20 +283,66 @@
 						.hide();
 				}
 			}
-
-			return group;
 		}
 
-		return group;
+		container.updateSpine = function() {
+			//update label and spine
+			container.settings.annotator.rescale();
+			var length = container.getBound('length');
+
+			spine
+				.draw(0,40, container.settings.seq_scale(length),40)
+				.style('stroke-width',container.settings.seq_spineWidth)
+				.style('stroke',container.settings.seq_spineColor);
+
+			return container;
+		}
+
+		container.updateLabel = function() {
+			var name = container.getBound('name');
+
+			label
+				.attr('x',container.settings.seq_labelxPos)
+				.attr('y',0)
+				.style('font-size','10pt')
+				.style('font-weight','bold');
+
+			if (container.settings.seq_numbered) {
+				label
+					.text((container.index + 1) + '. ' + name);
+			} else {
+				label
+					.text(name);
+			}
+
+			return container;
+		}
+
+		container.postBind = function() {
+			var num = _featureObjs.length;
+
+			while ( num-- ) {
+				_featureObjs
+					.onUpdate('visible', container.arrangeLabels)
+					.onUpdate('labeled', container.arrangeLabels);
+			}
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
 	}
 
 	seeker.annotator_feature = function() {
-		var group = new seeker.element('g',true);
-		var label = new seeker.element('text',true);
-		var feat = new seeker.element('line',true)
-			.style('shape-rendering','crispEdges');
+		var container = new seeker.element('g',true);
 
-		label
+		var label = new seeker.element('text',true)
+			.attachTo(container)
 			.on('mouseover', function(evt) {
 				document.body.style.cursor = 'move';
 			})
@@ -552,7 +354,7 @@
 				var downCoord = label.mouseCoord(evt);
 
 				document.body.onmousemove = function(evt) {
-					var currentCoord = group.mouseCoord(evt);
+					var currentCoord = container.mouseCoord(evt);
 
 					label
 						.attr('x',currentCoord[0] - downCoord[0])
@@ -563,84 +365,44 @@
 					document.body.onmousemove = null;
 					document.body.onmouseup = null;
 				}
-			})
+			});
 
-		feat
-			.on('mouseover', function(evt) {
-				document.body.style.cursor = 'pointer';
+		var feat = new seeker.element('line',true)
+			.attachTo(container);
+
+		var _labelLevel = 0;
+
+		container.update = function() {
+			var name = this.getBound('name');
+			var start = container.settings.seq_scale(this.getBound('start'));
+			var end = container.settings.seq_scale(this.getBound('end'));
+			var visible = this.getBound('visible');
+			var labeled = this.getBound('labeled');
+			var color = this.getBound('color');
+
+			if (visible) {
 				feat
-					.draw(-4,40,_settings.annotator.seq_scale(_feat['end'] - _feat['start'] + 5),40)
-					.style('stroke-width',_settings.feature.seq_featWidth + 4);
-			})
-			.on('mouseout', function(evt) {
-				document.body.style.cursor = 'default';
-				feat
-					.draw(0,40,_settings.annotator.seq_scale(_feat['end'] - _feat['start'] + 1),40)
-					.style('stroke-width',_settings.feature.seq_featWidth);
-			})
-			.on('click', function(evt) {
-				seeker.env_clickTarget = _feat;
-				_settings.application.menu_feature
-					.show()
-					.place(seeker.util.mouseCoord(evt));
-			})
-
-		label.attachTo(group);
-		feat.attachTo(group);
-
-		var _feat;
-		var _allFeat;
-		var _settings;
-
-		var _level;
-
-		group.data = function(d, f, s) {
-			_feat = d;
-			_allFeat = f;
-			_settings = s;
-
-			seeker.util.attachModel(_feat);
-			seeker.util.attachModel(_feat['ref']);
-
-			_feat['ref'].__onChange.push(group.update);
-			_feat.__onChange.push(group.update);
-			_settings.feature.__onChange.push(group.update);
-
-			return group;
-		}
-
-		group.setLevel = function(val) {
-			_level = val;
-
-			return group;
-		}
-
-		group.update = function() {
-			//update indivdual feature on sequence
-			var featureLength = _settings.annotator.seq_scale(_feat['end'] - _feat['start'] + 1);
-
-			if (_feat.show) {
-				feat
-					.draw(0,40,featureLength,40)
-					.style('stroke-width',_settings.feature.seq_featWidth)
-					.style('stroke',_feat['ref']['color'])
+					.draw(start,40,end,40)
+					.style('stroke-width',container.settings.seq_featWidth)
+					.style('stroke',color)
 					.show();
 
-				if (_feat.label) {
+				if (labeled) {
 					label
-						.textContent(_feat['ref']['name'])
-						.attr('x',featureLength / 2 - parseInt(label.node.getBBox().width) / 2)
+						.text(name)
+						.attr('x',start + (end - start) / 2 - parseInt(label.node.getBBox().width) / 2)
 						.style('font-size','8pt')
 						.show();
 
-					if (_level == 0) {
+					if (_labelLevel == 0) {
 						label
 							.attr('y',27);
 					} else {
-						var startY = 40 + _settings.feature.seq_featWidth / 2;
+						var startY = 40 + container.settings.seq_featWidth / 2;
 						label
-							.attr('y',_level * 15 + startY);
+							.attr('y',_labelLevel * 15 + startY);
 					}
+
 				} else {
 					label.hide();
 				}
@@ -649,61 +411,71 @@
 				label.hide();
 			}
 
-			return group;
+			return container;
 		}
 
-		group.getLabelEndpoint = function() {
-			return parseInt(label.node.getAttribute('x')) + parseInt(label.node.getBBox().width) + label.node.parentNode.translate_x;
+		container.setLevel = function(l) {
+			_labelLevel = l;
+
+			return container;
 		}
 
-		group.getLabelStartpoint = function() {
-			return parseInt(label.node.getAttribute('x')) + label.node.parentNode.translate_x;
+		container.postBind = function() {
+
+			return container;
 		}
 
-		return group;
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		container.getLabelStartpoint = function() {
+			return parseInt(label.node.getBBox().x);
+		}
+
+		container.getLabelEndpoint = function() {
+			return parseInt(label.node.getBBox().x) + parseInt(label.node.getBBox().width);
+		}
+
+		return container;
 	}
 
 	seeker.annotator_legend = function() {
-		var group = new seeker.element('g',true);
-		var colorRectangle = new seeker.element('rect',true);
-		var label = new seeker.element('text',true);
+		var container = new seeker.element('g',true);
+		var color = new seeker.element('rect',true)
+			.attachTo(container);
+		var label = new seeker.element('text',true)
+			.attachTo(container);
 
-		colorRectangle.attachTo(group);
-		label.attachTo(group);
-
-		var _feat;
-		var _settings;
-
-		group.data = function(d, s) {
-			_feat = d;
-			_settings = s;
-
-			seeker.util.attachModel(_feat);
-
-			_feat.__onChange.push(group.update);
-
-			return group;
-		}
-
-		group.update = function() {
-			colorRectangle
-				.attr('width',_settings.annotator.legend_colorSize)
-				.attr('height',_settings.annotator.legend_colorSize)
+		container.update = function() {
+			color
+				.attr('width',container.settings.legend_colorSize)
+				.attr('height',container.settings.legend_colorSize)
 				.attr('x',0)
 				.attr('y',0)
-				.attr('fill',_feat['color']);
+				.attr('fill',container.getBound('color'));
 
 			label
-				.attr('x', _settings.annotator.legend_colorSize + 5)
-				.attr('y', _settings.annotator.legend_colorSize / 2)
+				.attr('x',container.settings.legend_colorSize + 5)
+				.attr('y', container.settings.legend_colorSize / 2)
 				.style('font-size','10pt')
 				.attr('baseline-shift','-33%')
-				.textContent(_feat['name']);
+				.text(container.getBound('name'));
 
-			return group;
+			return container;
 		}
 
-		return group;
+		container.postBind = function() {
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+		return container;
 	}
-	*/
 })();

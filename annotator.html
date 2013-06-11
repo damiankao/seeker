@@ -17,7 +17,10 @@
   var dim = seeker.util.winDimensions();
 
   var anno = new seeker.annotator()
-    .bind({'seqs':[data.seq,'name'],'feats':[data.feat,'name']})
+    .bind({
+      'seqs':{'obj':data.seq},
+      'feats':{'obj':data.feat}
+    })
     .attachTo(document.body)
     .update();
 

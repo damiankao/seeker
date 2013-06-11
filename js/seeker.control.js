@@ -50,6 +50,11 @@
 
 		if (arguments[1]) {
 			this.node = document.createElementNS("http://www.w3.org/2000/svg", e);
+			this.text = function(val) {
+				this.node.textContent = val;
+
+				return this;
+			}
 		} else {
 			this.node = document.createElement(e);
 		}
@@ -91,48 +96,20 @@
 		this.data = d;
 
 		for (name in this.data) {
-			var obj = this.data[name][0];
-			var key = this.data[name][1];
+			var obj = this.data[name].obj;
 
-			if (!obj.__seeker) {
-				obj.__onUpdate = {};
+			if (Object.prototype.toString.call(obj) === '[object Array]') {
+				//collection
+				if (!obj.__seeker) {
+					obj.__onArrange = [];
 
-				obj.__update = function() {
-					var args = arguments;
-					var argsLen = args.length;
-
-					var k = [];
-
-					if (args.length > 0) {
-						while ( argsLen-- ) {
-							if (obj.__onUpdate[args[argsLen]]) {
-								k.push(args[argsLen]);
-							}
+					obj.__arrange = function() {
+						var i = obj.__onArrange.length;
+						while ( i-- ) {
+							obj.__onArrange[i][0]();
 						}
 					}
 
-					var kLen = k.length;
-					while ( kLen-- ) {
-						var update = obj.__onUpdate[k[kLen]];
-						var updateLen = update.length;
-						while ( updateLen-- ) {
-							update[updateLen][0]();
-						}
-					}
-				}
-
-				obj.__clean = function() {
-					for (prop in obj.__onUpdate) {
-						if ( obj.__onUpdate[prop].length == 0 ) {
-							delete obj.__onUpdate[prop];
-						}
-					}
-
-					return obj
-				}
-
-				if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
-					//collection
 					obj.__set = function(k, val, indeces) {
 						var l = indeces.length
 
@@ -140,7 +117,7 @@
 							obj[indeces][l].__set(k,val);
 						}
 
-						obj.__update(k);
+						obj.__arrange();
 						return obj;
 					}
 
@@ -151,28 +128,50 @@
 							obj[l].__set(n,val);
 						}
 
-						obj.__update(n);
+						obj.__arrange();
 						return obj;
 					}
+				}
+			} else {
+				//scalar
+				var key = this.data[name].key;
+				if (!obj.__seeker) {
+					obj.__onUpdate = {};
 
-					obj.__onArrange = [];
-					obj.__arrange = function() {
-						var l = obj.__onArrange.length;
+					obj.__update = function() {
+						var args = arguments;
+						var argsLen = args.length;
 
-						while ( l-- ) {
-							obj.__onArrange[l]();
+						var k = [];
+
+						if (args.length > 0) {
+							while ( argsLen-- ) {
+								if (obj.__onUpdate[args[argsLen]]) {
+									k.push(args[argsLen]);
+								}
+							}
 						}
 
-						return obj;
+						var kLen = k.length;
+						while ( kLen-- ) {
+							var update = obj.__onUpdate[k[kLen]];
+							var updateLen = update.length;
+							while ( updateLen-- ) {
+								update[updateLen][0]();
+							}
+						}
 					}
 
-					this.onArrange = function(d, f) {
-						d.__onArrange.push([f,this]);
+					obj.__clean = function() {
+						for (prop in obj.__onUpdate) {
+							if ( obj.__onUpdate[prop].length == 0 ) {
+								delete obj.__onUpdate[prop];
+							}
+						}
 
-						return this;
+						return obj
 					}
-				} else {
-					//scalar
+
 					obj.__set = function(k,val) {
 						obj[k] = val;
 						obj.__update(k);
@@ -180,46 +179,8 @@
 						return obj;
 					}
 				}
-
+			}
 			obj.__seeker = true;
-			}
-		}
-
-		if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
-			//collection
-			this.set = function(n, val, indeces) {
-				if (this.data) {
-					var obj = this.data[n][0];
-					var key = this.data[n][1];
-
-					obj.__set(key, val, indeces);
-				}
-
-				return this;
-			}
-
-			this.setAll = function(n, val) {
-				if (this.data) {
-					var obj = this.data[n][0];
-					var key = this.data[n][1];
-
-					obj.__setAll(key, val);
-				}
-
-				return this;
-			}
-		} else {
-			//scalar
-			this.set = function(n, val) {
-				if (this.data) {
-					var obj = this.data[n][0];
-					var key = this.data[n][1];
-
-					obj.__set(key,val);
-				}
-
-				return this;
-			}
 		}
 			
 		if (this.postBind) {
@@ -229,30 +190,51 @@
 		return this;
 	}
 
+	seeker.element.prototype.set = function(n, val) {
+		if (this.data) {
+			var obj = this.data[n].obj;
+			if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
+				var k = arguments[2]
+				var indeces = arguments[3];
+
+				obj.__set(k, val, indeces);
+			} else {
+				var key = this.data[n].key;
+
+				obj.__set(key,val);
+			}
+		}
+
+		return this;
+	}
+
 	seeker.element.prototype.unbind = function() {
 		if (this.data) {
 			for (name in this.data) {
-				var obj = this.data[name][0];
-				var key = this.data[name][1];
+				var obj = this.data[name].obj;
 
-				if (obj.__onUpdate[key]) {
-					var update = obj.__onUpdate[key];
-					var updateLen = update.length;
+				if ( Object.prototype.toString.call(obj) === '[object Object]' ) {
+					var key = this.data[name].key;
 
-					while ( updateLen-- ) {
-						if ( update[updateLen][1] === this ) {
-							update.splice(updateLen,1);
+					if (obj.__onUpdate[key]) {
+						var update = obj.__onUpdate[key];
+						var updateLen = update.length;
+
+						while ( updateLen-- ) {
+							if ( update[updateLen][1] === this ) {
+								update.splice(updateLen,1);
+							}
 						}
 					}
-				}
+				} else {
+					if (obj.__onArrange) {
+						var arrange = obj.__onArrange;
+						var arrangeLen = arrange.length;
 
-				if (obj.__onArrange) {
-					var arrange = obj.__onArrange;
-					var arrangeLen = arrange.length;
-
-					while ( arrangeLen-- ) {
-						if ( arrange[arrangeLen][1] == this ) {
-							arrange.splice(arrangeLen,1);
+						while ( arrangeLen-- ) {
+							if ( arrange[arrangeLen][1] == this ) {
+								arrange.splice(arrangeLen,1);
+							}
 						}
 					}
 				}
@@ -270,24 +252,37 @@
 
 	seeker.element.prototype.onUpdate = function(d, f) {
 		if (this.data) {
-			var obj = this.data[d][0];
-			var key = this.data[d][1];
+			var obj = this.data[d].obj;
 
-			if (!obj.__onUpdate[key]) {
-				obj.__onUpdate[key] = [];
+			if ( Object.prototype.toString.call(obj) === '[object Object]' ) {
+				var key = this.data[d].key;
+
+				if (!obj.__onUpdate[key]) {
+					obj.__onUpdate[key] = [];
+				}
+
+				obj.__onUpdate[key].push([f, this]);
 			}
-
-			obj.__onUpdate[key].push([f, this]);
 		}
 
 		return this;
 	}
 
+	seeker.element.prototype.onArrange = function(n, f) {
+		if (this.data) {
+			var obj = this.data[n].obj;
+
+			if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
+				obj.__onArrange.push([f, this]);
+			}
+		}
+	}
+
 	seeker.element.prototype.getBound = function(d) {
 		if (Object.prototype.toString.call(this.data[d][0]) === '[object Array]' ) {
-			return this.data[d][0][arguments[1]][this.data[d][1]];
+			return this.data[d].obj;
 		} else {
-			return this.data[d][0][this.data[d][1]];
+			return this.data[d].obj[this.data[d].key];
 		}
 	}
 
@@ -626,7 +621,9 @@
 		container.postBind = function() {
 			if (this.data.text) {
 				label
-					.bind({'text':[this.data.text[0],this.data.text[1]]})
+					.bind({
+						'text':{'obj':this.data.text.obj,'key':this.data.text.key}
+					})
 					.update();
 
 				container
@@ -688,14 +685,18 @@
 			_selection = [];
 
 			for ( var i = 0 ; i < d.length ; i++ ) {
-				_selection.push({'name':d[i],'click':function(index) {
+				_selection.push({
+					'name':d[i],
+					'click':function(index) {
 					container.set('option',_selection[index].name);
 					menu.hide();
 				}});
 			}
 
 			menu
-				.bind({'items':[_selection,'name'],'click':[_selection,'click']})
+				.bind({'items':{'obj':_selection}})
+				.setLabel('name')
+				.setClick('click')
 				.update();
 
 			return container;
@@ -738,7 +739,10 @@
 
 		container.postBind = function() {
 			label
-				.bind({'text':[this.data.option[0], this.data.option[1]]});
+				.bind({
+					'text':{'obj':this.data.text.obj,'key':this.data.text.key}
+				})
+				.onUpdate('text',container.update);
 
 			return container;
 		}
@@ -830,7 +834,7 @@
 		container.postBind = function() {
 			if (this.data.text) {
 				label
-					.bind({'text':[this.data.text[0],this.data.text[1]]})
+					.bind({'text':{'obj':this.data.text.obj,'key':this.data.text.key}})
 					.update();
 
 				container
@@ -913,6 +917,20 @@
 			.id('menu');
 
 		var _listObjs = [];
+		var _labelKey;
+		var _clickKey;
+
+		list.setLabel = function(k) {
+			_labelKey = k;
+
+			return list;
+		}
+
+		list.setClick = function(k) {
+			_clickKey = k;
+
+			return list;
+		}
 
 		list.update = function() {
 			//if length not equal, recreate items
@@ -939,17 +957,18 @@
 
 				var updateObj = function(obj) {
 					obj.label
-						.bind({'text':[list.data.items[0][obj.index], list.data.items[1]]})
-						.onUpdate('text', list.update)
-						.update();
+						.bind({
+							'text':{'obj':list.data.items.obj[obj.index],'key':_labelKey}
+						})
+						.onUpdate('text', list.update);
 
 					obj
 						.on('click', function(evt) {
-							list.getBound('click', obj.index)(obj.index);
+							list.data.items.obj[obj.index][_clickKey](obj.index);
 						});
 				}
 
-				seeker.util.updateCollection(list.data.items[0], _listObjs, addObj, delObj, updateObj, list);
+				seeker.util.updateCollection(list.data.items.obj, _listObjs, addObj, delObj, updateObj, list);
 			}
 
 			var num = _listObjs.length;
@@ -1020,7 +1039,7 @@
 			return container;
 		}
 
-		container.setControl = function(d) {
+		container.setControl = function(d, name, click) {
 			controlList
 				.bind(d);
 
@@ -1045,24 +1064,25 @@
 
 			var updateObj = function(obj) {
 				obj.label
-					.bind({'text':[controlList.data.items[0][obj.index], controlList.data.items[1]]})
-					.onUpdate('text', list.update)
+					.bind({
+						'text':{'obj':controlList.data.items.obj[obj.index], 'key':name}
+					})
 					.update();
 
 				obj
 					.on('click', function(evt) {
-						controlList.getBound('click', obj.index)(obj.index);
+						controlList.data.items.obj[obj.index][click](obj.index);
 					});
 			}
 
-			seeker.util.updateCollection(controlList.data.items[0], _controlListObjs, addObj, delObj, updateObj, controlList);
+			seeker.util.updateCollection(controlList.data.items.obj, _controlListObjs, addObj, delObj, updateObj, controlList);
 
 			return container;
 		}
 
 		container.update = function() {
-			if(_listObjs.length != this.data.items[0].length) {
-				seeker.util.updateCollection(this.data.items[0], _listObjs, _template, _delete, _update, list);
+			if(_listObjs.length != this.data.items.obj.length) {
+				seeker.util.updateCollection(this.data.items.obj, _listObjs, _template, _delete, _update, list);
 			}
 
 			var winDim = seeker.util.winDimensions();
@@ -1084,23 +1104,11 @@
 		}
 
 		container.postBind = function() {
-			container
-				.onArrange(this.data.items[0], container.update);
+
 		}
 
 		container.postUnbind = function() {
-			var num = _controlListObjs.length;
-			while ( num-- ) {
-				_controlListObjs[num].label.unbind();
-				controlList.unbind();
-			}
 
-			if (_unbind) {
-				num = _listObjs.length;
-				while ( num-- ) {
-					_unbind(_listObjs[num]);
-				}
-			}
 		}
 
 		controlList
