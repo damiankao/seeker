@@ -104,9 +104,9 @@
 					obj.__onArrange = [];
 
 					obj.__arrange = function() {
-						var i = obj.__onArrange.length;
+						var i = this.__onArrange.length;
 						while ( i-- ) {
-							obj.__onArrange[i][0]();
+							this.__onArrange[i][0]();
 						}
 					}
 
@@ -114,22 +114,22 @@
 						var l = indeces.length
 
 						while ( l-- ) {
-							obj[indeces][l].__set(k,val);
+							this[indeces[l]].__set(k,val);
 						}
 
-						obj.__arrange();
-						return obj;
+						this.__arrange();
+						return this;
 					}
 
 					obj.__setAll = function(n, val) {
-						var l = obj.length;
+						var l = this.length;
 
 						while ( l-- ) {
-							obj[l].__set(n,val);
+							this[l].__set(n,val);
 						}
 
-						obj.__arrange();
-						return obj;
+						this.__arrange();
+						return this;
 					}
 				}
 			} else {
@@ -146,7 +146,7 @@
 
 						if (args.length > 0) {
 							while ( argsLen-- ) {
-								if (obj.__onUpdate[args[argsLen]]) {
+								if (this.__onUpdate[args[argsLen]]) {
 									k.push(args[argsLen]);
 								}
 							}
@@ -154,7 +154,7 @@
 
 						var kLen = k.length;
 						while ( kLen-- ) {
-							var update = obj.__onUpdate[k[kLen]];
+							var update = this.__onUpdate[k[kLen]];
 							var updateLen = update.length;
 							while ( updateLen-- ) {
 								update[updateLen][0]();
@@ -163,20 +163,21 @@
 					}
 
 					obj.__clean = function() {
-						for (prop in obj.__onUpdate) {
-							if ( obj.__onUpdate[prop].length == 0 ) {
-								delete obj.__onUpdate[prop];
+						for (prop in this.__onUpdate) {
+							if ( this.__onUpdate[prop].length == 0 ) {
+								delete this.__onUpdate[prop];
 							}
 						}
 
-						return obj
+						return this;
 					}
 
 					obj.__set = function(k,val) {
-						obj[k] = val;
-						obj.__update(k);
+						this[k] = val;
 
-						return obj;
+						this.__update(k);
+
+						return this;
 					}
 				}
 			}
@@ -477,6 +478,7 @@
 		}
 
 		e.place = function(coord) {
+			this.show();
 			var winDim = seeker.util.winDimensions();
 			var w = this.node.offsetWidth;
 			var h = this.node.offsetHeight;
@@ -484,15 +486,15 @@
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
 				this.orient(1);
-				this.style('top',coord[1] + arrow.node.offsetHeight * 3);
+				this.style('top',coord[1] + 20);
 			} else if (coord[1] + h > winDim[1] - 30) {
 				//near bottom, make above cursor
 				this.orient(0);
-				this.style('top',coord[1] - h - arrow.node.offsetHeight);
+				this.style('top',coord[1] - h - 20);
 			} else {
 				//default, under cursor
 				this.orient(1);
-				this.style('top',coord[1] + arrow.node.offsetHeight * 3);
+				this.style('top',coord[1] + 20);
 			}
 
 			if (coord[0] - w < 20) {
@@ -519,10 +521,13 @@
 				var num = seeker.env_popups.length;
 				while (num--) {
 					seeker.env_popups[num].hide();
+					seeker.env_clickTarget = null;
 				}
 			}
 		}
 		seeker.env_popups.push(e);
+
+		document.body.onclick = seeker.env_closePopups;
 
 		return e;
 	}
@@ -964,7 +969,7 @@
 
 					obj
 						.on('click', function(evt) {
-							list.data.items.obj[obj.index][_clickKey](obj.index);
+							list.data.items.obj[obj.index][_clickKey](evt, obj.index);
 						});
 				}
 
@@ -1071,7 +1076,7 @@
 
 				obj
 					.on('click', function(evt) {
-						controlList.data.items.obj[obj.index][click](obj.index);
+						controlList.data.items.obj[obj.index][click](evt, obj.index);
 					});
 			}
 

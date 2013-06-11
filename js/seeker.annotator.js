@@ -20,13 +20,200 @@
 			.attachTo(container);
 
 		//function menus
+		var featureMenuData = [
+			{'name':'show all features','click':function(evt, index){
+				evt.stopPropagation();
 
+				var i = container.data.seqs.obj.length;
+				var name = container.settings.clickObj.data.start.obj.ref.name;
+				while ( i-- ) {
+					var feat = container.data.seqs.obj[i].feat;
+					var a = feat.length;
+					while ( a-- ) {
+						if (feat[a]['ref'].name == name) {
+							feat[a].__set('show',true);
+						}
+					}
+					feat.__arrange();
+				}
+				seeker.env_closePopups();
+			}},
+			{'name':'hide all features','click':function(evt, index){
+				evt.stopPropagation();
+
+				var i = container.data.seqs.obj.length;
+				var name = container.settings.clickObj.data.start.obj.ref.name;
+				while ( i-- ) {
+					var feat = container.data.seqs.obj[i].feat;
+					var a = feat.length;
+					while ( a-- ) {
+						if (feat[a]['ref'].name == name) {
+							feat[a].__set('show',false);
+						}
+					}
+					feat.__arrange();
+				}
+				seeker.env_closePopups();
+			}},
+			{'name':'show this label','click':function(evt, index){
+				evt.stopPropagation();
+
+				container.settings.clickObj.set('labeled',true);
+				container.settings.clickObj.parent.data.features.obj.__arrange();
+
+				seeker.env_closePopups();
+			}},
+			{'name':'hide this label','click':function(evt, index){
+				evt.stopPropagation();
+
+				container.settings.clickObj.set('labeled',false);
+				container.settings.clickObj.parent.data.features.obj.__arrange();
+
+				seeker.env_closePopups();
+			}},
+			{'name':'hide this feature','click':function(evt, index){
+				evt.stopPropagation();
+
+				container.settings.clickObj.set('visible',false);
+				container.settings.clickObj.parent.data.features.obj.__arrange();
+
+				seeker.env_closePopups();
+			}}
+		];
+		var sequenceMenuData = [
+			{'name':'show all features','click':function(evt, index){
+				evt.stopPropagation();
+
+				var feats = container.settings.clickObj.data.features.obj;
+				var featLength = feats.length;
+
+				while ( featLength-- ) {
+					feats[featLength].__set('show',true);
+				}
+				feats.__arrange();
+
+				seeker.env_closePopups();
+			}},
+			{'name':'hide all features','click':function(evt, index){
+				evt.stopPropagation();
+
+				var feats = container.settings.clickObj.data.features.obj;
+				var featLength = feats.length;
+				
+				while ( featLength-- ) {
+					feats[featLength].__set('show',false);
+				}
+				feats.__arrange();
+
+				seeker.env_closePopups();
+			}},
+			{'name':'hide this sequence','click':function(evt, index){
+				evt.stopPropagation();
+
+				container.settings.clickObj.set('visible',false);
+				container.arrangeSequences();
+
+				seeker.env_closePopups();
+			}}
+		];
+		var legendMenuData = [
+			{'name':'show all features','click':function(evt, index){
+				evt.stopPropagation();
+
+				var name = container.settings.clickObj.getBound('name');
+				var i = container.data.seqs.obj.length;
+				while ( i-- ) {
+					var feat = container.data.seqs.obj[i].feat;
+					var a = feat.length;
+					while ( a-- ) {
+						if (feat[a]['ref'].name == name) {
+							feat[a].__set('show',true);
+						}
+					}
+					feat.__arrange();
+				}
+				seeker.env_closePopups();
+			}},
+			{'name':'hide all features','click':function(evt, index){
+				evt.stopPropagation();
+
+				var name = container.settings.clickObj.getBound('name');
+				var i = container.data.seqs.obj.length;
+				while ( i-- ) {
+					var feat = container.data.seqs.obj[i].feat;
+					var a = feat.length;
+					while ( a-- ) {
+						if (feat[a]['ref'].name == name) {
+							feat[a].__set('show',false);
+						}
+					}
+					feat.__arrange();
+				}
+				seeker.env_closePopups();
+			}},
+			{'name':'hide this legend','click':function(evt, index){
+				evt.stopPropagation();
+
+				container.settings.clickObj.set('visible',false);
+				container.arrangeLegend();
+
+				seeker.env_closePopups();
+			}}
+		];
+
+		var featureMenu = new seeker.menu()
+			.attachTo(document.body)
+		    .bind({
+		      'items':{'obj':featureMenuData}
+		    })
+		    .setLabel('name')
+		    .setClick('click')
+		    .hide()
+		    .update();
+
+		var sequenceMenu = new seeker.menu()
+			.attachTo(document.body)
+		    .bind({
+		      'items':{'obj':sequenceMenuData}
+		    })
+		    .setLabel('name')
+		    .setClick('click')
+		    .hide()
+		    .update();
+
+		var legendMenu = new seeker.menu()
+			.attachTo(document.body)
+		    .bind({
+		      'items':{'obj':legendMenuData}
+		    })
+		    .setLabel('name')
+		    .setClick('click')
+		    .hide()
+		    .update();
+
+		var legendColorPicker = new seeker.colorpicker()
+			.attachTo(document.body)
+			.hide();
+
+		var nav_input;
+		var nav_sequence_menu;
+		var nav_sequence_submenu;
+		var nav_feature_menu;
+		var nav_selection;
+		var nav_option;
 
 		var _seqObjs = [];
 		var _legendObjs = [];
 
 		container.settings = {
 			'annotator':container,
+			'featureMenu':featureMenu,
+			'sequenceMenu':sequenceMenu,
+			'legendMenu':legendMenu,
+			'legendPicker':legendColorPicker,
+
+			'clickObj':null,
+
 			'seq_scale':null,
 			'margin':40,
 			'seq_underSpacing':30,
@@ -36,7 +223,7 @@
 			'legend_width':620,
 			'legend_height':40,
 			'legend_cols':5,
-			'seq_maxLength':900,
+			'seq_maxLength':1000,
 			'legend_colorSize':15,
 			'seq_spineWidth':5,
 			'seq_spineColor':'#9C9C9C',
@@ -201,17 +388,41 @@
 	seeker.annotator_sequence = function() {
 		var container = new seeker.element('g',true);
 		var label = new seeker.element('text',true)
-			.attachTo(container);
+			.attachTo(container)
+			.on('mouseover', function(evt) {
+				document.body.style.cursor = 'pointer';
+			})
+			.on('mouseout', function(evt) {
+				document.body.style.cursor = 'default';
+			})
+			.on('click', function(evt) {
+				evt.stopPropagation();
+				container.settings.clickObj = container;
+
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
+
+					container.settings.sequenceMenu
+						.place(seeker.util.mouseCoord(evt));
+
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closePopups();
+				}
+			});
+
 		var spine = new seeker.element('line',true)
-			.attachTo(container);
+			.attachTo(container)
+			.style('shape-rendering','crispEdges');
 
 		var _featureObjs = [];
 
 		container.update = function() {
-			if(_featureObjs.length != this.data.features.obj.length) {
+			if(_featureObjs.length != container.data.features.obj.length) {
 				var addObj = function() {
 					var feat = new seeker.annotator_feature();
 					feat.settings = container.settings;
+					feat.parent = container;
 					return feat;
 				}
 
@@ -236,12 +447,12 @@
 						.update();
 				}
 
-				seeker.util.updateCollection(this.data.features.obj, _featureObjs, addObj, deleteObj, updateObj, container);
+				seeker.util.updateCollection(container.data.features.obj, _featureObjs, addObj, deleteObj, updateObj, container);
 			}
 
-			this.updateSpine()
-			this.updateLabel();
-			this.arrangeLabels();
+			container.updateSpine()
+			container.updateLabel();
+			container.arrangeLabels();
 			return container;
 		}
 
@@ -319,13 +530,11 @@
 		}
 
 		container.postBind = function() {
-			var num = _featureObjs.length;
+			container
+				.onArrange('features',container.arrangeLabels);
 
-			while ( num-- ) {
-				_featureObjs
-					.onUpdate('visible', container.arrangeLabels)
-					.onUpdate('labeled', container.arrangeLabels);
-			}
+			container
+				.onUpdate('visible',container.update);
 
 			return container;
 		}
@@ -368,24 +577,60 @@
 			});
 
 		var feat = new seeker.element('line',true)
-			.attachTo(container);
+			.attachTo(container)
+			.style('shape-rendering','crispEdges')
+			.on('mouseover', function(evt) {
+				document.body.style.cursor = 'pointer';
+				var start = container.settings.seq_scale(container.getBound('start')) - 3;
+				var end = container.settings.seq_scale(container.getBound('end')) + 3;
+
+				feat
+					.draw(start,40,end,40)
+					.style('stroke-width',container.settings.seq_featWidth + 3);
+			})
+			.on('mouseout', function(evt) {
+				document.body.style.cursor = 'default';
+				var start = container.settings.seq_scale(container.getBound('start'));
+				var end = container.settings.seq_scale(container.getBound('end'));
+
+				feat
+					.draw(start,40,end,40)
+					.style('stroke-width',container.settings.seq_featWidth);
+			})
+			.on('click', function(evt) {
+				evt.stopPropagation();
+				container.settings.clickObj = container;
+
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
+
+					container.settings.featureMenu
+						.place(seeker.util.mouseCoord(evt));
+
+					seeker.env_clickTarget = container;
+				} else {
+					seeker.env_closePopups();
+				}
+			});
 
 		var _labelLevel = 0;
 
 		container.update = function() {
-			var name = this.getBound('name');
-			var start = container.settings.seq_scale(this.getBound('start'));
-			var end = container.settings.seq_scale(this.getBound('end'));
-			var visible = this.getBound('visible');
-			var labeled = this.getBound('labeled');
-			var color = this.getBound('color');
+			var name = container.getBound('name');
+			var start = container.settings.seq_scale(container.getBound('start'));
+			var end = container.settings.seq_scale(container.getBound('end'));
+			var visible = container.getBound('visible');
+			var labeled = container.getBound('labeled');
+			var color = container.getBound('color');
 
 			if (visible) {
+				container
+					.show();
+
 				feat
 					.draw(start,40,end,40)
 					.style('stroke-width',container.settings.seq_featWidth)
-					.style('stroke',color)
-					.show();
+					.style('stroke',color);
 
 				if (labeled) {
 					label
@@ -407,8 +652,7 @@
 					label.hide();
 				}
 			} else {
-				feat.hide()
-				label.hide();
+				container.hide();
 			}
 
 			return container;
@@ -421,6 +665,9 @@
 		}
 
 		container.postBind = function() {
+			container
+				.onUpdate('visible',container.update)
+				.onUpdate('labeled',container.update);
 
 			return container;
 		}
@@ -446,7 +693,28 @@
 		var color = new seeker.element('rect',true)
 			.attachTo(container);
 		var label = new seeker.element('text',true)
-			.attachTo(container);
+			.attachTo(container)
+			.on('mouseover', function(evt) {
+				document.body.style.cursor = 'pointer';
+			})
+			.on('mouseout', function(evt) {
+				document.body.style.cursor = 'default';
+			})
+			.on('click', function(evt) {
+				evt.stopPropagation();
+				container.settings.clickObj = container;
+
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
+
+					container.settings.legendMenu
+						.place(seeker.util.mouseCoord(evt));
+
+					seeker.env_clickTarget = container;
+				} else {
+					seeker.env_closePopups();
+				}
+			});
 
 		container.update = function() {
 			color

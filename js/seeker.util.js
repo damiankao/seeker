@@ -18,13 +18,35 @@
 		}
 	}
 
-	seeker.util.mouseCoord = function(event) {
-		if ( event.pageX == null && event.clientX != null ) {
-		  var doc = document.documentElement, body = document.body;
-		  	return [event.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc && doc.clientLeft || body && body.clientLeft || 0), event.clientY + (doc && doc.scrollTop  || body && body.scrollTop  || 0) - (doc   && doc.clientTop  || body && body.clientTop  || 0)];
+	seeker.util.mouseCoord = function(e) {
+		e = e || window.event;
+		var x = 0;
+		var y = 0;
+
+		if (e.pageX || e.pageY) {
+			x = e.pageX -
+			    (document.documentElement.scrollLeft || 
+			    document.body.scrollLeft) +
+			    document.documentElement.clientLeft;
+			y = e.pageY -
+			    (document.documentElement.scrollTop || 
+			    document.body.scrollTop) +
+			    document.documentElement.clientTop;;
 		} else {
-			return [event.pageX, event.pageY];
+			x = e.clientX;
+			y = e.clientY;
 		}
+
+		if (arguments[1]) {
+			x += (document.documentElement.scrollLeft || 
+			    document.body.scrollLeft) - 
+			    document.documentElement.clientLeft;
+			y += (document.documentElement.scrollTop || 
+			    document.body.scrollTop) - 
+			    document.documentElement.clientTop;
+		}
+
+		return [x,y];
 	}
 
 	//check if element is currently attached to DOM
@@ -211,7 +233,7 @@
 				}
 			}
 		}
-		
+
 		var i = views.length;
 		while ( i-- ) {
 			update(views[i], models[i]);
