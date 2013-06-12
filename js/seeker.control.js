@@ -1095,9 +1095,9 @@
 
 			if (pos > winDim[1] - 20) {
 				container
-					.style('height',winDim[1] - 20);
+					.style('height',winDim[1] - container.node.offsetTop - 20);
 				list
-					.style('height',winDim[1] - 20 - controlList.node.offsetHeight - 16);
+					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 36);
 			} else {
 				container
 					.style('height',null);

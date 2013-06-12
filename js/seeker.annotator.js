@@ -161,6 +161,38 @@
 			}}
 		];
 
+		var nav_sequenceControlData = [
+			{'name':'show all','click':function(evt) {
+				var l = container.data.seqs.obj.length;
+				var seqs = container.data.seqs.obj;
+
+				while ( l-- ) {
+					seqs[l].__set('show',true);
+				}
+
+				container.arrangeSequences();
+			}},
+			{'name':'hide all','click':function(evt) {
+				var l = container.data.seqs.obj.length;
+				var seqs = container.data.seqs.obj;
+
+				while ( l-- ) {
+					seqs[l].__set('show',false);
+				}
+
+				container.arrangeSequences();
+			}}
+		];
+
+		var nav_sequenceFeatureControlData = [
+			{'name':'show all','click':function(evt) {
+
+			}},
+			{'name':'hide all','click':function(evt) {
+
+			}}
+		];
+
 		var featureMenu = new seeker.menu()
 			.attachTo(document.body)
 		    .bind({
@@ -196,8 +228,118 @@
 			.hide();
 
 		var nav_input;
-		var nav_sequence_menu;
-		var nav_sequence_submenu;
+		var nav_sequence_menu = new seeker.complexMenu()
+			.attachTo(document.body)
+			.setControl({
+				'items':{'obj':nav_sequenceControlData}
+				},'name','click')
+			.setTemplate(function() {
+				var li = new seeker.element('li')
+					.on('click', function(evt) {
+						evt.stopPropagation();
+						container.arrangeSequences();
+					})
+					.on('mouseover', function(evt){
+						container.settings.clickObj = li.checkbox.data.text.obj;
+
+						//nav_sequence_submenu
+						//	.place([400,li.node.offsetTop]);
+						/*
+	var w = p.node().offsetWidth;
+    var h = p.node().offsetHeight;
+    var winDim = seeker.util.winDimensions();
+
+    p
+      .style('width',w + 20);
+
+    if (coord[1] + h > winDim[1] - 20) {
+      var newHeight = winDim[1] - 20 - coord[1];
+      if (newHeight > 150) {
+        p
+          .style('height',newHeight)
+          .style('top', coord[1]);
+      } else {
+        if (h > coord[1]) {
+          newHeight = coord[1];
+        } else {
+          newHeight = h;
+        }
+
+        p
+          .style('height',newHeight)
+          .style('top', coord[1] - newHeight + 22);
+      }
+    } else {
+      p
+        .style('top',coord[1]);
+    }
+
+    if (coord[0] + w > winDim[0] - 20) {
+      var newWidth = winDim[0] - w - coord[0] - 20;
+      if (newWidth > 200) {
+        p
+          .style('width',newWidth)
+          .style('left',coord[0])
+          .style('border-left','3px solid black');
+      } else {
+        if (w > coord[0] - 20) {
+          newWidth = coord[0] - 20;
+        } else {
+          newWidth = w;
+        }
+
+        p
+          .style('width',newWidth)
+          .style('left', coord[2] - newWidth - 3)
+          .style('border-right','3px solid black')
+      }
+    } else {
+      p
+        .style('left',coord[0])
+        .style('border-left','3px solid black');
+    }*/
+
+					});
+
+				var cbox = new seeker.checkbox()
+				.attachTo(li);
+
+				li.checkbox = cbox;
+
+				return li;
+			})
+			.setDelete(function(obj) {
+				obj.checkbox
+				.detach()
+				.unbind();
+
+				obj
+				.detach()
+				.unbind();
+			})
+			.setUpdate(function(obj, d) {
+				obj.checkbox
+				.bind({
+				  'text':{'obj':d,'key':'name'},
+				  'checkbox':{'obj':d,'key':'show'}
+				})
+				.update();
+			})
+			.setUnbind(function(obj) {
+				obj.checkbox.unbind();
+			})
+			.on('click', function(evt) {
+				evt.stopPropagation();
+			})
+			.whxy(-1,-1,300,50);
+
+		var nav_sequence_submenu = new seeker.complexMenu()
+			.attachTo(document.body)
+			.setControl({
+				'items':{'obj':nav_sequenceFeatureControlData}
+				},'name','click')
+			.hide();
+
 		var nav_feature_menu;
 		var nav_selection;
 		var nav_option;
@@ -373,6 +515,11 @@
 		}
 
 		container.postBind = function() {
+			nav_sequence_menu
+				.bind({
+				'items':{'obj':container.data.seqs.obj}
+				})
+				.update();
 
 			return container;
 		}
@@ -533,9 +680,6 @@
 			container
 				.onArrange('features',container.arrangeLabels);
 
-			container
-				.onUpdate('visible',container.update);
-
 			return container;
 		}
 
@@ -607,7 +751,7 @@
 					container.settings.featureMenu
 						.place(seeker.util.mouseCoord(evt));
 
-					seeker.env_clickTarget = container;
+					seeker.env_clickTarget = this;
 				} else {
 					seeker.env_closePopups();
 				}
@@ -658,6 +802,15 @@
 			return container;
 		}
 
+		container.updateColor = function() {
+			var color = container.getBound('color');
+
+			feat
+				.style('stroke',color);
+
+			return container;
+		}
+
 		container.setLevel = function(l) {
 			_labelLevel = l;
 
@@ -667,7 +820,8 @@
 		container.postBind = function() {
 			container
 				.onUpdate('visible',container.update)
-				.onUpdate('labeled',container.update);
+				.onUpdate('labeled',container.update)
+				.onUpdate('color',container.updateColor);
 
 			return container;
 		}
@@ -710,7 +864,7 @@
 					container.settings.legendMenu
 						.place(seeker.util.mouseCoord(evt));
 
-					seeker.env_clickTarget = container;
+					seeker.env_clickTarget = this;
 				} else {
 					seeker.env_closePopups();
 				}
@@ -722,7 +876,31 @@
 				.attr('height',container.settings.legend_colorSize)
 				.attr('x',0)
 				.attr('y',0)
-				.attr('fill',container.getBound('color'));
+				.attr('fill',container.getBound('color'))
+				.on('mouseover', function(evt) {
+					document.body.style.cursor = 'pointer';
+				})
+				.on('mouseout', function(evt) {
+					document.body.style.cursor = 'default';
+				})
+				.on('click', function(evt) {
+					evt.stopPropagation();
+					container.settings.clickObj = container;
+
+					if (seeker.env_clickTarget !== this) {
+						seeker.env_closePopups();
+
+						container.settings.legendPicker
+							.place(seeker.util.mouseCoord(evt))
+							.setCallback(function(hex) {
+								container.set('color',hex);
+							});
+
+						seeker.env_clickTarget = this;
+					} else {
+						seeker.env_closePopups();
+					}
+				});
 
 			label
 				.attr('x',container.settings.legend_colorSize + 5)
@@ -735,6 +913,8 @@
 		}
 
 		container.postBind = function() {
+			container
+				.onUpdate('color',container.update);
 
 			return container;
 		}
