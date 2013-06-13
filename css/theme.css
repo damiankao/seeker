@@ -134,6 +134,7 @@ body {
     -khtml-border-radius: 3px;
     border-radius: 3px;
     padding:10px 10px 10px 10px;
+    margin:10px;
 }
 
 #slider > #spine {
@@ -189,6 +190,7 @@ body {
     -khtml-border-radius: 3px;
     border-radius: 3px;
     position:relative;
+    margin:10px;
 }
 
 #checkbox > #cb {
@@ -311,9 +313,46 @@ body {
     cursor:pointer;
 }
 
+#navbar {
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    list-style:none;
+    background:#313841;
+    margin:0;
+    padding:3px 0px 3px 0px;
+    display:inline-block;
+    position:absolute;
+    color:#BDC3AF;
+}
+
+#navbar > li {
+    font-size:11pt;
+    font-family:Arial;
+    padding:3px 15px 3px 15px;
+    text-align:center;
+    display:inline-block;
+}
+
+#navbar > li:hover {
+    color:white;
+    cursor:pointer;
+}
+
 #annotator { 
     font-family:Arial;
     font-size:11pt;
     overflow-y:auto;
     overflow-x:hidden;
+}
+
+#blockscreen {
+    position:absolute;
+    background:white;
+    opacity:0.85;
+    top:0px;
+    left:0px;
+    z-index:1000;
+    overflow-y:auto;
 }

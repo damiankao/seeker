@@ -373,34 +373,6 @@
 		return this;
 	}
 
-	seeker.element.prototype.mouseCoord = function(evt) {
-		//get mouse position relative to clicked node
-		var absCoord = seeker.util.mouseCoord(event);
-		var totalOffsetX = 0;
-		var totalOffsetY = 0;
-		var currentElement = this.node;
-
-		do{
-			if (currentElement == document.body) {
-				break;
-			}
-
-			if (currentElement.translate_x) {
-				totalOffsetX += currentElement.translate_x;
-	        	totalOffsetY += currentElement.translate_y;
-	        } else if (currentElement.getAttribute('x')) {
-	        	totalOffsetX += parseInt(currentElement.getAttribute('x'));
-	        	totalOffsetY += parseInt(currentElement.getAttribute('y'));
-			} else {
-				totalOffsetX += parseInt(currentElement.offsetLeft) - parseInt(currentElement.scrollLeft);
-	        	totalOffsetY += parseInt(currentElement.offsetTop) - parseInt(currentElement.scrollTop);
-			}
-	    }
-	    while(currentElement = currentElement.parentNode)
-
-	    return [absCoord[0] - totalOffsetX, absCoord[1] - totalOffsetY];
-	}
-
 	//d3 functions
 	seeker.element.prototype.d3 = function() {
 		return d3.select(this.node);
@@ -452,6 +424,15 @@
 			.attachTo(e);
 
 		e.arrow = arrow;
+		_offsetX = 0;
+		_offsetY = 0;
+
+		e.setOffset = function(x,y) {
+			_offsetX = x;
+			_offsetY = y;
+
+			return e;
+		}
 
 		e.orient = function(m) {
 			if (m == '0') {
@@ -486,29 +467,29 @@
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
 				this.orient(1);
-				this.style('top',coord[1] + 20);
+				this.style('top',coord[1] + 20 - _offsetY);
 			} else if (coord[1] + h > winDim[1] - 30) {
 				//near bottom, make above cursor
 				this.orient(0);
-				this.style('top',coord[1] - h - 20);
+				this.style('top',coord[1] - h - 10 + _offsetY);
 			} else {
 				//default, under cursor
 				this.orient(1);
-				this.style('top',coord[1] + 20);
+				this.style('top',coord[1] + 20 - _offsetY);
 			}
 
 			if (coord[0] - w < 20) {
 				//near left, make right of cursor
 				this.position(1);
-				this.style('left', coord[0] + 10);
+				this.style('left', coord[0] + 10 - _offsetX);
 			} else if (coord[0] + w > winDim[0] - 20) {
 				//near right, make left of cursor
 				this.position(0);
-				this.style('left', coord[0] - w);
+				this.style('left', coord[0] - w + _offsetX);
 			} else {
 				//default, right of cursor
 				this.position(1);
-				this.style('left', coord[0] + 10);
+				this.style('left', coord[0] + 10 - _offsetX);
 			}
 
 			return this;
@@ -536,10 +517,25 @@
 	seeker.textbox = function() {
 		var container = new seeker.element('div')
 			.id('textbox');
+
+		var _prepend = '';
+		var _append = '';
+
+		container.prependText = function(val) {
+			_prepend = val;
+
+			return container;
+		}
+
+		container.appendText = function(val) { 
+			_append = val;
+
+			return container;
+		}
 		
 		container.update = function() {
 			container
-				.html(container.getBound('text'));
+				.html(_prepend + container.getBound('text') + _append);
 
 			return container;
 		}
@@ -588,15 +584,33 @@
 		container.setText = function(val) {
 			label.html(val);
 
+			container.update();
+
+			return container;
+		}
+
+		container.prependText = function(val) {
+			label.prependText(val);
+
+			return container;
+		}
+
+		container.appendText = function(val) { 
+			label.appendText(val);
+
 			return container;
 		}
 
 		container.update = function() {
+			if (container.data.text) {
+				label
+					.update();
+			}
+
 			label
 				.style('top',_margin - 1)
 				.style('left',cb.node.offsetWidth + 5 + _margin)
-				.update();
-
+					
 			container
 				.style('height',cb.node.offsetHeight + _margin * 2)
 				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
@@ -819,8 +833,10 @@
 			var spinePos = (spineWidth - 16) * ((container.getBound('slider') - _start) / (_end - _start));
 			var spineLeft = parseInt(numberBox.node.offsetLeft) + parseInt(numberBox.node.offsetWidth) + 10;
 
-			label
-				.update();
+			if (container.data.text) {
+				label
+					.update();
+			}
 
 			spine
 				.style('width',spineWidth)
@@ -859,13 +875,44 @@
 			return container;
 		}
 
+		marker.d3()
+			.on('mousedown', function(evt) {
+				d3.event.preventDefault();
+				d3.event.stopPropagation();
+
+				d3.select(document.body)
+					.on('mousemove', function(evt) {
+						var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
+						var spinePos = d3.mouse(container.node)[0] - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+						var length = _end - _start;
+						var val;
+
+						if (spinePos < 0) {
+							spinePos = 0;
+						} else if (spinePos > spineWidth) {
+							spinePos = spineWidth;
+						}
+
+						val = Math.round(spinePos / spineWidth * length);
+
+						container.set('slider',val + _start);
+					})
+					.on('mouseup', function(evt) {
+						d3.select(document.body)
+							.on('mousemove',null)
+							.on('mouseup',null);
+					})
+			})
+
+			/*
 		marker.node.onmousedown = function(evt) {
 			evt.preventDefault();
 			evt.stopPropagation();
 
 			document.body.onmousemove = function(evt) {
+				console.log(container.mouseCoord(evt)[0])
 				var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-				var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+				var spinePos = container.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
 				var length = _end - _start;
 				var val;
 
@@ -887,13 +934,13 @@
 				}
 			} 
 		}
-
+	*/
 		spine.node.onclick = function(evt) {
 			evt.preventDefault();
 			evt.stopPropagation();
 
 			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-			var spinePos = seeker.util.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+			var spinePos = container.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
 			var length = _end - _start;
 			var val;
 
@@ -1095,9 +1142,9 @@
 
 			if (pos > winDim[1] - 20) {
 				container
-					.style('height',winDim[1] - container.node.offsetTop - 20);
+					.style('height',winDim[1] - container.node.offsetTop - 50);
 				list
-					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 36);
+					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 66);
 			} else {
 				container
 					.style('height',null);
@@ -1120,6 +1167,22 @@
 			.attachTo(container);
 		list
 			.attachTo(container);
+
+		return container;
+	}
+
+	seeker.navBar = function() {
+		var container = new seeker.menu()
+			.id('navbar');
+
+		var i = seeker.env_popups.length;
+		while ( i-- ) {
+			if (seeker.env_popups[i] === container) {
+				seeker.env_popups.splice(i,1);
+			}
+		}
+
+		container.arrow.hide();
 
 		return container;
 	}
@@ -1182,21 +1245,6 @@
 			return container;
 		};
 
-		container.data = function(d) {
-			_data = d;
-
-			return container;
-		}
-
-		container.onclick = function() {
-			_data[1]();
-		}
-
-		container.update = function() {
-			container
-				.html(_data[0]);
-		}
-
 		return container;
 	}
 
@@ -1214,6 +1262,35 @@
 
 		container.setCallback = function(f) {
 			cp.callback = f;
+
+			return container;
+		}
+
+		return container;
+	}
+
+	seeker.blockscreen = function() {
+		var container = new seeker.element('div')
+			.attachTo(document.body)
+			.id('blockscreen');
+
+		container.hide = function() {
+			container
+				.style('display','none');
+
+			document.body.style.overflow = 'hidden';
+
+			return container;
+		}
+
+		container.show = function() {
+			var dim = seeker.util.winDimensions();
+			container
+				.style('width',dim[0])
+				.style('height',dim[1])
+				.style('display','block');
+
+			document.body.style.overflow = null;
 
 			return container;
 		}

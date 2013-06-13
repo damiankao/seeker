@@ -16,10 +16,207 @@
 	seeker.annotator = function() {
 		var container = new seeker.element('div')
 			.id('annotator');
-		var canvas = new seeker.element('svg',true)
+		var canvasContainer = new seeker.element('div')
 			.attachTo(container);
+		var canvas = new seeker.element('svg',true)
+			.style('background','white')
+			.attachTo(canvasContainer);
+
+		var dim = seeker.util.winDimensions();
+
+		var _seqObjs = [];
+		var _legendObjs = [];
+
+		container.settings = {
+			'annotator':container,
+
+			'clickObj':null,
+
+			'seq_scale':null,
+			'margin':40,
+			'topBarHeight':25,
+
+			'seq_underSpacing':30,
+			'legend_underSpacing':50,
+			'legend_show':true,
+			'legend_xPos':0,
+			'legend_width':620,
+			'legend_height':40,
+			'legend_cols':5,
+			'seq_maxLength':1000,
+			'legend_colorSize':15,
+			'seq_spineWidth':5,
+			'seq_spineColor':'#9C9C9C',
+			'seq_labelxPos':10,
+			'seq_numbered':true,
+			'seq_featWidth':10
+		};
 
 		//function menus
+		container.update = function() {
+			container.rescale();
+			if(_seqObjs.length != this.data.seqs.obj.length) {
+				var addObj = function() {
+					var seq = new seeker.annotator_sequence();
+					seq.settings = container.settings;
+					return seq;
+				}
+
+				var deleteObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					var seqData = container.data.seqs.obj[obj.index];
+
+					obj
+						.bind({
+							'name':{'obj':seqData,'key':'name'},
+							'length':{'obj':seqData,'key':'length'},
+							'visible':{'obj':seqData,'key':'show'},
+							'features':{'obj':seqData.feat}
+						})
+						.update();
+				}
+
+				seeker.util.updateCollection(this.data.seqs.obj, _seqObjs, addObj, deleteObj, updateObj, canvas);
+			}
+
+			if (_legendObjs.length != this.data.feats.obj.length) {
+				var addObj = function() {
+					var legend = new seeker.annotator_legend();
+					legend.settings = container.settings;
+					return legend;
+				}
+
+				var deleteObj = function(obj) {
+					obj
+						.detach()
+						.unbind();
+				}
+
+				var updateObj = function(obj) {
+					var featData = container.data.feats.obj[obj.index];
+
+					obj
+						.bind({
+							'name':{'obj':featData,'key':'name'},
+							'color':{'obj':featData,'key':'color'},
+							'visible':{'obj':featData,'key':'legend'},
+						})
+						.update();
+				}
+
+				seeker.util.updateCollection(this.data.feats.obj, _legendObjs, addObj, deleteObj, updateObj, canvas);
+			}
+
+			container.arrangeSequences();
+			container.arrangeLegend();
+
+			return container;
+		}
+
+		container.rescale = function() {
+			container.settings.seq_scale = d3.scale.linear()
+			    .domain([0, d3.max(this.data.seqs.obj,function(d) {return d['length'];})])
+			    .range([0, container.settings.seq_maxLength]);
+
+			return container;
+		}
+
+		container.arrangeSequences = function() {
+			//position each sequence element
+			var startY = container.settings.margin + container.settings.legend_height + container.settings.legend_underSpacing + container.settings.topBarHeight;
+			var startX = container.settings.margin;
+
+			if (!container.settings.legend_show) {
+				startY = container.settings.margin + container.settings.topBarHeight;
+			}
+
+			for ( var i = 0 ; i < _seqObjs.length ; i++ ) {
+				var g = _seqObjs[i];
+				var visible = container.data.seqs.obj[g.index]['show']
+				if (visible) {
+					g.node.translate_x = startX;
+					g.node.translate_y = startY;
+					g
+						.show()
+						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')');
+					startY += g.node.getBBox().height + container.settings.seq_underSpacing;
+				} else {
+					g
+						.hide();
+				}
+			}
+
+			canvas
+				.attr('height',startY + container.settings.margin)
+				.attr('width', container.node.style.width);
+
+			return container;
+		}
+
+		container.arrangeLegend = function() {
+			if (container.settings.legend_show) {
+				var startX = container.settings.margin + container.settings.legend_xPos;
+				var startY = container.settings.margin + container.settings.topBarHeight;
+				
+				var visible = seeker.util.countArray(container.data.feats.obj,'legend',true);
+				var cols = container.settings.legend_cols;
+				var rows = Math.ceil(visible / cols);
+				var w = container.settings.legend_width / cols;
+				var h = container.settings.legend_height / rows;
+
+				var i = 0;
+				for ( var r = 0 ;r < rows ; r++ ) {
+					for ( var c = 0 ; c < cols ; c++ ) {
+						if (i == container.data.feats.obj.length) {
+							break;
+						}
+						if (container.data.feats.obj[i].legend) {
+							_legendObjs[i]
+								.attr('transform','translate(' + (startX + c * w) + ',' + (startY + r * h) + ')')
+								.show();
+						} else {
+							_legendObjs[i].hide();
+							c--;
+						}
+						i++;
+					}
+				}
+			} else {
+				for ( var i = 0 ; i < _legendObjs.length ; i++ ) {
+					_legendObjs[i].hide();
+				}
+			}
+
+			return container;
+		}
+
+		container.postBind = function() {
+			nav_sequence_menu
+				.bind({
+					'items':{'obj':container.data.seqs.obj}
+				})
+				.update();
+
+			nav_feature_menu
+				.bind({
+					'items':{'obj':container.data.feats.obj}
+				})
+				.update();
+
+			return container;
+		}
+
+		container.postUnbind = function() {
+
+			return container;
+		}
+
+//menus
 		var featureMenuData = [
 			{'name':'show all features','click':function(evt, index){
 				evt.stopPropagation();
@@ -193,6 +390,15 @@
 			}}
 		];
 
+		var nav_featureControlData = [
+			{'name':'show all','click':function(evt) {
+
+			}},
+			{'name':'hide all','click':function(evt) {
+
+			}}
+		];
+
 		var featureMenu = new seeker.menu()
 			.attachTo(document.body)
 		    .bind({
@@ -233,7 +439,7 @@
 			.setControl({
 				'items':{'obj':nav_sequenceControlData}
 				},'name','click')
-			.setTemplate(function() {
+			.setTemplate(function(index) {
 				var li = new seeker.element('li')
 					.on('click', function(evt) {
 						evt.stopPropagation();
@@ -241,64 +447,64 @@
 					})
 					.on('mouseover', function(evt){
 						container.settings.clickObj = li.checkbox.data.text.obj;
+						var d = container.settings.clickObj.feat;
 
-						//nav_sequence_submenu
-						//	.place([400,li.node.offsetTop]);
-						/*
-	var w = p.node().offsetWidth;
-    var h = p.node().offsetHeight;
-    var winDim = seeker.util.winDimensions();
+						var coord = seeker.util.mouseCoord(evt);
+						var rel_coord = li.mouseCoord(evt);
 
-    p
-      .style('width',w + 20);
+						nav_sequence_submenu
+							.bind({'items':{'obj':d}})
+							.setOffset(0,20)
+							.place([parseInt(nav_sequence_menu.node.style.left) + parseInt(nav_sequence_menu.node.offsetWidth),coord[1] - rel_coord[1] - 15])
+							.update();
+					});
 
-    if (coord[1] + h > winDim[1] - 20) {
-      var newHeight = winDim[1] - 20 - coord[1];
-      if (newHeight > 150) {
-        p
-          .style('height',newHeight)
-          .style('top', coord[1]);
-      } else {
-        if (h > coord[1]) {
-          newHeight = coord[1];
-        } else {
-          newHeight = h;
-        }
+				var cbox = new seeker.checkbox()
+					.attachTo(li);
 
-        p
-          .style('height',newHeight)
-          .style('top', coord[1] - newHeight + 22);
-      }
-    } else {
-      p
-        .style('top',coord[1]);
-    }
+				li.checkbox = cbox;
 
-    if (coord[0] + w > winDim[0] - 20) {
-      var newWidth = winDim[0] - w - coord[0] - 20;
-      if (newWidth > 200) {
-        p
-          .style('width',newWidth)
-          .style('left',coord[0])
-          .style('border-left','3px solid black');
-      } else {
-        if (w > coord[0] - 20) {
-          newWidth = coord[0] - 20;
-        } else {
-          newWidth = w;
-        }
+				return li;
+			})
+			.setDelete(function(obj) {
+				obj.checkbox
+				.detach()
+				.unbind();
 
-        p
-          .style('width',newWidth)
-          .style('left', coord[2] - newWidth - 3)
-          .style('border-right','3px solid black')
-      }
-    } else {
-      p
-        .style('left',coord[0])
-        .style('border-left','3px solid black');
-    }*/
+				obj
+				.detach()
+				.unbind();
+			})
+			.setUpdate(function(obj, d) {
+				obj.checkbox
+				.bind({
+				  'text':{'obj':d,'key':'name'},
+				  'checkbox':{'obj':d,'key':'show'}
+				})
+				.prependText((obj.index + 1) + '. ')
+				.update();
+			})
+			.setUnbind(function(obj) {
+				obj.checkbox.unbind();
+			})
+			.on('click', function(evt) {
+				evt.stopPropagation();
+			})
+			.whxy(-1,-1,-1000,-1000);
 
+		var nav_sequence_submenu = new seeker.complexMenu()
+			.attachTo(document.body)
+			.setControl({
+				'items':{'obj':nav_sequenceFeatureControlData}
+				},'name','click')
+			.setTemplate(function() {
+				var li = new seeker.element('li')
+					.on('click', function(evt) {
+						evt.stopPropagation();
+						container.arrangeSequences();
+					})
+					.on('mouseover', function(evt){
+						
 					});
 
 				var cbox = new seeker.checkbox()
@@ -320,10 +526,102 @@
 			.setUpdate(function(obj, d) {
 				obj.checkbox
 				.bind({
-				  'text':{'obj':d,'key':'name'},
+				  'text':{'obj':d.ref,'key':'name'},
 				  'checkbox':{'obj':d,'key':'show'}
 				})
 				.update();
+			})
+			.whxy(-1,-1,-10000,-10000);
+
+		nav_sequence_submenu
+			.arrow.hide();
+
+		var nav_feature_menu = new seeker.complexMenu()
+			.attachTo(document.body)
+			.setControl({
+				'items':{'obj':nav_featureControlData}
+				},'name','click')
+			.setTemplate(function(index) {
+				var li = new seeker.element('li')
+					.style('text-align','left')
+					.on('click', function(evt) {
+						evt.stopPropagation();
+						container.arrangeSequences();
+					});
+
+				var label = new seeker.textbox()
+					.style('color','white')
+					.style('display','inline-block')
+					.style('margin','0px 10px 0px 0px ')
+					.attachTo(li);
+
+				var showButton = new seeker.button()
+					.style('display','inline-block')
+					.style('padding','2px 7px 2px 7px')
+					.style('font-size','9pt')
+					.style('margin','0px 0px 0px 5px')
+					.style('float','right')
+					.setType('suc')
+					.html('show all')
+					.attachTo(li);
+
+				var hideButton = new seeker.button()
+					.style('display','inline-block')
+					.style('padding','2px 7px 2px 7px')
+					.style('font-size','9pt')
+					.style('margin','0px 0px 0px 5px')
+					.style('float','right')
+					.setType('dan')
+					.html('hide all')
+					.attachTo(li);
+
+				li.label = label;
+				li.showButton = showButton;
+				li.hideButton = hideButton;
+
+				return li;
+			})
+			.setDelete(function(obj) {
+				obj
+				.detach()
+				.unbind();
+			})
+			.setUpdate(function(obj, d) {
+				var name = d.name;
+
+				obj.label
+					.bind({
+						'text':{'obj':d,'key':'name'}
+					})
+					.update();
+
+				obj.showButton.node.onclick = function(evt) {
+					var i = container.data.seqs.obj.length;
+					while ( i-- ) {
+						var feat = container.data.seqs.obj[i].feat;
+						var a = feat.length;
+						while ( a-- ) {
+							if (feat[a]['ref'].name == name) {
+								feat[a].__set('show',true);
+							}
+						}
+						feat.__arrange();
+					}
+				}
+
+				obj.hideButton.node.onclick = function(evt) {
+					var i = container.data.seqs.obj.length;
+					while ( i-- ) {
+						var feat = container.data.seqs.obj[i].feat;
+						var a = feat.length;
+						while ( a-- ) {
+							if (feat[a]['ref'].name == name) {
+								feat[a].__set('show',false);
+							}
+						}
+						feat.__arrange();
+					}
+				}
 			})
 			.setUnbind(function(obj) {
 				obj.checkbox.unbind();
@@ -331,203 +629,287 @@
 			.on('click', function(evt) {
 				evt.stopPropagation();
 			})
-			.whxy(-1,-1,300,50);
-
-		var nav_sequence_submenu = new seeker.complexMenu()
-			.attachTo(document.body)
-			.setControl({
-				'items':{'obj':nav_sequenceFeatureControlData}
-				},'name','click')
+			.whxy(-1, -1, -1000,-1000)
 			.hide();
 
-		var nav_feature_menu;
 		var nav_selection;
 		var nav_option;
 
-		var _seqObjs = [];
-		var _legendObjs = [];
+		var nav_barData = [
+			{'name':'input','click':function() {}},
+			{'name':'sequences','click':function(evt) {
+				evt.stopPropagation();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
 
-		container.settings = {
-			'annotator':container,
-			'featureMenu':featureMenu,
-			'sequenceMenu':sequenceMenu,
-			'legendMenu':legendMenu,
-			'legendPicker':legendColorPicker,
-
-			'clickObj':null,
-
-			'seq_scale':null,
-			'margin':40,
-			'seq_underSpacing':30,
-			'legend_underSpacing':50,
-			'legend_show':'top',
-			'legend_xPos':0,
-			'legend_width':620,
-			'legend_height':40,
-			'legend_cols':5,
-			'seq_maxLength':1000,
-			'legend_colorSize':15,
-			'seq_spineWidth':5,
-			'seq_spineColor':'#9C9C9C',
-			'seq_labelxPos':10,
-			'seq_numbered':true,
-			'seq_featWidth':10
-		};
-
-		container.update = function() {
-			container.rescale();
-			if(_seqObjs.length != this.data.seqs.obj.length) {
-				var addObj = function() {
-					var seq = new seeker.annotator_sequence();
-					seq.settings = container.settings;
-					return seq;
-				}
-
-				var deleteObj = function(obj) {
-					obj
-						.detach()
-						.unbind();
-				}
-
-				var updateObj = function(obj) {
-					var seqData = container.data.seqs.obj[obj.index];
-
-					obj
-						.bind({
-							'name':{'obj':seqData,'key':'name'},
-							'length':{'obj':seqData,'key':'length'},
-							'visible':{'obj':seqData,'key':'show'},
-							'features':{'obj':seqData.feat}
-						})
-						.update();
-				}
-
-				seeker.util.updateCollection(this.data.seqs.obj, _seqObjs, addObj, deleteObj, updateObj, canvas);
-			}
-
-			if (_legendObjs.length != this.data.feats.obj.length) {
-				var addObj = function() {
-					var legend = new seeker.annotator_legend();
-					legend.settings = container.settings;
-					return legend;
-				}
-
-				var deleteObj = function(obj) {
-					obj
-						.detach()
-						.unbind();
-				}
-
-				var updateObj = function(obj) {
-					var featData = container.data.feats.obj[obj.index];
-
-					obj
-						.bind({
-							'name':{'obj':featData,'key':'name'},
-							'color':{'obj':featData,'key':'color'},
-							'visible':{'obj':featData,'key':'legend'},
-						})
-						.update();
-				}
-
-				seeker.util.updateCollection(this.data.feats.obj, _legendObjs, addObj, deleteObj, updateObj, canvas);
-			}
-
-			container.arrangeSequences();
-			container.arrangeLegend();
-
-			return container;
-		}
-
-		container.rescale = function() {
-			container.settings.seq_scale = d3.scale.linear()
-			    .domain([0, d3.max(this.data.seqs.obj,function(d) {return d['length'];})])
-			    .range([0, container.settings.seq_maxLength]);
-
-			return container;
-		}
-
-		container.arrangeSequences = function() {
-			//position each sequence element
-			var startY = container.settings.margin + container.settings.legend_height + container.settings.legend_underSpacing;
-			var startX = container.settings.margin;
-
-			if (container.settings.legend_show == 'none' || container.settings.legend_show == 'bottom') {
-				startY = container.settings.margin;
-			}
-
-			for ( var i = 0 ; i < _seqObjs.length ; i++ ) {
-				var g = _seqObjs[i];
-				var visible = container.data.seqs.obj[g.index]['show']
-				if (visible) {
-					g.node.translate_x = startX;
-					g.node.translate_y = startY;
-					g
+					nav_sequence_menu
 						.show()
-						.attr('transform','translate(' + g.node.translate_x + ',' + g.node.translate_y + ')');
-					startY += g.node.getBBox().height + container.settings.seq_underSpacing;
+						.whxy(-1, -1, 100, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15)
+						.update();
+
+					seeker.env_clickTarget = this;
 				} else {
-					g
-						.hide();
+					seeker.env_closePopups();
 				}
-			}
+			}},
+			{'name':'features','click':function(evt) {
+				evt.stopPropagation();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
 
-			canvas
-				.style('height',startY + container.settings.margin)
+					nav_feature_menu
+						.show()
+						.whxy(-1, -1, 200, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15)
+						.update();
 
-			return container;
-		}
-
-		container.arrangeLegend = function() {
-			if (container.settings.legend_show != 'none') {
-				var startX = container.settings.margin + container.settings.legend_xPos;
-				var startY = container.settings.margin;
-				
-				var visible = seeker.util.countArray(container.data.feats.obj,'legend',true);
-				var cols = container.settings.legend_cols;
-				var rows = Math.ceil(visible / cols);
-				var w = container.settings.legend_width / cols;
-				var h = container.settings.legend_height / rows;
-
-				var i = 0;
-				for ( var r = 0 ;r < rows ; r++ ) {
-					for ( var c = 0 ; c < cols ; c++ ) {
-						if (i == container.data.feats.obj.length) {
-							break;
-						}
-						if (container.data.feats.obj[i].legend) {
-							_legendObjs[i]
-								.attr('transform','translate(' + (startX + c * w) + ',' + (startY + r * h) + ')');
-						} else {
-							_legendObjs[i].hide();
-							c--;
-						}
-						i++;
-					}
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closePopups();
 				}
-			} else {
-				for ( var i = 0 ; i < _legendObjs.length ; i++ ) {
-					_legendObjs[i].hide();
+			}},
+			{'name':'options','click':function(evt) {
+				evt.stopPropagation();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
+
+					blockscreen_option
+						.show()
+						.style('width',305)
+						.style('left',dim[0] - 305);
+
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closePopups();
 				}
-			}
+			}},
+			{'name':'export','click':function(evt) {
+				evt.stopPropagation();
+				var dim = seeker.util.winDimensions();
 
-			return container;
-		}
+				if (div_preview.img) {
+					div_preview.img.detach();
+				}
 
-		container.postBind = function() {
-			nav_sequence_menu
-				.bind({
-				'items':{'obj':container.data.seqs.obj}
-				})
-				.update();
+				label_preview
+					.style('top', dim[1] * 1/4 - 25)
+					.style('left', dim[0] / 2 - 200);
 
-			return container;
-		}
+				button_preview
+					.style('top',dim[1] * 3/4 + 10)
+					.style('left',dim[0] / 2 - button_preview.node.offsetWidth / 2);
 
-		container.postUnbind = function() {
+				div_preview
+					.style('width',dim[0] * 4/5)
+					.style('height', dim[1] * 1/2)
+					.style('top', dim[1] * 1/4)
+					.style('left', dim[0] * 1/10);
 
-			return container;
-		}
+				var html = canvas
+					.attr("title", "annotations")
+					.attr("version", 1.1)
+					.attr("xmlns", "http://www.w3.org/2000/svg")
+					.node.parentNode.innerHTML;
+
+				var img = new seeker.element('img')
+					.attachTo(div_preview)
+					.attr("src", "data:image/svg+xml;base64," + btoa(html))
+			        .style('width',dim[0] * 4/5)
+			        .style('height','auto');
+
+			    div_preview.img = img;
+
+				blockscreen_preview.show();
+			}},
+			{'name':'help','click':function() {}}
+		];
+
+		var nav_bar = new seeker.navBar()
+			.attachTo(container)
+			.bind({
+		 		'items':{'obj':nav_barData}
+			})
+			.setLabel('name')
+			.setClick('click')
+			.whxy(-1,-1,container.settings.margin,10)
+			.style('position','fixed')
+			.update();
+
+		var blockscreen_preview = new seeker.blockscreen()
+			.hide();
+		var div_preview = new seeker.element('div')
+			.attachTo(blockscreen_preview)
+			.style('position','absolute')
+			.style('overflow-x','hidden')
+			.style('overflow-y','auto')
+			.style('background','white')
+			.style('border','1px solid grey');
+		var label_preview = new seeker.element('div')
+			.style('position','absolute')
+			.style('font-family','Arial')
+			.style('font-size','11pt')
+			.attachTo(blockscreen_preview)
+			.html('right click on below image and save as to download as a SVG image.');
+		var button_preview = new seeker.button()
+			.attachTo(blockscreen_preview)
+			.setType('std')
+			.html('close')
+			.on('click', function(evt) {
+				blockscreen_preview.hide();
+			});
+
+		var blockscreen_input = new seeker.blockscreen()
+			.hide();
+
+		var blockscreen_option = new seeker.blockscreen()
+			.style('border-left','1px solid #313841')
+			.style('left',-10000)
+			.on('click',function(e) {e.stopPropagation()})
+			.show();
+		seeker.env_popups.push(blockscreen_option);
+
+		var opt_legendShow = new seeker.checkbox()
+			.bind({
+				'checkbox':{'obj':container.settings,'key':'legend_show'}
+			})
+			.attachTo(blockscreen_option)
+			.setText('show legend')
+			.update()
+			.whxy(-1,-1,0,0)
+			.onUpdate('checkbox',container.arrangeSequences)
+			.onUpdate('checkbox',container.arrangeLegend);
+
+		var opt_seqNumbered = new seeker.checkbox()
+			.bind({
+				'checkbox':{'obj':container.settings,'key':'seq_numbered'}
+			})
+			.attachTo(blockscreen_option)
+			.setText('numbered sequences')
+			.update()
+			.whxy(-1,-1,0,0);
+
+		var opt_spineColor;
+
+		var opt_margin = new seeker.slider()
+			.setInterval(5,150)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'margin'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('margins')
+		    .update()
+		    .onUpdate('slider',container.arrangeSequences);
+
+		var opt_legendSpacing = new seeker.slider()
+			.setInterval(0,dim[1])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_underSpacing'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('spacing under legend')
+		    .update()
+		    .onUpdate('slider',container.arrangeSequences);
+
+		var opt_legendWidth = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_width'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('legend width')
+		    .update()
+		    .onUpdate('slider',container.arrangeLegend);
+
+		var opt_legendHeight = new seeker.slider()
+			.setInterval(0,dim[1])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_height'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('legend height')
+		    .update()
+		    .onUpdate('slider',container.arrangeLegend);
+
+		var opt_legendCols = new seeker.slider()
+			.setInterval(0,20)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_cols'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('legend width')
+		    .update()
+		    .onUpdate('slider',container.arrangeLegend);
+
+		var opt_legendColorSize = new seeker.slider()
+			.setInterval(0,200)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_colorSize'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('legend color box size')
+		    .update();
+
+		var opt_legendXPos = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'legend_xPos'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('legend horizontal position')
+		    .update()
+		    .onUpdate('slider',container.arrangeLegend);
+
+		var opt_seqSpacing = new seeker.slider()
+			.setInterval(5,500)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'seq_underSpacing'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('spacing between sequences')
+		    .update()
+		    .onUpdate('slider',container.arrangeSequences);
+
+		var opt_spineWidth = new seeker.slider()
+			.setInterval(1,50)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'seq_spineWidth'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('sequence spine width')
+		    .update();
+
+		var opt_featWidth = new seeker.slider()
+			.setInterval(1,50)
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'seq_featWidth'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('feature width')
+		    .update();
+
+		var opt_labelXPos = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'seq_labelxPos'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('sequence label horizontal position')
+		    .update();
+
+		container.settings.featureMenu = featureMenu;
+		container.settings.sequenceMenu = sequenceMenu;
+		container.settings.legendMenu = legendMenu;
+		container.settings.legendPicker = legendColorPicker;
 
 		return container;
 	}
@@ -680,6 +1062,15 @@
 			container
 				.onArrange('features',container.arrangeLabels);
 
+			container.settings
+				.__onUpdate['seq_spineWidth'].push([container.updateSpine, container]);
+
+			container.settings
+				.__onUpdate['seq_labelxPos'].push([container.updateLabel, container]);
+
+			container.settings
+				.__onUpdate['seq_numbered'].push([container.updateLabel, container]);
+
 			return container;
 		}
 
@@ -811,6 +1202,13 @@
 			return container;
 		}
 
+		container.updateFeatWidth = function() {
+			feat
+				.style('stroke-width',container.settings.seq_featWidth);
+
+			return container;
+		}
+
 		container.setLevel = function(l) {
 			_labelLevel = l;
 
@@ -822,6 +1220,9 @@
 				.onUpdate('visible',container.update)
 				.onUpdate('labeled',container.update)
 				.onUpdate('color',container.updateColor);
+
+			container.settings
+				.__onUpdate['seq_featWidth'].push([container.updateFeatWidth,container]);
 
 			return container;
 		}
@@ -915,6 +1316,9 @@
 		container.postBind = function() {
 			container
 				.onUpdate('color',container.update);
+
+			container.settings
+				.__onUpdate['legend_colorSize'].push([container.update, container])
 
 			return container;
 		}
