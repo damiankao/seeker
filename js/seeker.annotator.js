@@ -440,9 +440,10 @@
 				'items':{'obj':nav_sequenceControlData}
 				},'name','click')
 			.setTemplate(function(index) {
-				var li = new seeker.element('li')
+				var li = new seeker.element('li');
+				li.d3()
 					.on('click', function(evt) {
-						evt.stopPropagation();
+						d3.event.stopPropagation();
 						container.arrangeSequences();
 					})
 					.on('mouseover', function(evt){
@@ -450,16 +451,17 @@
 						var d = container.settings.clickObj.feat;
 
 						var coord = seeker.util.mouseCoord(evt);
-						var rel_coord = li.mouseCoord(evt);
+						var rel_coord = d3.mouse(li.node);
 
 						nav_sequence_submenu
 							.bind({'items':{'obj':d}})
-							.setOffset(0,20)
-							.place([parseInt(nav_sequence_menu.node.style.left) + parseInt(nav_sequence_menu.node.offsetWidth),coord[1] - rel_coord[1] - 15])
+							.setOffset(0,0,45,15)
+							.place([parseInt(nav_sequence_menu.node.style.left) + parseInt(nav_sequence_menu.node.offsetWidth),coord[1] - rel_coord[1]])
 							.update();
 					});
 
 				var cbox = new seeker.checkbox()
+					.style('margin','0px')
 					.attachTo(li);
 
 				li.checkbox = cbox;
@@ -490,7 +492,7 @@
 			.on('click', function(evt) {
 				evt.stopPropagation();
 			})
-			.whxy(-1,-1,-1000,-1000);
+			.offscreen();
 
 		var nav_sequence_submenu = new seeker.complexMenu()
 			.attachTo(document.body)
@@ -508,7 +510,8 @@
 					});
 
 				var cbox = new seeker.checkbox()
-				.attachTo(li);
+					.style('margin','0px')
+					.attachTo(li);
 
 				li.checkbox = cbox;
 
@@ -531,7 +534,7 @@
 				})
 				.update();
 			})
-			.whxy(-1,-1,-10000,-10000);
+			.offscreen();
 
 		nav_sequence_submenu
 			.arrow.hide();
@@ -629,8 +632,7 @@
 			.on('click', function(evt) {
 				evt.stopPropagation();
 			})
-			.whxy(-1, -1, -1000,-1000)
-			.hide();
+			.offscreen();
 
 		var nav_selection;
 		var nav_option;
@@ -643,12 +645,11 @@
 					seeker.env_closePopups();
 
 					nav_sequence_menu
-						.show()
-						.whxy(-1, -1, 100, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15)
-						.update();
+						.whxy(-1, -1, 100, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15);
 
 					seeker.env_clickTarget = this;
 				} else {
+					console.log(nav_sequence_menu.node.offsetHeight);
 					seeker.env_closePopups();
 				}
 			}},
@@ -658,7 +659,6 @@
 					seeker.env_closePopups();
 
 					nav_feature_menu
-						.show()
 						.whxy(-1, -1, 200, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15)
 						.update();
 
@@ -673,7 +673,6 @@
 					seeker.env_closePopups();
 
 					blockscreen_option
-						.show()
 						.style('width',305)
 						.style('left',dim[0] - 305);
 
@@ -684,41 +683,50 @@
 			}},
 			{'name':'export','click':function(evt) {
 				evt.stopPropagation();
-				var dim = seeker.util.winDimensions();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closePopups();
 
-				if (div_preview.img) {
-					div_preview.img.detach();
+					var dim = seeker.util.winDimensions();
+
+					if (div_preview.img) {
+						div_preview.img.detach();
+					}
+
+					label_preview
+						.style('top', dim[1] * 1/4 - 25)
+						.style('left', dim[0] / 2 - 200);
+
+					button_preview
+						.style('top',dim[1] * 3/4 + 10)
+						.style('left',dim[0] / 2 - button_preview.node.offsetWidth / 2);
+
+					div_preview
+						.style('width',dim[0] * 4/5)
+						.style('height', dim[1] * 1/2)
+						.style('top', dim[1] * 1/4)
+						.style('left', dim[0] * 1/10);
+
+					var html = canvas
+						.attr("title", "annotations")
+						.attr("version", 1.1)
+						.attr("xmlns", "http://www.w3.org/2000/svg")
+						.node.parentNode.innerHTML;
+
+					var img = new seeker.element('img')
+						.attachTo(div_preview)
+						.attr("src", "data:image/svg+xml;base64," + btoa(html))
+				        .style('width',dim[0] * 4/5)
+				        .style('height','auto');
+
+				    div_preview.img = img;
+
+					blockscreen_preview
+						.whxy(dim[0],dim[1],0,0);
+
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closePopups();
 				}
-
-				label_preview
-					.style('top', dim[1] * 1/4 - 25)
-					.style('left', dim[0] / 2 - 200);
-
-				button_preview
-					.style('top',dim[1] * 3/4 + 10)
-					.style('left',dim[0] / 2 - button_preview.node.offsetWidth / 2);
-
-				div_preview
-					.style('width',dim[0] * 4/5)
-					.style('height', dim[1] * 1/2)
-					.style('top', dim[1] * 1/4)
-					.style('left', dim[0] * 1/10);
-
-				var html = canvas
-					.attr("title", "annotations")
-					.attr("version", 1.1)
-					.attr("xmlns", "http://www.w3.org/2000/svg")
-					.node.parentNode.innerHTML;
-
-				var img = new seeker.element('img')
-					.attachTo(div_preview)
-					.attr("src", "data:image/svg+xml;base64," + btoa(html))
-			        .style('width',dim[0] * 4/5)
-			        .style('height','auto');
-
-			    div_preview.img = img;
-
-				blockscreen_preview.show();
 			}},
 			{'name':'help','click':function() {}}
 		];
@@ -734,8 +742,13 @@
 			.style('position','fixed')
 			.update();
 
+		nav_sequence_menu
+			.whxy(-1, -1, 100, nav_bar.node.offsetTop + nav_bar.node.offsetHeight + 15)
+			.offscreen();
+
 		var blockscreen_preview = new seeker.blockscreen()
-			.hide();
+			.offscreen();
+		seeker.env_popups.push(blockscreen_preview);
 		var div_preview = new seeker.element('div')
 			.attachTo(blockscreen_preview)
 			.style('position','absolute')
@@ -754,17 +767,16 @@
 			.setType('std')
 			.html('close')
 			.on('click', function(evt) {
-				blockscreen_preview.hide();
+				blockscreen_preview.offscreen();
 			});
 
 		var blockscreen_input = new seeker.blockscreen()
-			.hide();
+			.offscreen()
 
 		var blockscreen_option = new seeker.blockscreen()
 			.style('border-left','1px solid #313841')
-			.style('left',-10000)
 			.on('click',function(e) {e.stopPropagation()})
-			.show();
+			.offscreen();
 		seeker.env_popups.push(blockscreen_option);
 
 		var opt_legendShow = new seeker.checkbox()
@@ -803,7 +815,7 @@
 		var opt_legendSpacing = new seeker.slider()
 			.setInterval(0,dim[1])
 		    .bind({
-		      'slider':{'obj':container.settings,'key':'legend_underSpacing'}
+		    	'slider':{'obj':container.settings,'key':'legend_underSpacing'}
 		    })
 		    .attachTo(blockscreen_option)
 		    .whxy(250,-1,0,0)
@@ -814,7 +826,7 @@
 		var opt_legendWidth = new seeker.slider()
 			.setInterval(0,dim[0])
 		    .bind({
-		      'slider':{'obj':container.settings,'key':'legend_width'}
+		    	'slider':{'obj':container.settings,'key':'legend_width'}
 		    })
 		    .attachTo(blockscreen_option)
 		    .whxy(250,-1,0,0)
@@ -825,12 +837,13 @@
 		var opt_legendHeight = new seeker.slider()
 			.setInterval(0,dim[1])
 		    .bind({
-		      'slider':{'obj':container.settings,'key':'legend_height'}
+				'slider':{'obj':container.settings,'key':'legend_height'}
 		    })
 		    .attachTo(blockscreen_option)
 		    .whxy(250,-1,0,0)
 		    .setText('legend height')
 		    .update()
+		    .onUpdate('slider',container.arrangeSequences)
 		    .onUpdate('slider',container.arrangeLegend);
 
 		var opt_legendCols = new seeker.slider()

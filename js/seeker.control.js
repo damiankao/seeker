@@ -367,6 +367,12 @@
 	    return this;
 	}
 
+	seeker.element.prototype.offscreen = function() {
+		this.node.style.left = seeker.util.winDimensions()[0] * 10;
+
+		return this;
+	}
+
 	seeker.element.prototype.on = function(e, f) {
 		this.node['on' + e] = f;
 
@@ -424,12 +430,16 @@
 			.attachTo(e);
 
 		e.arrow = arrow;
-		_offsetX = 0;
-		_offsetY = 0;
+		_leftOffsetX = 0;
+		_rightOffsetX = 0;
+		_topOffsetY = 0;
+		_bottomOffsetY = 0;
 
-		e.setOffset = function(x,y) {
-			_offsetX = x;
-			_offsetY = y;
+		e.setOffset = function(leftX, rightX, topY, bottomY) {
+			_leftOffsetX = leftX;
+			_rightOffsetX = rightX;
+			_topOffsetY = topY;
+			_bottomOffsetY = bottomY;
 
 			return e;
 		}
@@ -459,7 +469,6 @@
 		}
 
 		e.place = function(coord) {
-			this.show();
 			var winDim = seeker.util.winDimensions();
 			var w = this.node.offsetWidth;
 			var h = this.node.offsetHeight;
@@ -467,29 +476,29 @@
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
 				this.orient(1);
-				this.style('top',coord[1] + 20 - _offsetY);
+				this.style('top',coord[1] + 20 - _bottomOffsetY);
 			} else if (coord[1] + h > winDim[1] - 30) {
 				//near bottom, make above cursor
 				this.orient(0);
-				this.style('top',coord[1] - h - 10 + _offsetY);
+				this.style('top',coord[1] - h - 20 + _topOffsetY);
 			} else {
 				//default, under cursor
 				this.orient(1);
-				this.style('top',coord[1] + 20 - _offsetY);
+				this.style('top',coord[1] + 20 - _bottomOffsetY);
 			}
 
 			if (coord[0] - w < 20) {
 				//near left, make right of cursor
 				this.position(1);
-				this.style('left', coord[0] + 10 - _offsetX);
+				this.style('left', coord[0] + 10 - _rightOffsetX);
 			} else if (coord[0] + w > winDim[0] - 20) {
 				//near right, make left of cursor
 				this.position(0);
-				this.style('left', coord[0] - w + _offsetX);
+				this.style('left', coord[0] - w + _leftOffsetX);
 			} else {
 				//default, right of cursor
 				this.position(1);
-				this.style('left', coord[0] + 10 - _offsetX);
+				this.style('left', coord[0] + 10 - _rightOffsetX);
 			}
 
 			return this;
@@ -501,7 +510,7 @@
 			seeker.env_closePopups = function() {
 				var num = seeker.env_popups.length;
 				while (num--) {
-					seeker.env_popups[num].hide();
+					seeker.env_popups[num].offscreen();
 					seeker.env_clickTarget = null;
 				}
 			}
@@ -509,6 +518,8 @@
 		seeker.env_popups.push(e);
 
 		document.body.onclick = seeker.env_closePopups;
+
+		e.show();
 
 		return e;
 	}
@@ -610,7 +621,7 @@
 			label
 				.style('top',_margin - 1)
 				.style('left',cb.node.offsetWidth + 5 + _margin)
-					
+
 			container
 				.style('height',cb.node.offsetHeight + _margin * 2)
 				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
@@ -1055,6 +1066,7 @@
 
 		var list = new seeker.element('ul')
 			.id('complexMenuItems');
+		container.list = list;
 
 		var controlList = new seeker.element('ul')
 			.id('complexMenuControl');
@@ -1142,9 +1154,9 @@
 
 			if (pos > winDim[1] - 20) {
 				container
-					.style('height',winDim[1] - container.node.offsetTop - 50);
+					.style('height',winDim[1] - container.node.offsetTop - 70);
 				list
-					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 66);
+					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 86);
 			} else {
 				container
 					.style('height',null);
@@ -1279,18 +1291,6 @@
 				.style('display','none');
 
 			document.body.style.overflow = 'hidden';
-
-			return container;
-		}
-
-		container.show = function() {
-			var dim = seeker.util.winDimensions();
-			container
-				.style('width',dim[0])
-				.style('height',dim[1])
-				.style('display','block');
-
-			document.body.style.overflow = null;
 
 			return container;
 		}
