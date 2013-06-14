@@ -45,6 +45,7 @@ body {
 
 #complexMenu > #complexMenuItems > li:hover {
     cursor:default;
+    border-left:8px solid #313841;
 }
 
 #complexMenu {
@@ -134,7 +135,7 @@ body {
     -khtml-border-radius: 3px;
     border-radius: 3px;
     padding:10px 10px 10px 10px;
-    margin:10px;
+    margin:7px;
 }
 
 #slider > #spine {
@@ -190,7 +191,7 @@ body {
     -khtml-border-radius: 3px;
     border-radius: 3px;
     position:relative;
-    margin:10px;
+    margin:7px;
 }
 
 #checkbox > #cb {

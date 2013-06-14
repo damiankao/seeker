@@ -368,7 +368,7 @@
 	}
 
 	seeker.element.prototype.offscreen = function() {
-		this.node.style.left = seeker.util.winDimensions()[0] * 10;
+		this.node.style.left = seeker.util.winDimensions()[0] * -3;
 
 		return this;
 	}
@@ -430,6 +430,7 @@
 			.attachTo(e);
 
 		e.arrow = arrow;
+
 		_leftOffsetX = 0;
 		_rightOffsetX = 0;
 		_topOffsetY = 0;
@@ -469,10 +470,11 @@
 		}
 
 		e.place = function(coord) {
+			//e.show();
 			var winDim = seeker.util.winDimensions();
-			var w = this.node.offsetWidth;
-			var h = this.node.offsetHeight;
-
+			var w = e.node.offsetWidth;
+			var h = e.node.offsetHeight;
+			console.log(e.node.offsetHeight)
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
 				this.orient(1);
@@ -518,8 +520,6 @@
 		seeker.env_popups.push(e);
 
 		document.body.onclick = seeker.env_closePopups;
-
-		e.show();
 
 		return e;
 	}
@@ -915,59 +915,29 @@
 					})
 			})
 
-			/*
-		marker.node.onmousedown = function(evt) {
-			evt.preventDefault();
-			evt.stopPropagation();
+		spine.d3()
+			.on('click', function(evt) {
+				d3.event.preventDefault();
+				d3.event.stopPropagation();
 
-			document.body.onmousemove = function(evt) {
-				console.log(container.mouseCoord(evt)[0])
 				var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-				var spinePos = container.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
+				var spinePos = d3.mouse(container.node)[0] - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
 				var length = _end - _start;
 				var val;
 
-				if (spinePos < 0) {
-					spinePos = 0;
-				} else if (spinePos > spineWidth) {
-					spinePos = spineWidth;
-				}
-
 				val = Math.round(spinePos / spineWidth * length);
+				
+				if (val + _start < _start) {
+					val = 0;
+				} else if (val + _start > _end) {
+					val = _end - _start;
+				}
 
 				container.set('slider',val + _start);
-
-				document.body.onmouseup = function(evt) {
-					document.body.onmousemove = null;
-					document.body.onmouseup = null;
-
-					seeker.util.mouseCoord(evt)[0]
-				}
-			} 
-		}
-	*/
-		spine.node.onclick = function(evt) {
-			evt.preventDefault();
-			evt.stopPropagation();
-
-			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-			var spinePos = container.mouseCoord(evt)[0] - parseInt(container.node.style.left) - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
-			var length = _end - _start;
-			var val;
-
-			val = Math.round(spinePos / spineWidth * length);
-			
-			if (val + _start < _start) {
-				val = 0;
-			} else if (val + _start > _end) {
-				val = _end - _start;
-			}
-
-			container.set('slider',val + _start);
-		}
+			})
 
 		numberBox.node.onchange = function() {
-			container._data.__set(container._key, this.value);
+			container.set('slider',parseInt(this.value));
 		}
 
 		return container;
@@ -1242,6 +1212,8 @@
 			//dis - disabled button
 			if (m == 'std') {
 				container.style('background','#313841');
+			} else if (m == 'std2') {
+				container.style('background','#7F8C8D');
 			} else if (m == 'suc') {
 				container.style('background','#38B87C');
 			} else if (m == 'war') {

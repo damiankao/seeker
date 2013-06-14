@@ -52,7 +52,6 @@
 			'seq_featWidth':10
 		};
 
-		//function menus
 		container.update = function() {
 			container.rescale();
 			if(_seqObjs.length != this.data.seqs.obj.length) {
@@ -406,8 +405,8 @@
 		    })
 		    .setLabel('name')
 		    .setClick('click')
-		    .hide()
-		    .update();
+		    .update()
+		    .offscreen();
 
 		var sequenceMenu = new seeker.menu()
 			.attachTo(document.body)
@@ -416,8 +415,8 @@
 		    })
 		    .setLabel('name')
 		    .setClick('click')
-		    .hide()
-		    .update();
+		    .update()
+		    .offscreen();
 
 		var legendMenu = new seeker.menu()
 			.attachTo(document.body)
@@ -426,12 +425,12 @@
 		    })
 		    .setLabel('name')
 		    .setClick('click')
-		    .hide()
-		    .update();
+		    .update()
+		    .offscreen();
 
 		var legendColorPicker = new seeker.colorpicker()
 			.attachTo(document.body)
-			.hide();
+			.offscreen();
 
 		var nav_input;
 		var nav_sequence_menu = new seeker.complexMenu()
@@ -564,7 +563,7 @@
 					.style('font-size','9pt')
 					.style('margin','0px 0px 0px 5px')
 					.style('float','right')
-					.setType('suc')
+					.setType('std2')
 					.html('show all')
 					.attachTo(li);
 
@@ -574,7 +573,7 @@
 					.style('font-size','9pt')
 					.style('margin','0px 0px 0px 5px')
 					.style('float','right')
-					.setType('dan')
+					.setType('std2')
 					.html('hide all')
 					.attachTo(li);
 
@@ -673,7 +672,9 @@
 					seeker.env_closePopups();
 
 					blockscreen_option
+						.style('overflow-y','auto')
 						.style('width',305)
+						.style('height',dim[1])
 						.style('left',dim[0] - 305);
 
 					seeker.env_clickTarget = this;
@@ -812,6 +813,16 @@
 		    .update()
 		    .onUpdate('slider',container.arrangeSequences);
 
+		var opt_seqLength = new seeker.slider()
+			.setInterval(5,dim[0])
+		    .bind({
+		      'slider':{'obj':container.settings,'key':'seq_maxLength'}
+		    })
+		    .attachTo(blockscreen_option)
+		    .whxy(250,-1,0,0)
+		    .setText('maximum sequence width')
+		    .update();
+
 		var opt_legendSpacing = new seeker.slider()
 			.setInterval(0,dim[1])
 		    .bind({
@@ -853,7 +864,7 @@
 		    })
 		    .attachTo(blockscreen_option)
 		    .whxy(250,-1,0,0)
-		    .setText('legend width')
+		    .setText('legend columns')
 		    .update()
 		    .onUpdate('slider',container.arrangeLegend);
 
@@ -1084,6 +1095,9 @@
 			container.settings
 				.__onUpdate['seq_numbered'].push([container.updateLabel, container]);
 
+			container.settings
+				.__onUpdate['seq_maxLength'].push([container.updateSpine, container]);
+
 			return container;
 		}
 
@@ -1222,6 +1236,19 @@
 			return container;
 		}
 
+		container.updateSeqWidth = function() {
+			var start = container.settings.seq_scale(container.getBound('start'));
+			var end = container.settings.seq_scale(container.getBound('end'));
+
+			feat
+				.draw(start,40,end,40);
+
+			label
+				.attr('x',start + (end - start) / 2 - parseInt(label.node.getBBox().width) / 2);
+
+			return container;
+		}
+
 		container.setLevel = function(l) {
 			_labelLevel = l;
 
@@ -1236,6 +1263,10 @@
 
 			container.settings
 				.__onUpdate['seq_featWidth'].push([container.updateFeatWidth,container]);
+
+
+			container.settings
+				.__onUpdate['seq_maxLength'].push([container.updateSeqWidth, container]);
 
 			return container;
 		}
