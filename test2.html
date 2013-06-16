@@ -1,7 +1,7 @@
 <html>
   <head>
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
-    <script type="text/javascript" src="ext/d3.v2.js"></script>
+    <script type="text/javascript" src="ext/d3.v3.min.js"></script>
     <script type="text/javascript" src="ext/mousetrap.min.js"></script>
     <script type="text/javascript" src="ext/colorpicker.js"></script>
     <script type="text/javascript" src="js/seeker.util.js"></script>
@@ -20,94 +20,55 @@
   }},{'name':'cmd03','click':function() {console.log('three')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}],'selection':['label Change one','label change two','label change three']};
 
   var textbox = new seeker.textbox()
-    .bind({
-      'text':{'obj':data,'key':'label'}
+    .bind(data, {
+      'text':'label'
     })
     .attachTo(document.body)
     .update();
-
-  var cbox = new seeker.checkbox()
-    .bind({
-      'text':{'obj':data.cb[0],'key':'name'},
-      'checkbox':{'obj':data.cb[0],'key':'show'}
-    })
-    .attachTo(document.body)
-    .update()
-    .whxy(-1,-1,100,100);
-
-
-  var slider = new seeker.slider()
-    .setInterval(5,100)
-    .bind({
-      'text':{'obj':data,'key':'label'},
-      'slider':{'obj':data,'key':'range'}
-    })
-    .attachTo(document.body)
-    .whxy(200,-1,400,200)
-    .update();
-
-
-  var menu = new seeker.menu()
-    .attachTo(document.body)
-    .bind({
-      'items':{'obj':data.items}
-    })
-    .setLabel('name')
-    .setClick('click')
-    .whxy(-1,-1,300,100)
-    .update();
-
 
   var opt = new seeker.option()
     .attachTo(document.body)
     .setSelection(data.selection)
-    .bind({
-      'text':{'obj':data, 'key':'label'},
-      'option':{'obj':data, 'key':'label'}
-    })
-    .whxy(-1,-1,500,10)
+    .bind(data, {'text':'label','option':'label'})
+    .whxy(-1,-1,400,100)
     .update();
+
+
+  var slider = new seeker.slider()
+    .setInterval(0,100)
+    .bind(data, {'text':'label','slider':'range'})
+    .attachTo(document.body)
+    .whxy(200,-1,400,200)
+    .update();
+
+  var t = new seeker.menu()
+    .bind(data.items,{'text':'name','click':'click'})
+    .attachTo(document.body)
+    .update()
+    .place([100,200]);
+
 
   var cmenu = new seeker.complexMenu()
     .attachTo(document.body)
-    .setControl({
-      'items':{'obj':data.items}
-    },'name','click')
-    .bind({
-      'items':{'obj':data.cb}
-    })
-    .setTemplate(function() {
-      var container = new seeker.element('li');
+    .setControl(data.items, {'text':'name','click':'click'})
+    .bind(data.cb, {'text':'name','cb':'show'})
+    .setTemplate(function(li, data ,keys) {
       var cbox = new seeker.checkbox()
-        .attachTo(container);
+        .attachTo(li);
 
-      container.checkbox = cbox;
-
-      return container;
-    })
-    .setDelete(function(obj) {
-      obj.checkbox
-        .detach()
-        .unbind();
-
-      obj
-        .detach()
-        .unbind();
-    })
-    .setUpdate(function(obj, d) {
-      obj.checkbox
-        .bind({
-          'text':{'obj':d,'key':'name'},
-          'checkbox':{'obj':d,'key':'show'}
-        })
+      cbox
+        .bind(data, {'text':keys.text,'checkbox':keys.cb})
         .update();
+
+      li.checkbox = cbox;
     })
-    .setUnbind(function(obj) {
-      obj.checkbox.unbind();
+    .setRemove(function(obj) {
+      
     })
-    .whxy(-1,-1,10,200)
+    .whxy(-1,-1,800,200)
     .update();
 
+/*
   var nav = new seeker.navBar()
     .attachTo(document.body)
     .bind({
@@ -117,7 +78,7 @@
     .setClick('click')
     .whxy(-1,-1,50,20)
     .update();
-
+*/
   </script>
   </body>
 </html>

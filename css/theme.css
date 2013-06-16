@@ -29,13 +29,15 @@ body {
     display:inline-block;
     position:absolute;
     color:#BDC3AF;
+    z-index:9999;
 }
 
-#menu > li, #tooltip, #complexMenu > #complexMenuItems > li {
+#menu > li, #tooltip {
     font-size:11pt;
     font-family:Arial;
-    padding:3px 15px 3px 15px;
-    text-align:center;
+    margin:4px 15px 4px 15px;
+    position:relative;
+    white-space:nowrap;
 }
 
 #menu > li:hover {
@@ -43,9 +45,17 @@ body {
     cursor:pointer;
 }
 
+#complexMenu > #complexMenuItems > li {
+    font-size:11pt;
+    font-family:Arial;
+    margin:0px 15px 0px 15px;
+    position:relative;
+    white-space:nowrap;
+}
+
 #complexMenu > #complexMenuItems > li:hover {
     cursor:default;
-    border-left:8px solid #313841;
+    border-left:5px solid #313841;
 }
 
 #complexMenu {
@@ -134,8 +144,7 @@ body {
     -webkit-border-radius: 3px;
     -khtml-border-radius: 3px;
     border-radius: 3px;
-    padding:10px 10px 10px 10px;
-    margin:7px;
+    overflow:hidden;
 }
 
 #slider > #spine {
@@ -145,8 +154,8 @@ body {
     -khtml-border-radius: 4px;
     border-radius: 4px;
     background:#E0E0E0;
-    position:absolute;
-    display:inline;
+    position:relative;
+    display:inline-block;
 }
 
 #slider > #marker {
@@ -158,7 +167,6 @@ body {
     height:14;
     background:#BDC3AF;
     position:absolute;
-    display:inline;
 }
 
 #slider > #marker:hover {
@@ -174,7 +182,7 @@ body {
     font-size:11pt;
     color:white;
     display:block;
-    padding:0px 0px 5px 0px;
+    margin:5px;
 }
 
 #slider > #tbox {
@@ -182,6 +190,7 @@ body {
     width:40px;
     display:inline;
     padding:0px 5px 0px 5px;
+    margin:0px 5px 5px 5px;
 }
 
 #checkbox {
@@ -191,7 +200,11 @@ body {
     -khtml-border-radius: 3px;
     border-radius: 3px;
     position:relative;
-    margin:7px;
+    vertical-align:middle;
+}
+
+#checkbox:hover {
+    cursor:pointer;
 }
 
 #checkbox > #cb {
@@ -203,7 +216,10 @@ body {
     -khtml-border-radius: 4px;
     border-radius: 4px;
     opacity:0.8;
-    position:absolute;
+    position:relative;
+    display:inline-block;
+    margin:2px;
+    top:2px;
 }
 
 #checkbox > #cbChecked {
@@ -216,12 +232,14 @@ body {
     border-radius: 4px;
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAaCAYAAACgoey0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAX9JREFUeNpi+P//PwMNsS4QbwBiLnQ5WlqqAsRP/0PARiBmoYfFkkB8+z8qWALEjLS0mB+IL/3HDibSymJQXB7/jx/UgNSCvU4lwAbEG4DYkwi1WUxUspQZiOcRaSkIWOAKMk0Sg3jaf+IBOIVjMyQWiH8DsR+RljaTYOkBWJ5GNwRk2R+ooh9A7ETA0jwSLL0ATfEYqRpkyVc0xR+A2AyHpdFA/I9IS0F5WhRbAWIEtQQbeAXE6lhC5jeRlj4GYgVsRaYK1HBCmmWgmuyxhAwu8BpaXjNgs/gYkYbcAGIXPCGDDkCOM8eVPkCEFhE+JhX8BGJnfAkTxgC57BOVLAXlihBC2RA9Vf+k0FJQKk8nJv+jCwQi5WNyQAWxpR02wRQS8icy6CKlmMUlUUGipfOQK3lKLAbhdhIKfWZS6258kiAfzCZg6V4gZiOn0UBIAcgn63BYehK50Ke2xQxQH+3FUoqJUtJMIlYhLxAfxVJu09xiWENuMxCrUaNhCBBgAOAVfjALa5TLAAAAAElFTkSuQmCC) no-repeat center;
     background-size:8px 8px;
-    position:absolute;
+    position:relative;
+    display:inline-block;
+    margin:2px;
+    top:2px;
 }
 
 #checkbox > #cbChecked:hover {
     border:2px solid #5FBD8F;
-    cursor:pointer;
     opacity:0.8;
 }
 
@@ -233,11 +251,14 @@ body {
 
 #checkbox > #label {
     font-family:Arial;
-    font-size:11pt;
+    font-size:10pt;
     color:white;
-    position:absolute;
-    left:5;
+    position:relative;
     white-space:nowrap;
+    display:inline-block;
+    margin-right:2px;
+    margin-left:5px;
+    top:-4px;
 }
 
 #colorpicker {
@@ -280,22 +301,27 @@ body {
     -webkit-border-radius: 4px;
     -khtml-border-radius: 4px;
     border-radius: 4px;
+    overflow:hidden;
 }
 
 #optionBox > #label {
-    position:absolute;
+    position:relative;
     white-space:nowrap;
+    display:block;
+    margin:5px;
 }
 
 #optionBox > #optionSelection {
-    position:absolute;
-    display:inline;
+    position:relative;
+    display:block;
     background:#38B87C;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     -khtml-border-radius: 4px;
     border-radius: 4px;
-    padding:2px 2px 2px 8px;
+    width:auto;
+    padding:3px;
+    margin:5px;
 }
 
 #optionBox > #optionSelection:hover {
@@ -343,7 +369,7 @@ body {
 
 #annotator { 
     font-family:Arial;
-    font-size:11pt;
+    font-size:9pt;
     overflow-y:auto;
     overflow-x:hidden;
 }

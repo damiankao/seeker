@@ -14,6 +14,195 @@
 	}
 	*/
 	seeker.annotator = function() {
+		var base = new seeker.base('div')
+			.id('annotator');
+		var canvasContainer = new seeker.base('div')
+			.attachTo(base.container.node());
+		var canvas = new seeker.base('svg')
+			.attachTo(canvasContainer.container.node());
+
+		var dim = seeker.util.winDimensions();
+		base.settings = {
+			'margin':50,
+			'legend_show':true,
+			'legend_height':100,
+			'legend_spacing':20,
+			'seq_spacing':40,
+			'seq_maxLength':1000,
+			'feat_width':10,
+			'seq_spineColor':'grey',
+			'seq_spineWidth':5,
+			'seq_labelxPos':0,
+			'seq_numbered':true
+		};
+
+		var _scale;
+
+		base.update = function() {
+			_scale = d3.scale.linear()
+			    .domain([0, d3.max(base.data[base.keys.sequences],function(d) {return d['length'];})])
+			    .range([0, base.settings.seq_maxLength]);
+
+			//sequences
+			var seqGroups = canvas.container
+				.selectAll('g')
+				.data(base.data[base.keys.sequences]);
+
+			seqGroups
+				.enter()
+				.append('g')
+				.each(function(d, i) {
+					var obj = d3.select(this);
+					obj
+						.append('line')
+						.attr('id','spine')
+						.style('stroke-width',base.settings.seq_spineWidth);
+					obj
+						.append('text')
+						.attr('id','seq')
+						.style('font-weight','bold');
+				});
+
+				var feat = seqGroups
+					.selectAll('g')
+					.data(function(d) {
+						return d.feat;
+					});
+
+				feat
+					.enter()
+					.append('g')
+					.each(function(d,i) {
+						var obj = d3.select(this);
+						obj
+							.append('line')
+							.attr('id','feature')
+							.style('stroke-width',base.settings.feat_width);
+						obj
+							.append('text')
+							.attr('id','feature')
+							.attr('text-anchor','middle');
+					});
+
+				var levels = [];
+				feat
+					.select('text')
+					.text(function(d) {
+						return d.ref.name;
+					})
+					.attr('x',function(d) {
+						var length = d.end - d.start + 1;
+						return _scale(d.start) + _scale(length) / 2;
+					})
+					.attr('y', function(d, i) {
+						if (i == 0) {
+							levels = [];
+						}
+
+						var currentStart = this.getBBox().x;
+						var currentEnd = currentStart + this.getBBox().width;
+
+						var l = null;
+						for (var a = 0; a < levels.length ; a++ ) {
+							if (currentStart > levels[a] + 5) {
+								l = a;
+								levels[a] = currentEnd;
+								break;
+							}
+						}
+
+						if (l == null) {
+							levels.push(currentEnd);
+							l = levels.length - 1;
+						}
+
+						if (l == 0) {
+							return 30;
+						} else {
+							return 40 + (base.settings.feat_width / 2) + (l * 14);
+						}
+					});
+
+				feat
+					.select('line')
+					.attr('x1',function(d) {
+						return _scale(d.start);
+					})
+					.attr('y1',function(d) {
+						return 40;
+					})
+					.attr('x2',function(d) {
+						return _scale(d.end);
+					})
+					.attr('y2',function(d) {
+						return 40;
+					})
+					.style('stroke', function(d) {
+						return d.ref.color;
+					})
+
+				feat
+					.exit()
+					.remove();
+
+			seqGroups
+				.select('line')
+				.attr('x1',function(d) {
+					return 0;
+				})
+				.attr('y1',function(d) {
+					return 40;
+				})
+				.attr('x2',function(d) {
+					return _scale(d.length);
+				})
+				.attr('y2',function(d) {
+					return 40;
+				})
+				.style('stroke', function(d) {
+					return base.settings.seq_spineColor;
+				})
+
+			seqGroups
+				.select('text')
+				.text(function(d, i) {
+					if (base.settings.seq_numbered) {
+						return (i + 1) + '. ' + d.name;
+					} else {
+						return d.name;
+					}
+				})
+				.attr('x',base.settings.seq_labelxPos);
+
+			var startY = base.settings.margin;
+			if (base.settings.legend_show) {
+				startY += base.settings.legend_height + base.settings.legend_spacing;
+			}
+			var startX = base.settings.margin;
+			seqGroups
+				.attr('transform',function(d,i) {
+					var trans = 'translate(' + startX + ',' + startY +')';
+					startY += this.getBBox().height + base.settings.seq_spacing;
+					return trans;
+				});
+
+			seqGroups
+				.exit()
+				.remove();
+
+			canvas.container
+				.style('height',startY + base.settings.margin);
+		}
+
+		base.postBind = function() {
+
+		}
+
+		return base;
+	}
+
+/*
+	seeker.annotator = function() {
 		var container = new seeker.element('div')
 			.id('annotator');
 		var canvasContainer = new seeker.element('div')
@@ -1374,4 +1563,5 @@
 
 		return container;
 	}
+	*/
 })();

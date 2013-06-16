@@ -44,146 +44,90 @@
 			status
 	*/
 
-	//base elements
-	seeker.element = function(e) {
-		this.node;
+	seeker.update = function(d) {
+		if (d.__bound__) {
+			if (Object.prototype.toString.call(d) === '[object Array]') {
+				var u = d.__onUpdate__;
+				var l = u.length;
+				while ( l-- ) {
+					u[l]();
+				}
+			} else {
+				var args = arguments;
+				var u = d.__onUpdate__;
+				var l = args.length;
 
-		if (arguments[1]) {
-			this.node = document.createElementNS("http://www.w3.org/2000/svg", e);
-			this.text = function(val) {
-				this.node.textContent = val;
-
-				return this;
-			}
-		} else {
-			this.node = document.createElement(e);
-		}
-
-		this.node.__seeker = this;
-
-		if (e != 'input') {
-			this.node.onmousedown = function(evt) {
-				evt.preventDefault();
-			}
-		} else {
-			this.node.onmousedown = function(evt) {
-				evt.stopPropagation();
-			}
-		}
-
-		if (e == 'line') {
-			this.draw = function(x1,y1,x2,y2) {
-				this
-					.attr('x1',x1)
-					.attr('y1',y1)
-					.attr('x2',x2)
-					.attr('y2',y2);
-
-				return this;
+				if (args.length > 1) {
+					while ( l-- ) {
+						if (l != 0) {
+							if (u[args[l]]) {
+								var a = u[args[l]];
+								var i = a.length;
+								while ( i-- ) {
+									a[i]();
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+	}
+
+	seeker.base = function(e) {
+		e = d3.ns.qualify(e);
+
+    	this.container = d3.select(e.local ? document.createElementNS(e.space, e.local) : document.createElement(e));
+    	this.container
+    		.on('mousedown',function(evt) {
+    			d3.event.preventDefault();
+    			d3.event.stopPropagation();
+    		})
+
+    	return this;
+	}
+
+	seeker.base.prototype.attachTo = function(parent) {
+		parent.appendChild(this.container.node());
 
 		return this;
 	}
 
-	seeker.element.prototype.bind = function(d) {
-		//can bind multiple objects
-		//d is an object where each key/value is an array of [object, key]
-		if (this.data) {
-			this.unbind();
-		}
+	seeker.base.prototype.whxy = function(w,h,x,y) {
+		var c = this.container;
+		c
+			.style('width',(w != -1) ? w : c.node().style.width)
+			.style('height',(h != -1) ? h : c.node().style.height)
+			.style('left',(x != -1) ? x : c.node().style.left)
+			.style('top',(y != -1) ? y : c.node().style.top);
 
+		return this;
+	}
+
+	seeker.base.prototype.bind = function(d, k) {
 		this.data = d;
+		this.keys = k;
 
-		for (name in this.data) {
-			var obj = this.data[name].obj;
-
-			if (Object.prototype.toString.call(obj) === '[object Array]') {
-				//collection
-				if (!obj.__seeker) {
-					obj.__onArrange = [];
-
-					obj.__arrange = function() {
-						var i = this.__onArrange.length;
-						while ( i-- ) {
-							this.__onArrange[i][0]();
-						}
-					}
-
-					obj.__set = function(k, val, indeces) {
-						var l = indeces.length
-
-						while ( l-- ) {
-							this[indeces[l]].__set(k,val);
-						}
-
-						this.__arrange();
-						return this;
-					}
-
-					obj.__setAll = function(n, val) {
-						var l = this.length;
-
-						while ( l-- ) {
-							this[l].__set(n,val);
-						}
-
-						this.__arrange();
-						return this;
+		if (Object.prototype.toString.call(d) === '[object Array]') {
+			if (!this.data.__bound__) {
+				this.data.__onUpdate__ = [];
+				var i = this.data.length;
+				while ( i-- ) {
+					var obj = this.data[i];
+					if (!obj.__bound__) {
+						obj.__onUpdate__ = {};
+						obj.__bound__ = true;
 					}
 				}
-			} else {
-				//scalar
-				var key = this.data[name].key;
-				if (!obj.__seeker) {
-					obj.__onUpdate = {};
-
-					obj.__update = function() {
-						var args = arguments;
-						var argsLen = args.length;
-
-						var k = [];
-
-						if (args.length > 0) {
-							while ( argsLen-- ) {
-								if (this.__onUpdate[args[argsLen]]) {
-									k.push(args[argsLen]);
-								}
-							}
-						}
-
-						var kLen = k.length;
-						while ( kLen-- ) {
-							var update = this.__onUpdate[k[kLen]];
-							var updateLen = update.length;
-							while ( updateLen-- ) {
-								update[updateLen][0]();
-							}
-						}
-					}
-
-					obj.__clean = function() {
-						for (prop in this.__onUpdate) {
-							if ( this.__onUpdate[prop].length == 0 ) {
-								delete this.__onUpdate[prop];
-							}
-						}
-
-						return this;
-					}
-
-					obj.__set = function(k,val) {
-						this[k] = val;
-
-						this.__update(k);
-
-						return this;
-					}
-				}
+				this.data.__bound__ = true;
 			}
-			obj.__seeker = true;
+		} else {
+			if (!this.data.__bound__) {
+				this.data.__onUpdate__ = {};
+				this.data.__bound__ = true;
+			}
 		}
-			
+
 		if (this.postBind) {
 			this.postBind();
 		}
@@ -191,264 +135,46 @@
 		return this;
 	}
 
-	seeker.element.prototype.set = function(n, val) {
-		if (this.data) {
-			var obj = this.data[n].obj;
-			if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
-				var k = arguments[2]
-				var indeces = arguments[3];
-
-				obj.__set(k, val, indeces);
-			} else {
-				var key = this.data[n].key;
-
-				obj.__set(key,val);
-			}
-		}
+	seeker.base.prototype.set = function(name, val) {
+		this.data[this.keys[name]] = val;
+		seeker.update(this.data, this.keys[name]);
 
 		return this;
 	}
 
-	seeker.element.prototype.unbind = function() {
-		if (this.data) {
-			for (name in this.data) {
-				var obj = this.data[name].obj;
-
-				if ( Object.prototype.toString.call(obj) === '[object Object]' ) {
-					var key = this.data[name].key;
-
-					if (obj.__onUpdate[key]) {
-						var update = obj.__onUpdate[key];
-						var updateLen = update.length;
-
-						while ( updateLen-- ) {
-							if ( update[updateLen][1] === this ) {
-								update.splice(updateLen,1);
-							}
-						}
-					}
-				} else {
-					if (obj.__onArrange) {
-						var arrange = obj.__onArrange;
-						var arrangeLen = arrange.length;
-
-						while ( arrangeLen-- ) {
-							if ( arrange[arrangeLen][1] == this ) {
-								arrange.splice(arrangeLen,1);
-							}
-						}
-					}
-				}
-			}
-
-			this.data = null;
-		}
-
-		if (this.postUnbind) {
-			this.postUnbind();
-		}
+	seeker.base.prototype.id = function(val) {
+		this.container.attr('id',val);
 
 		return this;
 	}
 
-	seeker.element.prototype.onUpdate = function(d, f) {
-		if (this.data) {
-			var obj = this.data[d].obj;
+	seeker.responsiveBase = function(e) {
+		var base = new seeker.base(e);
 
-			if ( Object.prototype.toString.call(obj) === '[object Object]' ) {
-				var key = this.data[d].key;
+		var arrow = base.container
+			.append('div')
+			.attr('id','arrow');
 
-				if (!obj.__onUpdate[key]) {
-					obj.__onUpdate[key] = [];
-				}
-
-				obj.__onUpdate[key].push([f, this]);
-			}
-		}
-
-		return this;
-	}
-
-	seeker.element.prototype.onArrange = function(n, f) {
-		if (this.data) {
-			var obj = this.data[n].obj;
-
-			if ( Object.prototype.toString.call(obj) === '[object Array]' ) {
-				obj.__onArrange.push([f, this]);
-			}
-		}
-	}
-
-	seeker.element.prototype.getBound = function(d) {
-		if (Object.prototype.toString.call(this.data[d][0]) === '[object Array]' ) {
-			return this.data[d].obj;
-		} else {
-			return this.data[d].obj[this.data[d].key];
-		}
-	}
-
-	seeker.element.prototype.style = function(s, val) {
-		this.node.style[s] = val;
-		return this;
-	}
-
-	seeker.element.prototype.attr = function(a, val) {
-		this.node.setAttribute(a,val);
-		return this;
-	}
-
-	seeker.element.prototype.id = function(val) {
-		this.node.setAttribute('id',val);
-		return this;
-	}
-
-	seeker.element.prototype.class = function(val) {
-		this.node.className = val;
-		return this;
-	}
-
-	seeker.element.prototype.html = function(val) {
-		this.node.innerHTML = val;
-		return this;
-	}
-
-	seeker.element.prototype.whxy = function(w,h,x,y) {
-		s = this.node.style;
-		this.style('width',(w != -1) ? w : s.width)
-			.style('height',(h != -1) ? h : s.height)
-			.style('left',(x != -1) ? x : s.left)
-			.style('top',(y != -1) ? y : s.top);
-		return this;
-	}
-
-	seeker.element.prototype.attachTo = function(obj) {
-		if (obj.appendChild) {
-			obj.appendChild(this.node);
-		} else {
-			obj.node.appendChild(this.node);
-		}
-		return this;
-	}
-
-	seeker.element.prototype.append = function(obj) {
-		if (obj.attachTo) {
-			obj.attachTo(this.node);
-		} else {
-			this.node.appendChild(obj);
-		}
-
-		return this;
-	}
-
-	seeker.element.prototype.detach = function() {
-		if (this.node.parentNode) {
-			this.node.parentNode.removeChild(this.node);
-		}
-    	return this;
-	}
-
-	seeker.element.prototype.show = function() {
-		this.node.style.display = 'block';
-		return this;
-
-	}
-
-	seeker.element.prototype.hide = function() {
-		this.node.style.display = 'none';
-		return this;
-	}
-
-	seeker.element.prototype.toggle = function() {
-		if (this.node.style.display == "none") {
-	    	this.show();
-	    } else {
-	    	this.hide();
-	    }
-	    return this;
-	}
-
-	seeker.element.prototype.offscreen = function() {
-		this.node.style.left = seeker.util.winDimensions()[0] * -3;
-
-		return this;
-	}
-
-	seeker.element.prototype.on = function(e, f) {
-		this.node['on' + e] = f;
-
-		return this;
-	}
-
-	//d3 functions
-	seeker.element.prototype.d3 = function() {
-		return d3.select(this.node);
-	}
-
-	seeker.element.prototype.fade = function(from, to, d,e) {
-		this.d3()
-			.style('opacity',from)
-				.transition().duration(d).ease(e)
-					.style('opacity',to);
-
-		return this;
-	}
-
-	seeker.element.prototype.move = function(xa, ya, xb, yb, d,e) {
-		this.d3()
-			.style('top',ya)
-			.style('left',xa)
-			.transition().duration(d).ease(e)
-				.style('top',yb)
-				.style('left',xb);
-
-		return this;
-	}
-
-	seeker.element.prototype.moveFade = function(from,to,xa,ya,xb,yb,d,e) {
-		this.d3()
-			.style('opacity',from)
-			.style('top',ya)
-			.style('left',xa)
-			.transition().duration(d).ease(e)
-				.style('top',yb)
-				.style('left',xb)
-				.style('opacity',to);
-
-		return this;
-	}
-
-	seeker.popup = function(e) {
-		/*
-		This is used for any DOM element that pops up and requires attention to edge of window. 
-		This element is an arrowed rounded corner container.
-		*/
-		var arrow = new seeker.element('div');
-		var e = new seeker.element(e);
-
-		arrow
-			.id('arrow')
-			.attachTo(e);
-
-		e.arrow = arrow;
+		base.arrow = arrow;
 
 		_leftOffsetX = 0;
 		_rightOffsetX = 0;
 		_topOffsetY = 0;
 		_bottomOffsetY = 0;
 
-		e.setOffset = function(leftX, rightX, topY, bottomY) {
+		base.setOffset = function(leftX, rightX, topY, bottomY) {
 			_leftOffsetX = leftX;
 			_rightOffsetX = rightX;
 			_topOffsetY = topY;
 			_bottomOffsetY = bottomY;
 
-			return e;
+			return base;
 		}
 
-		e.orient = function(m) {
+		base.orient = function(m) {
 			if (m == '0') {
 				//above cursor
-				arrow.style('top',this.node.offsetHeight - 6);
+				arrow.style('top',basbase.container.style('height') - 6);
 			} else {
 				//below cursor
 				arrow.style('top',-4);
@@ -457,10 +183,10 @@
 			return this;
 		}
 
-		e.position = function(m) {
+		base.position = function(m) {
 			if (m =='0') {
 				//left of cursor
-				arrow.style('left',this.node.offsetWidth - 10 - arrow.node.offsetWidth);
+				arrow.style('left',basbase.container.style('width') - 10 - arrow.style('width'));
 			} else {
 				//right of cursor
 				arrow.style('left', 10);
@@ -469,444 +195,369 @@
 			return this;
 		}
 
-		e.place = function(coord) {
-			//e.show();
+		base.place = function(coord) {
+			//base.show();
 			var winDim = seeker.util.winDimensions();
-			var w = e.node.offsetWidth;
-			var h = e.node.offsetHeight;
-			console.log(e.node.offsetHeight)
+			var w = base.container.style('width');
+			var h = base.container.style('height');
+
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
-				this.orient(1);
-				this.style('top',coord[1] + 20 - _bottomOffsetY);
+				base.orient(1);
+				base.container.style('top',coord[1] + 20 - _bottomOffsetY);
 			} else if (coord[1] + h > winDim[1] - 30) {
 				//near bottom, make above cursor
-				this.orient(0);
-				this.style('top',coord[1] - h - 20 + _topOffsetY);
+				base.orient(0);
+				base.container.style('top',coord[1] - h - 20 + _topOffsetY);
 			} else {
 				//default, under cursor
-				this.orient(1);
-				this.style('top',coord[1] + 20 - _bottomOffsetY);
+				base.orient(1);
+				base.container.style('top',coord[1] + 20 - _bottomOffsetY);
 			}
 
 			if (coord[0] - w < 20) {
 				//near left, make right of cursor
-				this.position(1);
-				this.style('left', coord[0] + 10 - _rightOffsetX);
+				base.position(1);
+				base.container.style('left', coord[0] + 10 - _rightOffsetX);
 			} else if (coord[0] + w > winDim[0] - 20) {
 				//near right, make left of cursor
-				this.position(0);
-				this.style('left', coord[0] - w + _leftOffsetX);
+				base.position(0);
+				base.container.style('left', coord[0] - w + _leftOffsetX);
 			} else {
 				//default, right of cursor
-				this.position(1);
-				this.style('left', coord[0] + 10 - _rightOffsetX);
+				base.position(1);
+				base.container.style('left', coord[0] + 10 - _rightOffsetX);
 			}
 
 			return this;
 		}
 
-		if (!seeker.env_popups) {
-			seeker.env_clickTarget;
-			seeker.env_popups = [];
-			seeker.env_closePopups = function() {
-				var num = seeker.env_popups.length;
-				while (num--) {
-					seeker.env_popups[num].offscreen();
-					seeker.env_clickTarget = null;
-				}
-			}
-		}
-		seeker.env_popups.push(e);
-
-		document.body.onclick = seeker.env_closePopups;
-
-		return e;
+		return base;
 	}
 
-	//scalar binding elements
 	seeker.textbox = function() {
-		var container = new seeker.element('div')
+		var base = new seeker.base('span')
 			.id('textbox');
 
 		var _prepend = '';
 		var _append = '';
 
-		container.prependText = function(val) {
+		base.prependText = function(val) {
 			_prepend = val;
 
-			return container;
+			return base;
 		}
 
-		container.appendText = function(val) { 
+		base.appendText = function(val) { 
 			_append = val;
 
-			return container;
+			return base;
 		}
 		
-		container.update = function() {
-			container
-				.html(_prepend + container.getBound('text') + _append);
+		base.update = function() {
+			base.container
+				.html(_prepend + base.data[base.keys.text] + _append);
 
-			return container;
+			return base;
 		}
 
-		container.postBind = function() {
-			container
-				.onUpdate('text',container.update);
+		base.postBind = function() {
+			if (!base.data.__onUpdate__[base.keys.text]) {
+				base.data.__onUpdate__[base.keys.text] = [];
+			}
+
+			base.data.__onUpdate__[base.keys.text].push(base.update);
 		}
 
-		return container;
+		return base;
 	}
 
 
 	seeker.checkbox = function() {
-		var container = new seeker.element('div')
+		var base = new seeker.base('div')
 			.id('checkbox');
 
-		var cb = new seeker.element('div')
-			.id('cb')
-			.attachTo(container);
+		var cb = base.container
+			.append('div');
 
 		var label = new seeker.textbox()
-			.attachTo(container)
+			.attachTo(base.container.node())
 			.id('label');
-			
-		var _margin = 4;
 
-		container.check = function() {
-			cb.id('cbChecked');
+		base.check = function() {
+			cb
+				.attr('id','cbChecked');
 
-			return container;
+			return base;
 		}
 
-		container.uncheck = function() {
-			cb.id('cb');
+		base.uncheck = function() {
+			cb
+				.attr('id','cb');
 
-			return container;
+			return base;
 		}
 
-		container.margin = function(val) {
-			_margin = val;
-
-			return container;
-		}
-
-		container.setText = function(val) {
-			label.html(val);
-
-			container.update();
-
-			return container;
-		}
-
-		container.prependText = function(val) {
+		base.prependText = function(val) {
 			label.prependText(val);
 
-			return container;
+			return base;
 		}
 
-		container.appendText = function(val) { 
+		base.appendText = function(val) { 
 			label.appendText(val);
 
-			return container;
+			return base;
 		}
 
-		container.update = function() {
-			if (container.data.text) {
+		base.update = function() {
+			if (base.keys.text) {
 				label
 					.update();
 			}
 
-			label
-				.style('top',_margin - 1)
-				.style('left',cb.node.offsetWidth + 5 + _margin)
-
-			container
-				.style('height',cb.node.offsetHeight + _margin * 2)
-				.style('width',cb.node.offsetWidth + label.node.offsetWidth + _margin * 2 + 6);
-
-			cb
-				.style('top',_margin)
-				.style('left',_margin);
-
-
-			if (container.getBound('checkbox')) {
-				container.check();
+			if (base.data[base.keys.checkbox]) {
+				base.check();
 			} else {
-				container.uncheck();
+				base.uncheck();
 			}
 
-			return container;
+			return base;
 		}
 
-		container.node.onclick = function(evt) {
-			if (container.getBound('checkbox')) {
-				container.set('checkbox',false);
-			} else {
-				container.set('checkbox',true);
-			}
-		}
-
-		container.postBind = function() {
-			if (this.data.text) {
+		base.postBind = function() {
+			if (this.keys.text) {
 				label
-					.bind({
-						'text':{'obj':this.data.text.obj,'key':this.data.text.key}
-					})
+					.bind(base.data, {'text':base.keys.text})
 					.update();
-
-				container
-					.onUpdate('text',container.update);
 			}
 
-			container
-				.onUpdate('checkbox',container.update);
+			if (!base.data.__onUpdate__[base.keys.checkbox]) {
+				base.data.__onUpdate__[base.keys.checkbox] = [];
+			}
+
+			base.data.__onUpdate__[base.keys.checkbox].push(base.update);
 		}
 
-		container.postUnbind = function() {
-			label
-				.unbind();
-		}
+		base.container
+			.on('click',function(evt) {
+				d3.event.stopPropagation();
+				if (base.data[base.keys.checkbox]) {
+					base.set('checkbox',false);
+				} else {
+					base.set('checkbox',true)
+				}
+			})
 
-		return container;
+		return base;
 	}
 
 	seeker.option = function() {
-		var _selection = [];
-		var _margin = 10;
+		var base = new seeker.base('div')
+		base.container
+			.style('position','absolute');
 
-		var container = new seeker.element('div')
+		var innerContainer = new seeker.base('div')
+			.attachTo(base.container.node())
 			.id('optionBox');
 
 		var menu = new seeker.menu()
-			.attachTo(container)
+			.attachTo(base.container.node())
+		menu.container
 			.style('background','#38B87C')
-			.style('color','white');
+			.style('color','white')
+			.style('position','absolute')
+			.style('visibility','hidden');
 		menu.arrow
 			.style('background','#38B87C');
 
 		var label = new seeker.textbox()
-			.id('label')
-			.attachTo(container);
+			.attachTo(innerContainer.container.node())
+			.id('label');
 
-		var selection = new seeker.element('div')
-			.id('optionSelection')
-			.attachTo(container);
+		var selection = new seeker.base('div')
+			.attachTo(innerContainer.container.node())
+			.id('optionSelection');
 
-		var downArrow = new seeker.element('div')
-			.attachTo(container)
+		var downArrow = new seeker.base('div')
+			.attachTo(innerContainer.container.node())
 			.id('downArrow');
+		downArrow.container
+			.style('position','absolute');
 
-		container.setText = function(val) {
-			label.html(val);
-
-			return container;
-		}
-
-		container.setMargin = function(val) {
-			_margin = val;
-			container.update();
-
-			return container;
-		}
-
-		container.setSelection = function(d) {
+		var _selection;
+		base.setSelection = function(d) {
 			_selection = [];
 
 			for ( var i = 0 ; i < d.length ; i++ ) {
 				_selection.push({
 					'name':d[i],
 					'click':function(index) {
-					container.set('option',_selection[index].name);
-					menu.hide();
-				}});
+						base.set('option',_selection[index].name);
+					}
+				});
 			}
 
 			menu
-				.bind({'items':{'obj':_selection}})
-				.setLabel('name')
-				.setClick('click')
+				.bind(_selection, {'text':'name','click':'click'})
 				.update();
 
-			return container;
+			return base;
 		}
 
-		container.update = function() {
-			menu
-				.style('display','block')
-				.style('left',-10000);
-
+		base.update = function() {
 			label
-				.style('top',_margin)
-				.style('left',_margin)
 				.update();
 
-			var w = label.node.offsetWidth > menu.node.offsetWidth ? label.node.offsetWidth : menu.node.offsetWidth;
+			var lWidth = parseInt(label.container.style('width'));
+			var mWidth = parseInt(menu.container.style('width')) + 8;
 
-			selection
-				.style('width',w - 10)
-				.style('top',label.node.offsetHeight + 5 + _margin)
-				.style('left',_margin)
-				.html(container.getBound('option'));
+			base.container
+				.style('width',lWidth > mWidth ? lWidth : mWidth);
 
-			container
-				.style('width',w + _margin * 2)
-				.style('height',label.node.offsetHeight + 5 + selection.node.offsetHeight + _margin * 2);
+			innerContainer.container
+				.style('width',lWidth > mWidth ? lWidth : mWidth);
 
-			menu
-				.style('width',parseInt(container.node.style.width) - _margin * 2);
+			selection.container
+				.html(base.data[base.keys.option]);
 
-			downArrow
-				.style('top',selection.node.offsetTop + selection.node.offsetHeight / 2 - 3)
-				.style('left',selection.node.offsetLeft + selection.node.offsetWidth - 18);
+			menu.container
+				.style('left',4)
+				.style('top',parseInt(base.container.style('height')) + 8);
 
 			menu.arrow
-				.style('left',container.node.offsetWidth - 37);
+				.style('left',parseInt(base.container.style('width')) - 25);
 
-			return container;
+			downArrow.container
+				.style('top',parseInt(base.container.style('height')) - 17)
+				.style('left',parseInt(base.container.style('width')) - 22);
+
+			return base;
 		}
 
-		container.postBind = function() {
+		base.postBind = function() {
 			label
-				.bind({
-					'text':{'obj':this.data.text.obj,'key':this.data.text.key}
-				})
-				.onUpdate('text',container.update);
+				.bind(base.data, {'text':base.keys.text});
 
-			return container;
-		}
-
-		container.postUnbind = function() {
-			label
-				.unbind();
-
-			menu
-				.unbind();
-
-			return container;
-		}
-
-		var click = function(evt) {
-			evt.stopPropagation();
-			evt.preventDefault();
-
-			if (menu.node.style.left == '-10000px') {
-				menu.style('display','none');
+			if (!base.data.__onUpdate__[base.keys.option]) {
+				base.data.__onUpdate__[base.keys.option] = [];
 			}
 
-			menu.toggle();
-			menu
-				.moveFade(0,1,selection.node.offsetLeft, selection.node.offsetTop,selection.node.offsetLeft,selection.node.offsetTop + selection.node.offsetHeight + 13,120,'cubic-in-out');
+			base.data.__onUpdate__[base.keys.option].push(base.update);
+
+			return base;
 		}
 
-		selection.node.onclick = click;
-		downArrow.node.onclick = click;
+		selection.container
+			.on('click',function() {
+				d3.event.stopPropagation();
 
-		return container;
+				var m = menu.container;
+				if (m.style('visibility') == 'hidden') {
+					m.style('visibility','visible')
+				} else {
+					m.style('visibility','hidden')
+				}
+
+			});
+
+		downArrow.container
+			.on('click',function() {
+				d3.event.stopPropagation();
+
+				var m = menu.container;
+				if (m.style('visibility') == 'hidden') {
+					m.style('visibility','visible')
+				} else {
+					m.style('visibility','hidden')
+				}
+
+			});
+
+		return base;
 	}
 
 	seeker.slider = function() {
-		var container = new seeker.element('div')
+		var base = new seeker.base('div')
 			.id('slider');
-		var numberBox = new seeker.element('input')
+		var numberBox = new seeker.base('input')
 			.id('tbox');
-		var spine = new seeker.element('div')
+		var spine = new seeker.base('div')
 			.id('spine');
-		var marker = new seeker.element('div')
+		var marker = new seeker.base('div')
 			.id('marker');
 		var label = new seeker.textbox()
 			.id('label');
 
-		label.attachTo(container);
-		numberBox.attachTo(container);
-		spine.attachTo(container);
-		marker.attachTo(container);
+		label.attachTo(base.container.node());
+		numberBox.attachTo(base.container.node());
+		spine.attachTo(base.container.node());
+		marker.attachTo(base.container.node());
 
 		var _start;
 		var _end;
 
-		container.setText = function(val) {
-			label.html(val);
-
-			return container;
-		}
-
-		container.setInterval = function(s,e) {
+		base.setInterval = function(s,e) {
 			_start = s;
 			_end = e;
 
-			return container;
+			return base;
 		}
 
-		container.update = function() {
-			var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 10;
-			var spinePos = (spineWidth - 16) * ((container.getBound('slider') - _start) / (_end - _start));
-			var spineLeft = parseInt(numberBox.node.offsetLeft) + parseInt(numberBox.node.offsetWidth) + 10;
+		base.update = function() {
+			var sliderVal = base.data[base.keys.slider];
 
-			if (container.data.text) {
-				label
-					.update();
-			}
-
-			spine
-				.style('width',spineWidth)
-				.style('left',spineLeft)
-				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 2);
-
-			marker
-				.style('left',spineLeft + 3 + spinePos)
-				.style('top',parseInt(numberBox.node.offsetTop) + (parseInt(numberBox.node.offsetHeight) / 2) - 8);
-
-			numberBox.node.value = container.getBound('slider');
-
-			return container;
-		}
-
-		container.postBind = function() {
-			if (this.data.text) {
-				label
-					.bind({'text':{'obj':this.data.text.obj,'key':this.data.text.key}})
-					.update();
-
-				container
-					.onUpdate('text',container.update);
-			}
-
-			container
-				.onUpdate('slider',container.update);
-
-			return container;
-		}
-
-		container.postUnbind = function() {
 			label
-				.unbind();
+				.update();
 
-			return container;
+			var spineWidth = parseInt(base.container.style('width')) - parseInt(numberBox.container.style('width')) - 20;
+			var spinePos = (spineWidth - 16) * ((sliderVal - _start) / (_end - _start))
+			var spineLeft = parseInt(numberBox.container.node().offsetLeft) + 49;
+
+			spine.container
+				.style('width',spineWidth);
+
+			marker.container
+				.style('top',numberBox.container.node().offsetTop)
+				.style('left',spineLeft + spinePos)
+
+			numberBox.container.node().value = sliderVal;
+
+			return base;
 		}
 
-		marker.d3()
+		base.postBind = function() {
+			label
+				.bind(base.data, {'text':base.keys.text});
+
+			if (!base.data.__onUpdate__[base.keys.slider]) {
+				base.data.__onUpdate__[base.keys.slider] = [];
+			}
+
+			base.data.__onUpdate__[base.keys.slider].push(base.update);
+
+			return base;
+		}
+
+		marker.container
 			.on('mousedown', function(evt) {
 				d3.event.preventDefault();
 				d3.event.stopPropagation();
 
 				d3.select(document.body)
 					.on('mousemove', function(evt) {
-						var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-						var spinePos = d3.mouse(container.node)[0] - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
-						var length = _end - _start;
-						var val;
+						var spineWidth = parseInt(base.container.style('width')) - parseInt(numberBox.container.style('width')) - 20;
+						var spineLeft = parseInt(numberBox.container.node().offsetLeft) + 49;
+						var spinePos = Math.round((_end - _start) * (d3.mouse(base.container.node())[0] - spineLeft) / spineWidth);
 
-						if (spinePos < 0) {
-							spinePos = 0;
-						} else if (spinePos > spineWidth) {
-							spinePos = spineWidth;
+						if (spinePos < _start) {
+							spinePos = _start;
+						}
+						if (spinePos > _end) {
+							spinePos = _end;
 						}
 
-						val = Math.round(spinePos / spineWidth * length);
-
-						container.set('slider',val + _start);
+						base.set('slider',spinePos);
 					})
 					.on('mouseup', function(evt) {
 						d3.select(document.body)
@@ -915,295 +566,251 @@
 					})
 			})
 
-		spine.d3()
+		spine.container
 			.on('click', function(evt) {
 				d3.event.preventDefault();
 				d3.event.stopPropagation();
 
-				var spineWidth = parseInt(container.node.style.width) - parseInt(numberBox.node.offsetWidth) - 26;
-				var spinePos = d3.mouse(container.node)[0] - parseInt(numberBox.node.offsetLeft) - parseInt(numberBox.node.offsetWidth) - 18;
-				var length = _end - _start;
-				var val;
-
-				val = Math.round(spinePos / spineWidth * length);
+				var spineWidth = parseInt(base.container.style('width')) - parseInt(numberBox.container.style('width')) - 20;
+				var spineLeft = parseInt(numberBox.container.node().offsetLeft) + 49;
+				var spinePos = Math.round((_end - _start) * (d3.mouse(base.container.node())[0] - spineLeft) / spineWidth);
 				
-				if (val + _start < _start) {
-					val = 0;
-				} else if (val + _start > _end) {
-					val = _end - _start;
+				if (spinePos < _start) {
+					spinePos = _start;
+				}
+				if (spinePos > _end) {
+					spinePos = _end;
 				}
 
-				container.set('slider',val + _start);
+				base.set('slider',spinePos);
 			})
 
-		numberBox.node.onchange = function() {
-			container.set('slider',parseInt(this.value));
-		}
+		numberBox.container
+			.on('mousedown',null)
+			.on('change', function() {
+				var val = parseInt(this.value);
+				if (val < _start) {
+					val = _start;
+				}
+				if (val > _end) {
+					val = _end
+				}
+				base.set('slider', val);
+			});
 
-		return container;
+		base.container
+			.on('mousedown',null);
+
+
+		return base;
 	}
 
-
-	//collection binding elements
 	seeker.menu = function() {
-		var list = new seeker.popup('ul')
-			.id('menu');
+		var base = new seeker.responsiveBase('ul')
+		base.container
+			.attr('id','menu');
 
-		var _listObjs = [];
-		var _labelKey;
-		var _clickKey;
+		base.data;
+		base.keys = {};
 
-		list.setLabel = function(k) {
-			_labelKey = k;
+		base.postBind = function() {
+			var i = base.data.length;
+			while ( i-- ) {
+				var obj = base.data[i];
 
-			return list;
-		}
-
-		list.setClick = function(k) {
-			_clickKey = k;
-
-			return list;
-		}
-
-		list.update = function() {
-			//if length not equal, recreate items
-			if (_listObjs.length != this.data.items.length) {
-				var addObj = function() {
-					var li = new seeker.element('li');
-					var label = new seeker.textbox()
-						.attachTo(li);
-
-					li.label = label;
-
-					return li;
+				if (!obj.__onUpdate__[base.keys.text]) {
+					obj.__onUpdate__[base.keys.text] = [];
 				}
 
-				var delObj = function(obj) {
-					obj
-						.detach()
-						.unbind();
-
-					obj.label
-						.detach()
-						.unbind();
+				if (!obj.__onUpdate__[base.keys.click]) {
+					obj.__onUpdate__[base.keys.click] = [];
 				}
 
-				var updateObj = function(obj) {
-					obj.label
-						.bind({
-							'text':{'obj':list.data.items.obj[obj.index],'key':_labelKey}
-						})
-						.onUpdate('text', list.update);
-
-					obj
-						.on('click', function(evt) {
-							list.data.items.obj[obj.index][_clickKey](evt, obj.index);
-						});
-				}
-
-				seeker.util.updateCollection(list.data.items.obj, _listObjs, addObj, delObj, updateObj, list);
+				obj.__onUpdate__[base.keys.text].push(base.update);
+				obj.__onUpdate__[base.keys.click].push(base.update);
 			}
 
-			var num = _listObjs.length;
-			while ( num-- ) {
-				_listObjs[num].label.update();
-			}
-
-			return list;
+			base.data.__onUpdate__.push(base.update);
 		}
 
-		list.postBind = function() {
-			list.onUpdate('items',list.update);
+		base.update = function() {
+			var items = base.data;
+			var li = base.container
+				.selectAll('li')
+				.data(items)
 
-			return list;
+			li
+				.enter()
+				.append('li');
+
+			li
+				.html(function(d) {
+					return d[base.keys.text];
+				})
+				.on('click',function(d, i) {
+					d[base.keys.click](i);
+				});
+					
+			li
+				.exit()
+				.remove();
+
+			return base;
 		}
 
-		list.postUnbind = function() {
-
-			return list;
-		}
-
-		return list;
+		return base;
 	}
-
 
 	seeker.complexMenu = function() {
-		var container = new seeker.popup('div')
+		var base = new seeker.responsiveBase('div')
 			.id('complexMenu')
 		
-		container.arrow
+		base.arrow
 			.style('background','#38B87C');
 
-		var list = new seeker.element('ul')
+		var list = new seeker.base('ul')
 			.id('complexMenuItems');
-		container.list = list;
 
-		var controlList = new seeker.element('ul')
+		var controlList = new seeker.base('ul')
 			.id('complexMenuControl');
 
+		var _controlData = [];
+		var _controlKeys = {};
 		var _template;
-		var _update;
-		var _delete;
-		var _unbind;
+		var _remove;
 
-		var _listObjs = [];
-		var _controlListObjs = [];
+		base.setControl = function(d, keys) {
+			_controlData = d;
+			_controlKeys = keys;
 
-		container.setTemplate = function(f) {
+			var li = controlList.container
+				.selectAll('li')
+				.data(_controlData);
+
+			li
+				.enter()
+				.append('li');
+
+			li
+				.html(function(d) {
+					return d[_controlKeys.text];
+				})
+				.on('click',function(d, i) {
+					d[_controlKeys.click](i);
+				});
+
+			li
+				.exit()
+				.remove();
+
+			return base;
+
+		}
+
+		base.setTemplate = function(f) {
 			_template = f;
 
-			return container;
+			return base;
 		}
 
-		container.setUpdate = function(f) {
-			_update = f;
+		base.setRemove = function(f) {
+			_remove = f;
 
-			return container;
+			return base;
 		}
 
-		container.setDelete = function(f) {
-			_delete = f;
+		base.update = function() {
+			var li = list.container
+				.selectAll('li')
+				.data(base.data);
 
-			return container;
+			li
+				.enter()
+				.append('li')
+				.each(function(d,i) {
+					_template(this, d, base.keys);
+				});
+					
+			li
+				.exit()
+				.each(function() {
+					_remove(this);
+				})
+				.remove();
+
+			return base;
 		}
 
-		container.setUnbind = function(f) {
-			_unbind = f;
+		base.postBind = function() {
+			var i = base.data.length;
+			while ( i-- ) {
+				for (name in base.keys) {
+					var obj = base.data[i];
+					var key = base.keys[name]
+					if (!obj.__onUpdate__[key]) {
+						obj.__onUpdate__[key] = [];
+					}
 
-			return container;
-		}
-
-		container.setControl = function(d, name, click) {
-			controlList
-				.bind(d);
-
-			var addObj = function() {
-				var li = new seeker.element('li');
-				var label = new seeker.textbox()
-					.attachTo(li);
-
-				li.label = label;
-
-				return li;
+					obj.__onUpdate__[key].push(base.update);
+				}
 			}
 
-			var delObj = function(obj) {
-				obj
-					.detach();
-
-				obj.label
-					.detach()
-					.unbind();
-			}
-
-			var updateObj = function(obj) {
-				obj.label
-					.bind({
-						'text':{'obj':controlList.data.items.obj[obj.index], 'key':name}
-					})
-					.update();
-
-				obj
-					.on('click', function(evt) {
-						controlList.data.items.obj[obj.index][click](evt, obj.index);
-					});
-			}
-
-			seeker.util.updateCollection(controlList.data.items.obj, _controlListObjs, addObj, delObj, updateObj, controlList);
-
-			return container;
-		}
-
-		container.update = function() {
-			if(_listObjs.length != this.data.items.obj.length) {
-				seeker.util.updateCollection(this.data.items.obj, _listObjs, _template, _delete, _update, list);
-			}
-
-			var winDim = seeker.util.winDimensions();
-			var pos = container.node.offsetTop + container.node.offsetHeight;
-
-			if (pos > winDim[1] - 20) {
-				container
-					.style('height',winDim[1] - container.node.offsetTop - 70);
-				list
-					.style('height',winDim[1] - container.node.offsetTop - controlList.node.offsetHeight - 86);
-			} else {
-				container
-					.style('height',null);
-				list
-					.style('height',null);
-			}
-
-			return container;
-		}
-
-		container.postBind = function() {
-
-		}
-
-		container.postUnbind = function() {
-
+			base.data.__onUpdate__.push(base.update);
 		}
 
 		controlList
-			.attachTo(container);
+			.attachTo(base.container.node());
 		list
-			.attachTo(container);
+			.attachTo(base.container.node());
 
-		return container;
+		return base;
 	}
 
 	seeker.navBar = function() {
 		var container = new seeker.menu()
 			.id('navbar');
 
-		var i = seeker.env_popups.length;
-		while ( i-- ) {
-			if (seeker.env_popups[i] === container) {
-				seeker.env_popups.splice(i,1);
-			}
-		}
-
 		container.arrow.hide();
 
 		return container;
 	}
 
+
 	//static elements
 	seeker.status = function() {
-		var container = new seeker.element('div')
-			.attr('id','status');
+		var base = new seeker.base('div')
+			.id('status');
 
 		var _pos;
 
-		container.setPos = function(f) {
+		base.setPos = function(f) {
 			_pos = f.bind(this)
 
-			return container;
+			return base;
 		}
 
-		container.update = function(val) {
+		base.update = function(val) {
 			var pos = _pos();
 
-			container
+			base.container
 				.style('display','table')
 				.html(val)
 				.style('top',pos[1])
 				.style('left',pos[0]);
 
-			return container;
+			return base;
 		}
 
-		return container;
+		return base;
 	}
 
 	seeker.button = function() {
-		var container = new seeker.element('div')
+		var base = new seeker.base('div')
 			.id('button');
 
 		var _data = [];
 
-		container.setType = function(m) {
+		base.setType = function(m) {
 			//std - standard button
 			//suc - success button
 			//war - warning button
@@ -1211,62 +818,60 @@
 			//dan - danger button
 			//dis - disabled button
 			if (m == 'std') {
-				container.style('background','#313841');
+				base.container
+					.style('background','#313841');
 			} else if (m == 'std2') {
-				container.style('background','#7F8C8D');
+				base.container
+					.style('background','#7F8C8D');
 			} else if (m == 'suc') {
-				container.style('background','#38B87C');
+				base.container
+					.style('background','#38B87C');
 			} else if (m == 'war') {
-				container.style('background','#F1C40F');
+				base.container
+					.style('background','#F1C40F');
 			} else if (m == 'inf') {
-				container.style('background','#2980B9');
+				base.container
+					.style('background','#2980B9');
 			} else if (m == 'dan') {
-				container.style('background','#F34541');
+				base.container
+					.style('background','#F34541');
 			} else if (m == 'dis') {
-				container.style('background','#BDC3AF');
+				base.container
+					.style('background','#BDC3AF');
 			}
 
-			return container;
+			return base;
 		};
 
-		return container;
+		return base;
 	}
 
 	seeker.colorpicker = function() {
-		var container = new seeker.popup('div')
+		var base = new seeker.popup('div')
 			.id('colorpicker');
-		var slider = new seeker.element('div')
-			.attachTo(container)
+		var slider = new seeker.base('div')
+			.attachTo(base)
 			.id('colorslider');
-		var picker = new seeker.element('div')
-			.attachTo(container)
+		var picker = new seeker.base('div')
+			.attachTo(base)
 			.id('picker');
 
 		var cp = ColorPicker(slider.node, picker.node,function(){});
 
-		container.setCallback = function(f) {
+		base.setCallback = function(f) {
 			cp.callback = f;
 
-			return container;
+			return base;
 		}
 
-		return container;
+		return base;
 	}
 
 	seeker.blockscreen = function() {
-		var container = new seeker.element('div')
+		var base = new seeker.base('div')
 			.attachTo(document.body)
 			.id('blockscreen');
 
-		container.hide = function() {
-			container
-				.style('display','none');
-
-			document.body.style.overflow = 'hidden';
-
-			return container;
-		}
-
-		return container;
+		return base;
 	}
 })();

@@ -1,7 +1,7 @@
 <html>
   <head>
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
-    <script type="text/javascript" src="ext/d3.v2.js"></script>
+    <script type="text/javascript" src="ext/d3.v3.min.js"></script>
     <script type="text/javascript" src="ext/mousetrap.min.js"></script>
     <script type="text/javascript" src="ext/colorpicker.js"></script>
     <script type="text/javascript" src="js/seeker.util.js"></script>
@@ -19,10 +19,7 @@
   var dim = seeker.util.winDimensions();
 
   var anno = new seeker.annotator()
-    .bind({
-      'seqs':{'obj':data.seq},
-      'feats':{'obj':data.feat}
-    })
+    .bind(data, {'sequences':'seq','features':'feat'})
     .attachTo(document.body)
     .whxy(dim[0],dim[1],0,0)
     .update();
