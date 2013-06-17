@@ -7,11 +7,6 @@
 	Annotator is used to view annotations on series of sequence. It allows the user to
 	input annotation data and manipulate the visualization.
 
-	bind:
-	{
-	'seqs':{'obj':data},
-	'feats':{'obj':data}
-	}
 	*/
 	seeker.annotator = function() {
 		var base = new seeker.base('div')
@@ -25,8 +20,11 @@
 		base.settings = {
 			'margin':50,
 			'legend_show':true,
-			'legend_height':100,
-			'legend_spacing':20,
+			'legend_width':800,
+			'legend_height':70,
+			'legend_spacing':30,
+			'legend_size':15,
+			'legend_cols':5,
 			'seq_spacing':40,
 			'seq_maxLength':1000,
 			'feat_width':10,
@@ -43,14 +41,91 @@
 			    .domain([0, d3.max(base.data[base.keys.sequences],function(d) {return d['length'];})])
 			    .range([0, base.settings.seq_maxLength]);
 
+			if (base.settings.legend_show) {
+				var featData = base.data[base.keys.features];
+				var legendGroups = canvas.container
+					.selectAll('#annotator_legendGroups')
+					.data(featData);
+
+				legendGroups
+					.enter()
+					.append('g')
+					.attr('id','annotator_legendGroups')
+					.each(function(d,i) {
+						var obj = d3.select(this);
+
+						obj
+							.append('rect')
+							.attr('x',0)
+							.attr('y',0);
+						obj
+							.append('text')
+							.attr('baseline-shift','-33%');
+					});
+
+				legendGroups
+					.select('text')
+					.text(function(d) {
+						return d.name;
+					})
+					.attr('x',base.settings.legend_size + 5)
+					.attr('y',base.settings.legend_size / 2);
+
+				legendGroups
+					.select('rect')
+					.attr('width',base.settings.legend_size)
+					.attr('height',base.settings.legend_size)
+					.attr('fill', function(d) {
+						return d.color;
+					});
+
+				var visibleCount = 0;
+				var a = featData.length;
+				while ( a-- ) {
+					if (featData[a].legend) {
+						visibleCount += 1;
+					}
+				}
+
+				var count = 0;
+				var xSpacing = base.settings.legend_width / base.settings.legend_cols;
+				var ySpacing = base.settings.legend_height / Math.ceil(visibleCount / base.settings.legend_cols)
+
+				legendGroups
+					.style('display', function(d) {
+						if (d.legend) {
+							return 'block';
+						} else {
+							return 'none';
+						}
+					})
+					.attr('transform',function(d,i) {
+						var row = Math.floor(count / base.settings.legend_cols);
+						var col = count % base.settings.legend_cols;
+						if (d.legend) {
+							count += 1;
+						}
+
+						return 'translate(' + (base.settings.margin + (col * xSpacing)) + ',' + (base.settings.margin + (row * ySpacing)) + ')';
+					});
+
+				legendGroups
+					.exit()
+					.remove();
+			} else {
+				canvas.container
+					.selectAll('#annotator_legendGroups')
+					.style('display','none');
+			}
 			//sequences
 			var seqGroups = canvas.container
-				.selectAll('g')
+				.selectAll('#annotator_seqGroups')
 				.data(base.data[base.keys.sequences]);
 
 			seqGroups
 				.enter()
 				.append('g')
+				.attr('id','annotator_seqGroups')
 				.each(function(d, i) {
 					var obj = d3.select(this);
 					obj
@@ -64,7 +139,7 @@
 				});
 
 				var feat = seqGroups
-					.selectAll('g')
+					.selectAll('#annotator_featGroups')
 					.data(function(d) {
 						return d.feat;
 					});
@@ -72,12 +147,12 @@
 				feat
 					.enter()
 					.append('g')
+					.attr('id','annotator_featGroups')
 					.each(function(d,i) {
 						var obj = d3.select(this);
 						obj
 							.append('line')
-							.attr('id','feature')
-							.style('stroke-width',base.settings.feat_width);
+							.attr('id','feature');
 						obj
 							.append('text')
 							.attr('id','feature')
@@ -86,7 +161,21 @@
 
 				var levels = [];
 				feat
+					.style('display',function(d) {
+						if (d.show) {
+							return 'block';
+						} else {
+							return 'none';
+						}
+					})
 					.select('text')
+					.style('display', function(d) {
+						if (d.label) {
+							return 'block';
+						} else {
+							return 'none';
+						}
+					})
 					.text(function(d) {
 						return d.ref.name;
 					})
@@ -119,7 +208,7 @@
 						if (l == 0) {
 							return 30;
 						} else {
-							return 40 + (base.settings.feat_width / 2) + (l * 14);
+							return 35 + (base.settings.feat_width) + (l * 14);
 						}
 					});
 
@@ -129,35 +218,43 @@
 						return _scale(d.start);
 					})
 					.attr('y1',function(d) {
-						return 40;
+						return 35 + base.settings.feat_width / 2;
 					})
 					.attr('x2',function(d) {
 						return _scale(d.end);
 					})
 					.attr('y2',function(d) {
-						return 40;
+						return 35 + base.settings.feat_width / 2;
 					})
 					.style('stroke', function(d) {
 						return d.ref.color;
 					})
+					.style('stroke-width',base.settings.feat_width);
 
 				feat
 					.exit()
 					.remove();
 
 			seqGroups
+				.style('display',function(d) {
+					if (d.show) {
+						return 'block';
+					} else {
+						return 'none';
+					}
+				})
 				.select('line')
 				.attr('x1',function(d) {
 					return 0;
 				})
 				.attr('y1',function(d) {
-					return 40;
+					return 35 + base.settings.feat_width / 2;
 				})
 				.attr('x2',function(d) {
 					return _scale(d.length);
 				})
 				.attr('y2',function(d) {
-					return 40;
+					return 35 + base.settings.feat_width / 2;
 				})
 				.style('stroke', function(d) {
 					return base.settings.seq_spineColor;
@@ -192,10 +289,13 @@
 
 			canvas.container
 				.style('height',startY + base.settings.margin);
+
+			return base;
 		}
 
 		base.postBind = function() {
 
+			return base;
 		}
 
 		return base;
