@@ -49,6 +49,51 @@
 		return [x,y];
 	}
 
+	seeker.util.bindModel = function(d) {
+		if (Object.prototype.toString.call(d) === '[object Array]') {
+			if (!d.__bound__) {
+				d.__onUpdate__ = [];
+				var i = d.length;
+				while ( i-- ) {
+					var obj = d[i];
+					if (!obj.__bound__) {
+						obj.__onUpdate__ = {};
+						obj.__bound__ = true;
+					}
+				}
+				d.__bound__ = true;
+			}
+		} else {
+			if (!d.__bound__) {
+				d.__onUpdate__ = {};
+				d.__bound__ = true;
+			}
+		}
+	}
+
+	seeker.util.addUpdate = function(d, key, f) {
+		if (d.__bound__) {
+			if (!d.__onUpdate__[key]) {
+				d.__onUpdate__[key] = [];
+			}
+
+			d.__onUpdate__[key].push(f);
+		}
+	}
+
+	seeker.util.set = function(d, key, val) {
+		if (d.__bound__) {
+			d[key] = val;
+			if (d.__onUpdate__[key]) {
+				var obj = d.__onUpdate__[key];
+				var i = obj.length;
+				while ( i-- ) {
+					obj[i]();
+				}
+			}
+		}
+	}
+
 	//check if element is currently attached to DOM
 	seeker.util.inDOM = function(element) {
 	    while (element = element.parentNode) {

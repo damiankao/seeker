@@ -131,6 +131,7 @@
 					obj
 						.append('line')
 						.attr('id','spine')
+						.style('shape-rendering','crispEdges')
 						.style('stroke-width',base.settings.seq_spineWidth);
 					obj
 						.append('text')
@@ -152,6 +153,7 @@
 						var obj = d3.select(this);
 						obj
 							.append('line')
+							.style('shape-rendering','crispEdges')
 							.attr('id','feature');
 						obj
 							.append('text')
@@ -294,8 +296,23 @@
 		}
 
 		base.postBind = function() {
+			seeker.util.bindModel(base.settings);
+
+			for (name in base.settings) {
+				if (name.lastIndexOf('__',0)) {
+					seeker.util.addUpdate(base.settings, name, base.update);
+				}
+			}
 
 			return base;
+		}
+
+		base.hideAllFeature = function(name) {
+
+		}
+
+		base.showAllFeature = function(name) {
+
 		}
 
 		return base;

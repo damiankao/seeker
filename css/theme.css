@@ -138,7 +138,7 @@ body {
 }
 
 #slider {
-    position:relative;
+    position:absolute;
     background:#313841;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
@@ -167,6 +167,7 @@ body {
     height:14;
     background:#BDC3AF;
     position:absolute;
+    bottom:5;
 }
 
 #slider > #marker:hover {

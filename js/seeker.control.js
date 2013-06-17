@@ -108,25 +108,7 @@
 		this.data = d;
 		this.keys = k;
 
-		if (Object.prototype.toString.call(d) === '[object Array]') {
-			if (!this.data.__bound__) {
-				this.data.__onUpdate__ = [];
-				var i = this.data.length;
-				while ( i-- ) {
-					var obj = this.data[i];
-					if (!obj.__bound__) {
-						obj.__onUpdate__ = {};
-						obj.__bound__ = true;
-					}
-				}
-				this.data.__bound__ = true;
-			}
-		} else {
-			if (!this.data.__bound__) {
-				this.data.__onUpdate__ = {};
-				this.data.__bound__ = true;
-			}
-		}
+		seeker.util.bindModel(d);
 
 		if (this.postBind) {
 			this.postBind();
@@ -507,18 +489,19 @@
 		base.update = function() {
 			var sliderVal = base.data[base.keys.slider];
 
-			label
-				.update();
+			if (base.keys.text) {
+				label
+					.update();
+			}
 
-			var spineWidth = parseInt(base.container.style('width')) - parseInt(numberBox.container.style('width')) - 20;
+			var spineWidth = parseInt(base.container.node().style.width) - 60;
 			var spinePos = (spineWidth - 16) * ((sliderVal - _start) / (_end - _start))
-			var spineLeft = parseInt(numberBox.container.node().offsetLeft) + 49;
+			var spineLeft = 54;
 
 			spine.container
 				.style('width',spineWidth);
 
 			marker.container
-				.style('top',numberBox.container.node().offsetTop)
 				.style('left',spineLeft + spinePos)
 
 			numberBox.container.node().value = sliderVal;
@@ -527,14 +510,23 @@
 		}
 
 		base.postBind = function() {
-			label
-				.bind(base.data, {'text':base.keys.text});
+			if (base.keys.text) {
+				label
+					.bind(base.data, {'text':base.keys.text});
+			}
 
 			if (!base.data.__onUpdate__[base.keys.slider]) {
 				base.data.__onUpdate__[base.keys.slider] = [];
 			}
 
 			base.data.__onUpdate__[base.keys.slider].push(base.update);
+
+			return base;
+		}
+
+		base.setText = function(val) {
+			label.container
+				.html(val);
 
 			return base;
 		}
