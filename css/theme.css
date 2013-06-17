@@ -356,9 +356,9 @@ body {
 }
 
 #navbar > li {
-    font-size:11pt;
+    font-size:10pt;
     font-family:Arial;
-    padding:3px 15px 3px 15px;
+    padding:3px 10px 3px 10px;
     text-align:center;
     display:inline-block;
 }

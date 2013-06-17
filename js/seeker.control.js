@@ -130,6 +130,20 @@
 		return this;
 	}
 
+	seeker.base.prototype.hide = function() {
+		this.container
+			.style('visibility','hidden');
+
+		return this;
+	}
+
+	seeker.base.prototype.show = function() {
+		this.container
+			.style('visibility','visible');
+
+		return this;
+	}
+
 	seeker.responsiveBase = function(e) {
 		var base = new seeker.base(e);
 
@@ -213,6 +227,18 @@
 
 			return this;
 		}
+
+		if(!seeker.env_closeAll) {
+			seeker.env_toClose = [];
+			seeker.env_closeAll = function() {
+				var i = seeker.env_toClose.length;
+				while ( i-- ) {
+					seeker.env_toClose[i].hide();
+				}
+			}
+		}
+
+		seeker.env_toClose.push(base);
 
 		return base;
 	}
@@ -762,8 +788,9 @@
 		var container = new seeker.menu()
 			.id('navbar');
 
-		container.arrow.hide();
-
+		container.arrow
+			.style('display','none');
+			
 		return container;
 	}
 

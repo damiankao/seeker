@@ -35,6 +35,7 @@
 		};
 
 		var _scale;
+		var _navBarHeight = 20;
 
 		base.update = function() {
 			_scale = d3.scale.linear()
@@ -106,7 +107,7 @@
 							count += 1;
 						}
 
-						return 'translate(' + (base.settings.margin + (col * xSpacing)) + ',' + (base.settings.margin + (row * ySpacing)) + ')';
+						return 'translate(' + (base.settings.margin + (col * xSpacing)) + ',' + (base.settings.margin + _navBarHeight + (row * ySpacing)) + ')';
 					});
 
 				legendGroups
@@ -273,7 +274,7 @@
 				})
 				.attr('x',base.settings.seq_labelxPos);
 
-			var startY = base.settings.margin;
+			var startY = base.settings.margin + _navBarHeight;
 			if (base.settings.legend_show) {
 				startY += base.settings.legend_height + base.settings.legend_spacing;
 			}
@@ -314,6 +315,34 @@
 		base.showAllFeature = function(name) {
 
 		}
+
+		//menus
+		var navData = [
+			{'name':'input','click':function() {
+
+			}},
+			{'name':'sequences','click':function() {
+				
+			}},
+			{'name':'features','click':function() {
+				
+			}},
+			{'name':'options','click':function() {
+				
+			}},
+			{'name':'export','click':function() {
+				
+			}},
+			{'name':'about','click':function() {
+				
+			}}
+		];
+
+		var navBar = new seeker.navBar()
+			.attachTo(base.container.node())
+			.bind(navData, {'text':'name','click':'click'})
+			.whxy(-1,-1,50,20)
+			.update();
 
 		return base;
 	}
