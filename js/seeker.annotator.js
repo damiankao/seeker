@@ -344,6 +344,31 @@
 			.whxy(-1,-1,50,20)
 			.update();
 
+		var _targetData;
+
+		var sequenceMenuData = [];
+		var sequenceMenu;
+
+		var featureMenuData = [];
+		var featureMenu;
+
+		var legendMenuData = [];
+		var legendMenu;
+
+		var blockscreen_input;
+
+		var menu_sequences;
+
+		var submenu_features;
+
+		var menu_features;
+
+		var panel_options
+
+		var blockscreen_export;
+
+		var panel_about;
+
 		return base;
 	}
 
