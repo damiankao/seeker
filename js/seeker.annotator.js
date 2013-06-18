@@ -346,13 +346,46 @@
 
 		var _targetData;
 
-		var sequenceMenuData = [];
+		var sequenceMenuData = [
+			{'name':'hide this sequence','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'show all features','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'hide all features','click':function(evt) {
+				evt.stopPropagation();
+			}}
+		];
 		var sequenceMenu;
 
-		var featureMenuData = [];
+		var featureMenuData = [
+			{'name':'hide this feature','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'hide this label','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'show all features','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'hide all features','click':function(evt) {
+				evt.stopPropagation();
+			}}
+		];
 		var featureMenu;
 
-		var legendMenuData = [];
+		var legendMenuData = [
+			{'name':'hide this legend','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'show all features','click':function(evt) {
+				evt.stopPropagation();
+			}},
+			{'name':'hide all features','click':function(evt) {
+				evt.stopPropagation();
+			}}
+		];
 		var legendMenu;
 
 		var blockscreen_input;
