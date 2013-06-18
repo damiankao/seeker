@@ -36,6 +36,7 @@
 
 		var _scale;
 		var _navBarHeight = 20;
+		var _targetData;
 
 		base.update = function() {
 			_scale = d3.scale.linear()
@@ -61,7 +62,28 @@
 							.attr('y',0);
 						obj
 							.append('text')
-							.attr('baseline-shift','-33%');
+							.attr('baseline-shift','-33%')
+							.on('mouseover', function(evt) {
+								document.body.style.cursor = 'pointer';
+							})
+							.on('mouseout', function(evt) {
+								document.body.style.cursor = 'default';
+							})
+							.on('click', function(evt) {
+								d3.event.stopPropagation();
+								_targetData = d;
+								if (seeker.env_clickTarget !== this) {
+									seeker.env_closeAll();
+
+									legendMenu
+										.place(d3.mouse(document.body))
+										.show();
+
+									seeker.env_clickTarget = this;
+								} else {
+									seeker.env_closeAll();
+								}
+							});
 					});
 
 				legendGroups
@@ -137,7 +159,28 @@
 					obj
 						.append('text')
 						.attr('id','seq')
-						.style('font-weight','bold');
+						.style('font-weight','bold')
+						.on('mouseover', function(evt) {
+							document.body.style.cursor = 'pointer';
+						})
+						.on('mouseout', function(evt) {
+							document.body.style.cursor = 'default';
+						})
+						.on('click', function(evt) {
+							d3.event.stopPropagation();
+							_targetData = d;
+							if (seeker.env_clickTarget !== this) {
+								seeker.env_closeAll();
+
+								sequenceMenu
+									.place(d3.mouse(document.body))
+									.show();
+
+								seeker.env_clickTarget = this;
+							} else {
+								seeker.env_closeAll();
+							}
+						});
 				});
 
 				var feat = seqGroups
@@ -155,7 +198,36 @@
 						obj
 							.append('line')
 							.style('shape-rendering','crispEdges')
-							.attr('id','feature');
+							.attr('id','feature')
+							.on('mouseover', function(evt) {
+								document.body.style.cursor = 'pointer';
+								d3.select(this)
+									.attr('x1',_scale(d.start) - 4)
+									.attr('x2',_scale(d.end) + 4)
+									.style('stroke-width',base.settings.feat_width + 4);
+							})
+							.on('mouseout', function(evt) {
+								document.body.style.cursor = 'default';
+								d3.select(this)
+									.attr('x1',_scale(d.start))
+									.attr('x2',_scale(d.end))
+									.style('stroke-width',base.settings.feat_width);
+							})
+							.on('click', function(evt) {
+								d3.event.stopPropagation();
+								_targetData = d;
+								if (seeker.env_clickTarget !== this) {
+									seeker.env_closeAll();
+									
+									featureMenu
+										.place(d3.mouse(document.body))
+										.show();
+
+									seeker.env_clickTarget = this;
+								} else {
+									seeker.env_closeAll();
+								}
+							});
 						obj
 							.append('text')
 							.attr('id','feature')
@@ -305,15 +377,43 @@
 				}
 			}
 
+			menu_sequences
+				.bind(base.data[base.keys.sequences], {'text':'name','cb':'show'})
+				.update();
+
 			return base;
 		}
 
 		base.hideAllFeature = function(name) {
+			var seqs = base.data[base.keys.sequences];
+			var i = seqs.length;
+			while ( i-- ) {
+				var feats = seqs[i].feat;
+				var a = feats.length;
+				while ( a-- ) {
+					if (feats[a].ref.name == name) {
+						feats[a].show = false;
+					}
+				}
+			}
 
+			base.update();
 		}
 
 		base.showAllFeature = function(name) {
+			var seqs = base.data[base.keys.sequences];
+			var i = seqs.length;
+			while ( i-- ) {
+				var feats = seqs[i].feat;
+				var a = feats.length;
+				while ( a-- ) {
+					if (feats[a].ref.name == name) {
+						feats[a].show = true;
+					}
+				}
+			}
 
+			base.update();
 		}
 
 		//menus
@@ -322,7 +422,17 @@
 
 			}},
 			{'name':'sequences','click':function() {
-				
+				d3.event.stopPropagation();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closeAll();
+					
+					menu_sequences
+						.show();
+
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closeAll();
+				}
 			}},
 			{'name':'features','click':function() {
 				
@@ -344,61 +454,185 @@
 			.whxy(-1,-1,50,20)
 			.update();
 
-		var _targetData;
-
 		var sequenceMenuData = [
-			{'name':'hide this sequence','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide this sequence','click':function() {
+				_targetData.show = false;
+				base.update();
+				seeker.env_closeAll();
 			}},
-			{'name':'show all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'show all features','click':function() {
+				var feats = _targetData.feat;
+				var i = feats.length;
+				while ( i-- ) {
+					feats[i].show = true;
+				}
+				base.update();
+				seeker.env_closeAll();
 			}},
-			{'name':'hide all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide all features','click':function() {
+				var feats = _targetData.feat;
+				var i = feats.length;
+				while ( i-- ) {
+					feats[i].show = false;
+				}
+				base.update();
+				seeker.env_closeAll();
 			}}
 		];
-		var sequenceMenu;
+		var sequenceMenu = new seeker.menu()
+			.attachTo(document.body)
+			.bind(sequenceMenuData, {'text':'name','click':'click'})
+			.update()
+			.hide();
 
 		var featureMenuData = [
-			{'name':'hide this feature','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide this feature','click':function() {
+				_targetData.show = false;
+				base.update()
+				seeker.env_closeAll();
 			}},
-			{'name':'hide this label','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide this label','click':function() {
+				_targetData.label = false;
+				base.update()
+				seeker.env_closeAll();
 			}},
-			{'name':'show all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'show this label','click':function() {
+				_targetData.label = true;
+				base.update()
+				seeker.env_closeAll();
 			}},
-			{'name':'hide all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'show all features','click':function() {
+				var name = _targetData.ref.name;
+				base.showAllFeature(name);
+				seeker.env_closeAll();
+			}},
+			{'name':'hide all features','click':function() {
+				var name = _targetData.ref.name;
+				base.hideAllFeature(name);
+				seeker.env_closeAll();
 			}}
 		];
-		var featureMenu;
+		var featureMenu = new seeker.menu()
+			.attachTo(document.body)
+			.bind(featureMenuData, {'text':'name','click':'click'})
+			.update()
+			.hide();
 
 		var legendMenuData = [
-			{'name':'hide this legend','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide this legend','click':function() {
+				_targetData.legend = false;
+				base.update()
+				seeker.env_closeAll();
 			}},
-			{'name':'show all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'show all features','click':function() {
+				var name = _targetData.name;
+				base.showAllFeature(name);
+				seeker.env_closeAll();
 			}},
-			{'name':'hide all features','click':function(evt) {
-				evt.stopPropagation();
+			{'name':'hide all features','click':function() {
+				var name = _targetData.name;
+				base.hideAllFeature(name);
+				seeker.env_closeAll();
 			}}
 		];
-		var legendMenu;
+		var legendMenu = new seeker.menu()
+			.attachTo(document.body)
+			.bind(legendMenuData, {'text':'name','click':'click'})
+			.update()
+			.hide();
 
-		var blockscreen_input;
+		var blockscreen_input = new seeker.blockscreen()
+			.attachTo(document.body)
+			.update()
+			.hide();
 
-		var menu_sequences;
+		var menu_sequencesControlData = [
+			{'name':'show all','click':function() {
+				var seqs = base.data[base.keys.sequences];
+				var i = seqs.length;
+				while ( i-- ) {
+					seqs[i].show = true;
+				}
+				base.update();
+			}},
+			{'name':'hide all','click':function() {
+				var seqs = base.data[base.keys.sequences];
+				var i = seqs.length;
+				while ( i-- ) {
+					seqs[i].show = false;
+				}
+				base.update();
+			}},
+		];
 
-		var submenu_features;
+		var menu_sequences = new seeker.complexMenu()
+			.attachTo(document.body)
+		    .setControl(menu_sequencesControlData, {'text':'name','click':'click'})
+		    .setTemplate(function(li, data, index, keys) {
+				var cbox = new seeker.checkbox()
+				.attachTo(li);
+
+				cbox
+				.bind(data, {'text':keys.text,'checkbox':keys.cb})
+				.prependText((index + 1) + '. ')
+				.update();
+
+				cbox.data.__onUpdate__[cbox.keys.checkbox].push(base.update);
+
+				li.checkbox = cbox;
+
+				d3.select(li)
+					.on('mouseover', function() {
+						_targetData = data.feat;
+						submenu_features
+							.bind(_targetData, {'text':'show','cb':'show'})
+							.update()
+							.show();
+					})
+		    })
+		    .setRemove(function(obj) {
+		      
+		    })
+		    .whxy(-1,-1,100,57)
+		    .hide();
+
+		var submenu_featuresControlData = [
+			{'name':'show all','click':function() {
+
+			}},
+			{'name':'hide all','click':function() {
+
+			}},
+		];
+		var submenu_features = new seeker.complexMenu()
+			.attachTo(document.body)
+		    .setControl(submenu_featuresControlData, {'text':'name','click':'click'})
+		    .setTemplate(function(li, data, index, keys) {
+				var cbox = new seeker.checkbox()
+					.attachTo(li);
+
+				cbox
+					.bind(data, {'text':keys.text,'checkbox':keys.cb})
+					.prependText((index + 1) + '. ')
+					.update();
+
+				cbox.data.__onUpdate__[cbox.keys.checkbox].push(base.update);
+
+				li.checkbox = cbox;
+		    })
+		    .setRemove(function(obj) {
+		      
+		    })
+		    .whxy(-1,-1,500,57);
 
 		var menu_features;
 
 		var panel_options
 
-		var blockscreen_export;
+		var blockscreen_export = new seeker.blockscreen()
+			.attachTo(document.body)
+			.update()
+			.hide();;
 
 		var panel_about;
 

@@ -46,7 +46,7 @@ body {
 }
 
 #complexMenu > #complexMenuItems > li {
-    font-size:11pt;
+    font-size:10pt;
     font-family:Arial;
     margin:0px 15px 0px 15px;
     position:relative;
@@ -55,7 +55,7 @@ body {
 
 #complexMenu > #complexMenuItems > li:hover {
     cursor:default;
-    border-left:5px solid #313841;
+    border-left:3px solid #313841;
 }
 
 #complexMenu {
@@ -257,7 +257,7 @@ body {
     position:relative;
     white-space:nowrap;
     display:inline-block;
-    margin-right:2px;
+    margin-right:10px;
     margin-left:5px;
     top:-4px;
 }
@@ -378,7 +378,7 @@ body {
 #blockscreen {
     position:absolute;
     background:white;
-    opacity:0.85;
+    opacity:0.90;
     top:0px;
     left:0px;
     z-index:1000;
