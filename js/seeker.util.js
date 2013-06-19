@@ -71,13 +71,19 @@
 		}
 	}
 
-	seeker.util.addUpdate = function(d, key, f) {
+	seeker.util.addUpdate = function(obj, d, key, f) {
 		if (d.__bound__) {
-			if (!d.__onUpdate__[key]) {
-				d.__onUpdate__[key] = [];
-			}
 
-			d.__onUpdate__[key].push(f);
+
+			if (Object.prototype.toString.call(d) === '[object Array]') {
+				d.__onUpdate__.push([f, obj]);
+			} else {
+				if (!d.__onUpdate__[key]) {
+					d.__onUpdate__[key] = [];
+				}
+
+				d.__onUpdate__[key].push([f, obj]);
+			}
 		}
 	}
 
@@ -88,7 +94,7 @@
 				var obj = d.__onUpdate__[key];
 				var i = obj.length;
 				while ( i-- ) {
-					obj[i]();
+					obj[i][0]();
 				}
 			}
 		}

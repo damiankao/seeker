@@ -50,7 +50,7 @@
 				var u = d.__onUpdate__;
 				var l = u.length;
 				while ( l-- ) {
-					u[l]();
+					u[l][0]();
 				}
 			} else {
 				var args = arguments;
@@ -64,7 +64,7 @@
 								var a = u[args[l]];
 								var i = a.length;
 								while ( i-- ) {
-									a[i]();
+									a[i][0]();
 								}
 							}
 						}
@@ -113,6 +113,12 @@
 		if (this.postBind) {
 			this.postBind();
 		}
+
+		return this;
+	}
+
+	seeker.base.prototype.unbind = function(d, k) {
+
 
 		return this;
 	}
@@ -275,11 +281,7 @@
 		}
 
 		base.postBind = function() {
-			if (!base.data.__onUpdate__[base.keys.text]) {
-				base.data.__onUpdate__[base.keys.text] = [];
-			}
-
-			base.data.__onUpdate__[base.keys.text].push(base.update);
+			seeker.util.addUpdate(base, base.data, base.keys.text, base.update);
 		}
 
 		return base;
@@ -352,11 +354,7 @@
 					.update();
 			}
 
-			if (!base.data.__onUpdate__[base.keys.checkbox]) {
-				base.data.__onUpdate__[base.keys.checkbox] = [];
-			}
-
-			base.data.__onUpdate__[base.keys.checkbox].push(base.update);
+			seeker.util.addUpdate(base, base.data, base.keys.checkbox, base.update);
 		}
 
 		base.container
@@ -459,11 +457,7 @@
 			label
 				.bind(base.data, {'text':base.keys.text});
 
-			if (!base.data.__onUpdate__[base.keys.option]) {
-				base.data.__onUpdate__[base.keys.option] = [];
-			}
-
-			base.data.__onUpdate__[base.keys.option].push(base.update);
+			seeker.util.addUpdate(base, base.data, base.keys.option, base.update);
 
 			return base;
 		}
@@ -553,11 +547,7 @@
 					.bind(base.data, {'text':base.keys.text});
 			}
 
-			if (!base.data.__onUpdate__[base.keys.slider]) {
-				base.data.__onUpdate__[base.keys.slider] = [];
-			}
-
-			base.data.__onUpdate__[base.keys.slider].push(base.update);
+			seeker.util.addUpdate(base, base.data, base.keys.slider, base.update);
 
 			return base;
 		}
@@ -648,19 +638,11 @@
 			while ( i-- ) {
 				var obj = base.data[i];
 
-				if (!obj.__onUpdate__[base.keys.text]) {
-					obj.__onUpdate__[base.keys.text] = [];
-				}
-
-				if (!obj.__onUpdate__[base.keys.click]) {
-					obj.__onUpdate__[base.keys.click] = [];
-				}
-
-				obj.__onUpdate__[base.keys.text].push(base.update);
-				obj.__onUpdate__[base.keys.click].push(base.update);
+				seeker.util.addUpdate(base, obj, base.keys.text, base.update);
+				seeker.util.addUpdate(base, obj, base.keys.click, base.update);
 			}
 
-			base.data.__onUpdate__.push(base.update);
+			seeker.util.addUpdate(base, base.data, null, base.update);
 		}
 
 		base.update = function() {
@@ -793,15 +775,12 @@
 				for (name in base.keys) {
 					var obj = base.data[i];
 					var key = base.keys[name]
-					if (!obj.__onUpdate__[key]) {
-						obj.__onUpdate__[key] = [];
-					}
 
-					obj.__onUpdate__[key].push(base.update);
+					seeker.util.addUpdate(base, obj, key, base.update);
 				}
 			}
 
-			base.data.__onUpdate__.push(base.update);
+			seeker.util.addUpdate(base, base.data, null, base.update);
 		}
 
 		controlList
