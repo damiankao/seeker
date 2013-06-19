@@ -153,16 +153,16 @@
 
 		base.arrow = arrow;
 
-		_leftOffsetX = 0;
-		_rightOffsetX = 0;
-		_topOffsetY = 0;
-		_bottomOffsetY = 0;
+		base.leftOffsetX = 0;
+		base.rightOffsetX = 0;
+		base.topOffsetY = 0;
+		base.bottomOffsetY = 0;
 
 		base.setOffset = function(leftX, rightX, topY, bottomY) {
-			_leftOffsetX = leftX;
-			_rightOffsetX = rightX;
-			_topOffsetY = topY;
-			_bottomOffsetY = bottomY;
+			base.leftOffsetX = leftX;
+			base.rightOffsetX = rightX;
+			base.topOffsetY = topY;
+			base.bottomOffsetY = bottomY;
 
 			return base;
 		}
@@ -170,7 +170,7 @@
 		base.orient = function(m) {
 			if (m == '0') {
 				//above cursor
-				arrow.style('top',basbase.container.style('height') - 6);
+				arrow.style('top',base.container.node().offsetHeight - 6);
 			} else {
 				//below cursor
 				arrow.style('top',-4);
@@ -182,7 +182,7 @@
 		base.position = function(m) {
 			if (m =='0') {
 				//left of cursor
-				arrow.style('left',basbase.container.style('width') - 10 - arrow.style('width'));
+				arrow.style('left',base.container.node().offsetWidth - 10 - arrow.container.node().offsetWidth);
 			} else {
 				//right of cursor
 				arrow.style('left', 10);
@@ -194,35 +194,35 @@
 		base.place = function(coord) {
 			//base.show();
 			var winDim = seeker.util.winDimensions();
-			var w = base.container.style('width');
-			var h = base.container.style('height');
+			var w = parseInt(base.container.node().offsetWidth);
+			var h = parseInt(base.container.node().offsetHeight);
 
 			if (coord[1] - h < 10) {
 				//near top, make under cursor
 				base.orient(1);
-				base.container.style('top',coord[1] + 20 - _bottomOffsetY);
+				base.container.style('top',coord[1] + 20 - base.bottomOffsetY);
 			} else if (coord[1] + h > winDim[1] - 30) {
 				//near bottom, make above cursor
 				base.orient(0);
-				base.container.style('top',coord[1] - h - 20 + _topOffsetY);
+				base.container.style('top',coord[1] - h - 20 + base.topOffsetY);
 			} else {
 				//default, under cursor
 				base.orient(1);
-				base.container.style('top',coord[1] + 20 - _bottomOffsetY);
+				base.container.style('top',coord[1] + 20 - base.bottomOffsetY);
 			}
 
 			if (coord[0] - w < 20) {
 				//near left, make right of cursor
 				base.position(1);
-				base.container.style('left', coord[0] + 10 - _rightOffsetX);
+				base.container.style('left', coord[0] + 10 - base.rightOffsetX);
 			} else if (coord[0] + w > winDim[0] - 20) {
 				//near right, make left of cursor
 				base.position(0);
-				base.container.style('left', coord[0] - w + _leftOffsetX);
+				base.container.style('left', coord[0] - w + base.leftOffsetX);
 			} else {
 				//default, right of cursor
 				base.position(1);
-				base.container.style('left', coord[0] + 10 - _rightOffsetX);
+				base.container.style('left', coord[0] + 10 - base.rightOffsetX);
 			}
 
 			return this;
@@ -319,6 +319,13 @@
 
 		base.appendText = function(val) { 
 			label.appendText(val);
+
+			return base;
+		}
+
+		base.setText = function(val) {
+			label.container
+				.html(val);
 
 			return base;
 		}
@@ -720,6 +727,7 @@
 					return d[_controlKeys.text];
 				})
 				.on('click',function(d, i) {
+					d3.event.stopPropagation();
 					d[_controlKeys.click](i);
 				});
 
@@ -762,6 +770,10 @@
 				})
 				.remove();
 
+			return base;
+		}
+
+		base.respondToWindow = function() {
 			var dim = seeker.util.winDimensions();
 
 			if (base.container.node().offsetTop + base.container.node().offsetHeight > dim[1] - 20) {
@@ -796,6 +808,8 @@
 			.attachTo(base.container.node());
 		list
 			.attachTo(base.container.node());
+
+		base.list = list;
 
 		return base;
 	}
@@ -850,8 +864,6 @@
 	seeker.button = function() {
 		var base = new seeker.base('div')
 			.id('button');
-
-		var _data = [];
 
 		base.setType = function(m) {
 			//std - standard button

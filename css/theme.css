@@ -138,13 +138,14 @@ body {
 }
 
 #slider {
-    position:absolute;
+    position:relative;
     background:#313841;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     -khtml-border-radius: 3px;
     border-radius: 3px;
     overflow:hidden;
+    margin:5px;
 }
 
 #slider > #spine {
@@ -202,6 +203,7 @@ body {
     border-radius: 3px;
     position:relative;
     vertical-align:middle;
+    margin:5px;
 }
 
 #checkbox:hover {
@@ -368,6 +370,28 @@ body {
     cursor:pointer;
 }
 
+#controlList {
+    list-style:none;
+    display:block;
+    position:relative;
+    color:white;
+    margin:0px;
+    padding:0px;
+}
+
+#controlList > li {
+    font-size:10pt;
+    font-family:Arial;
+    padding:3px 8px 3px 8px;
+    display:inline-block;
+    color:#BDC3AF;
+}
+
+#controlList > li:hover {
+    cursor:pointer;
+    color:white;
+}
+
 #annotator { 
     font-family:Arial;
     font-size:9pt;
@@ -383,4 +407,15 @@ body {
     left:0px;
     z-index:1000;
     overflow-y:auto;
+}
+
+#panel {
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -khtml-border-radius: 4px;
+    border-radius: 4px;
+    background:#313841;
+    margin:0;
+    padding:3px 0px 3px 0px;
+    position:absolute;
 }

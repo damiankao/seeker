@@ -25,6 +25,7 @@
 			'legend_spacing':30,
 			'legend_size':15,
 			'legend_cols':5,
+			'legend_xPos':0,
 			'seq_spacing':40,
 			'seq_maxLength':1000,
 			'feat_width':10,
@@ -37,6 +38,7 @@
 		var _scale;
 		var _navBarHeight = 20;
 		var _targetData;
+		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
 
 		base.update = function() {
 			_scale = d3.scale.linear()
@@ -58,10 +60,12 @@
 
 						obj
 							.append('rect')
+							.style('shape-rendering','crispEdges')
 							.attr('x',0)
 							.attr('y',0);
 						obj
 							.append('text')
+							.style('font-size','9pt')
 							.attr('baseline-shift','-33%')
 							.on('mouseover', function(evt) {
 								document.body.style.cursor = 'pointer';
@@ -129,7 +133,7 @@
 							count += 1;
 						}
 
-						return 'translate(' + (base.settings.margin + (col * xSpacing)) + ',' + (base.settings.margin + _navBarHeight + (row * ySpacing)) + ')';
+						return 'translate(' + (base.settings.margin + base.settings.legend_xPos + (col * xSpacing)) + ',' + (base.settings.margin + _navBarHeight + (row * ySpacing)) + ')';
 					});
 
 				legendGroups
@@ -154,12 +158,12 @@
 					obj
 						.append('line')
 						.attr('id','spine')
-						.style('shape-rendering','crispEdges')
-						.style('stroke-width',base.settings.seq_spineWidth);
+						.style('shape-rendering','crispEdges');
 					obj
 						.append('text')
 						.attr('id','seq')
 						.style('font-weight','bold')
+						.style('font-size','10pt')
 						.on('mouseover', function(evt) {
 							document.body.style.cursor = 'pointer';
 						})
@@ -230,6 +234,7 @@
 							});
 						obj
 							.append('text')
+							.style('font-size','9pt')
 							.attr('id','feature')
 							.attr('text-anchor','middle');
 					});
@@ -331,6 +336,7 @@
 				.attr('y2',function(d) {
 					return 35 + base.settings.feat_width / 2;
 				})
+				.style('stroke-width',base.settings.seq_spineWidth)
 				.style('stroke', function(d) {
 					return base.settings.seq_spineColor;
 				})
@@ -363,7 +369,8 @@
 				.remove();
 
 			canvas.container
-				.style('height',startY + base.settings.margin);
+				.attr('height',startY + base.settings.margin)
+				.attr('width',base.settings.margin * 2 + base.settings.seq_maxLength);
 
 			return base;
 		}
@@ -379,6 +386,10 @@
 
 			menu_sequences
 				.bind(base.data[base.keys.sequences], {'text':'name','cb':'show'})
+				.update();
+
+			menu_features
+				.bind(base.data[base.keys.features], {'text':'name','cb':'show'})
 				.update();
 
 			return base;
@@ -416,6 +427,62 @@
 			base.update();
 		}
 
+		base.parseInput = function(data, type) {
+			if (type == "hmmscan") {
+				var d = {};
+
+				var seqs = {};
+				var feats = {};
+
+				var lines = data.split('\n');
+				var length = lines.length;
+				var featCount = 0;
+				for ( var i = 0 ; i < length ; i ++ ) {
+					var line = lines[i];
+					if (line[0] != '#' && line[0] != '!') {
+						var cols = line.split(new RegExp("\\s+"));
+
+						var feature = cols[0];
+						var seq = cols[3];
+						var seqLen = cols[5]
+						var start = cols[17];
+						var end = cols[18];
+
+						if (!feats[feature]) {
+							feats[feature] = {'name':feature,'color':_palette[featCount],'legend':true,'count':1};
+							featCount += 1;
+							if (featCount == _palette.length) {
+								featCount = 0;
+							}
+						} else {
+							feats[feature].count += 1;
+						}
+
+						if (!seqs[seq]) {
+							seqs[seq] = {'name':seq,'length':seqLen,'show':true,'seq':-1,'feat':[]};
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						} else {
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						}
+					}	
+				}
+
+				d.seq = [];
+				d.feat = [];
+				for (seq in seqs) {
+					d.seq.push(seqs[seq]);
+				}
+
+				for (feat in feats) {
+					d.feat.push(feats[feat]);
+				}
+
+				return d;
+			} else if (type == 'tab') {
+
+			}
+		}
+
 		//menus
 		var navData = [
 			{'name':'input','click':function() {
@@ -427,6 +494,7 @@
 					seeker.env_closeAll();
 					
 					menu_sequences
+						.respondToWindow()
 						.show();
 
 					seeker.env_clickTarget = this;
@@ -435,16 +503,77 @@
 				}
 			}},
 			{'name':'features','click':function() {
-				
+				d3.event.stopPropagation();
+				if (seeker.env_clickTarget !== this) {
+					seeker.env_closeAll();
+					
+					menu_features
+						.respondToWindow()
+						.show();
+
+					seeker.env_clickTarget = this;
+				} else {
+					seeker.env_closeAll();
+				}
 			}},
 			{'name':'options','click':function() {
-				
+				if (panel_options.container.style('visibility') == 'hidden') {
+					panel_options.container.style('visibility','visible');
+				} else {
+					panel_options.container.style('visibility','hidden');
+				}
 			}},
 			{'name':'export','click':function() {
-				
+				d3.event.stopPropagation();
+
+				if (blockscreen_export.container.style('visibility') == 'hidden') {
+					var dim = seeker.util.winDimensions();
+
+					blockscreen_export.container.select('span')
+						.style('top', dim[1] * 1/4 - 25)
+						.style('left', dim[0] / 2 - 260);
+
+
+					blockscreen_export.container.select('#button')
+						.style('top',dim[1] * 3/4 + 10)
+						.style('left',dim[0] / 2 -50);
+
+					blockscreen_export.container
+						.style('visibility','visible');
+
+					var html = canvas.container
+						.attr("title", "annotations")
+						.attr("version", 1.1)
+						.attr("xmlns", "http://www.w3.org/2000/svg")
+						.node().parentNode.innerHTML;
+
+					blockscreen_export.container.select('#preview')
+						.style('width',dim[0] * 4/5)
+						.style('height', dim[1] * 1/2)
+						.style('top', dim[1] * 1/4)
+						.style('left', dim[0] * 1/10)
+
+					blockscreen_export.container.select('img')
+						.attr("src", "data:image/svg+xml;base64," + btoa(html))
+						.style('width',dim[0] * 4/5)
+		        		.style('height','auto');
+
+				} else {
+					blockscreen_export.container
+						.style('visibility','hidden');
+				}
 			}},
 			{'name':'about','click':function() {
-				
+				if (panel_about.container.style('visibility') == "hidden") {
+					panel_about.container
+						.style('visibility','visible')
+						.style('top',dim[1] / 2 - 150)
+						.style('left',dim[0] / 2 - 300)
+						.style('width',600)
+						.style('height',300);
+				} else {
+					panel_about.container.style('visibility','hidden');
+				}
 			}}
 		];
 
@@ -456,7 +585,7 @@
 
 		var sequenceMenuData = [
 			{'name':'hide this sequence','click':function() {
-				_targetData.show = false;
+				seeker.util.set(_targetData, 'show', false);
 				base.update();
 				seeker.env_closeAll();
 			}},
@@ -543,8 +672,39 @@
 
 		var blockscreen_input = new seeker.blockscreen()
 			.attachTo(document.body)
-			.update()
-			.hide();
+			.update();
+		blockscreen_input.container
+			.on('mousedown',null);
+
+		var button_inputLoad;
+		var textarea_input = new seeker.base('textarea')
+			.attachTo(blockscreen_input.container.node());
+		textarea_input.container
+			.style('position','absolute')
+			.style('width',dim[0] * 4/5)
+			.style('height',dim[1] * 1/2)
+			.style('top',100)
+			.style('left',dim[0] * 1/10)
+			.on('mousedown',null);
+
+		var button_inputValidate = new seeker.button()
+			.attachTo(blockscreen_input.container.node())
+			.setType('std');
+		button_inputValidate.container
+			.html('validate')
+			.style('top',110 + dim[1] * 1/2)
+			.style('left',dim[0] * 1/2 - 30)
+			.on('click', function() {
+				var parsedData = base.parseInput(textarea_input.container.node().value,'hmmscan');
+
+				base
+					.bind(parsedData, {'sequences':'seq','features':'feat'})
+					.update();
+
+				blockscreen_input.hide();
+			});
+
+		var div_inputStatus;
 
 		var menu_sequencesControlData = [
 			{'name':'show all','click':function() {
@@ -585,9 +745,13 @@
 					.on('mouseover', function() {
 						_targetData = data.feat;
 						submenu_features
-							.bind(_targetData, {'text':'show','cb':'show'})
+							.bind(_targetData, {'text':'name','cb':'show'})
 							.update()
 							.show();
+
+						var seqMenu = menu_sequences.container.node();
+						submenu_features
+							.place([seqMenu.offsetLeft + seqMenu.offsetWidth - 5,this.offsetTop - menu_sequences.list.container.node().scrollTop + seqMenu.offsetTop - 10]);
 					})
 		    })
 		    .setRemove(function(obj) {
@@ -598,10 +762,22 @@
 
 		var submenu_featuresControlData = [
 			{'name':'show all','click':function() {
+				var i = _targetData.length;
 
+				while ( i-- ) {
+					_targetData[i].show = true;
+				}
+
+				base.update();
 			}},
 			{'name':'hide all','click':function() {
+				var i = _targetData.length;
 
+				while ( i-- ) {
+					_targetData[i].show = false;
+				}
+
+				base.update();
 			}},
 		];
 		var submenu_features = new seeker.complexMenu()
@@ -610,7 +786,6 @@
 		    .setTemplate(function(li, data, index, keys) {
 				var cbox = new seeker.checkbox()
 					.attachTo(li);
-
 				cbox
 					.bind(data, {'text':keys.text,'checkbox':keys.cb})
 					.prependText((index + 1) + '. ')
@@ -623,18 +798,247 @@
 		    .setRemove(function(obj) {
 		      
 		    })
-		    .whxy(-1,-1,500,57);
+		    .setOffset(0,0,50,40)
+		    .hide();
 
-		var menu_features;
+		submenu_features.arrow
+			.style('display','none');
 
-		var panel_options
+		var menu_featuresControlData = [
+			{'name':'show all','click':function() {
+
+				base.update();
+			}},
+			{'name':'hide all','click':function() {
+
+
+				base.update();
+			}},
+		];
+
+		var menu_features = new seeker.complexMenu()
+			.attachTo(document.body)
+		    .setControl(menu_featuresControlData, {'text':'name','click':'click'})
+		    .setTemplate(function(li, data, index, keys) {
+				var tbox = new seeker.base('div')
+					.attachTo(li);
+
+				tbox.container
+					.text(data.name)
+					.style('color','white');
+
+				var controlItems = [
+					{'name':'show legend','click':function() {
+						data.legend = true;
+						base.update();
+					}},
+					{'name':'hide legend','click':function() {
+						data.legend = false;
+						base.update();
+					}},
+					{'name':'show all','click':function() {
+						base.showAllFeature(data.name);
+					}},
+					{'name':'hide all','click':function() {
+						base.hideAllFeature(data.name);
+					}}
+				];
+
+				var control = new seeker.base('ul')
+					.id('controlList')
+					.attachTo(li);
+
+				control.container
+					.selectAll('li')
+					.data(controlItems)
+					.enter()
+					.append('li')
+					.text(function(d) {
+						return d.name;
+					})
+					.on('click', function(d,i) {
+						d.click();
+					});
+					
+				d3.select(li)
+					.on('click',function(evt) {
+						d3.event.stopPropagation();
+					})
+					.on('mouseover', function() {
+						
+					})
+		    })
+		    .setRemove(function(obj) {
+		      
+		    })
+		    .whxy(-1,-1,185,57)
+		    .hide();
+
+		var panel_options = new seeker.base('div')
+			.id('panel')
+			.attachTo(document.body)
+			.hide();
+
+		panel_options.container
+			.style('height',dim[1] - 40)
+			.style('width', 240)
+			.style('top',20)
+			.style('left',dim[0] - 270)
+			.style('overflow-y','auto');
+
+		var opt_legendShow = new seeker.checkbox()
+			.bind(base.settings, {'checkbox':'legend_show'})
+			.attachTo(panel_options.container.node())
+			.setText('show legend')
+			.update();
+
+		var opt_seqNumbered = new seeker.checkbox()
+			.bind(base.settings, {'checkbox':'seq_numbered'})
+			.attachTo(panel_options.container.node())
+			.setText('numbered sequences')
+			.update();
+
+		var opt_margin = new seeker.slider()
+			.setInterval(0,100)
+			.setText('figure margins')
+		    .bind(base.settings, {'slider':'margin'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,-1,-1)
+		    .update();
+
+		var opt_seqLength = new seeker.slider()
+			.setInterval(0,dim[0])
+			.setText('maximum sequence width')
+		    .bind(base.settings, {'slider':'seq_maxLength'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,-1,-1)
+		    .update();
+
+		var opt_legendSpacing = new seeker.slider()
+			.setInterval(0,dim[1])
+		    .bind(base.settings, {'slider':'legend_spacing'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('spacing under legend')
+		    .update();
+
+		var opt_legendWidth = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind(base.settings, {'slider':'legend_width'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('legend width')
+		    .update();
+
+		var opt_legendHeight = new seeker.slider()
+			.setInterval(0,dim[1])
+		    .bind(base.settings, {'slider':'legend_height'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('legend height')
+		    .update();
+
+		var opt_legendCols = new seeker.slider()
+			.setInterval(0,20)
+		    .bind(base.settings, {'slider':'legend_cols'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('legend columns')
+		    .update();
+
+		var opt_legendColorSize = new seeker.slider()
+			.setInterval(0,200)
+		    .bind(base.settings, {'slider':'legend_size'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('legend color box size')
+		    .update();
+
+		var opt_legendXPos = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind(base.settings, {'slider':'legend_xPos'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('legend horizontal position')
+		    .update();
+
+		var opt_seqSpacing = new seeker.slider()
+			.setInterval(5,500)
+		    .bind(base.settings, {'slider':'seq_spacing'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('spacing between sequences')
+		    .update();
+
+		var opt_spineWidth = new seeker.slider()
+			.setInterval(1,50)
+		    .bind(base.settings, {'slider':'seq_spineWidth'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('sequence spine width')
+		    .update();
+
+		var opt_featWidth = new seeker.slider()
+			.setInterval(1,50)
+		    .bind(base.settings, {'slider':'feat_width'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('feature width')
+		    .update();
+
+		var opt_labelXPos = new seeker.slider()
+			.setInterval(0,dim[0])
+		    .bind(base.settings, {'slider':'seq_labelxPos'})
+		    .attachTo(panel_options.container.node())
+		    .whxy(200,-1,0,0)
+		    .setText('sequence label horizontal position')
+		    .update();
 
 		var blockscreen_export = new seeker.blockscreen()
 			.attachTo(document.body)
 			.update()
-			.hide();;
+			.hide();
 
-		var panel_about;
+		blockscreen_export.container
+			.append('div')
+			.style('position','absolute')
+			.style('border','1px solid gray')
+			.style('overflow-y','auto')
+			.style('overflow-x','hidden')
+			.attr('id','preview')
+				.append('img');
+
+		blockscreen_export.container
+			.append('span')
+			.style('position','absolute')
+			.style('font-family','Arial')
+			.style('font-size','10pt')
+			.text('Right click on the below image and select "save as" to save the image as svg to your computer.');
+
+		var button_exportClose = new seeker.button()
+			.attachTo(blockscreen_export.container.node())
+			.setType('std');
+		button_exportClose.container
+			.html('close')
+			.on('click',function(evt) {
+				blockscreen_export.hide();
+			});
+
+		var panel_about = new seeker.base('div')
+			.id('panel')
+			.attachTo(document.body)
+			.hide();
+
+		panel_about.container
+			.style('opacity',0.90)
+			.style('overflow-y','auto')
+			.style('overflow-x','hidden')
+			.style('padding',10)
+			.style('color','white')
+			.style('font-family','Arial')
+			.style('font-size','10pt')
+			.on('mousedown',null)
+			.html('TES TEST TEST');
 
 		return base;
 	}
