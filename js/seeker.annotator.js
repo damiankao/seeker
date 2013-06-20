@@ -641,9 +641,9 @@
 							.style('left',dim[0] * 1/10);
 
 						text_inputInstruct.container
-							.style('top',dim[1] / 2 - dim[1] / 4 - 65)
 							.style('left',dim[0] * 1/10)
-							.style('width',dim[0] * 4/5 - 20);
+							.style('width',dim[0] * 4/5 - 20)
+							.style('top',dim[1] / 2 - dim[1] / 4 - text_inputInstruct.container.node().offsetHeight + 2);
 
 						button_inputValidate.container
 							.style('top',10 + dim[1] * 1/2  + dim[1] / 4)
@@ -727,6 +727,7 @@
 			}},
 			{'name':'export','click':function() {
 				d3.event.stopPropagation();
+				panel_options.hide();
 				seeker.env_closeAll();
 
 				if (blockscreen_export.container.style('visibility') == 'hidden') {
@@ -992,6 +993,7 @@
 					.on('mouseover', function() {
 						_targetData = data.feat;
 						submenu_features
+							.reinit()
 							.bind({'items':_targetData}, {'text':'name','cb':'show'})
 							.update()
 							.show();
