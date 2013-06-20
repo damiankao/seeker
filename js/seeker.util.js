@@ -73,8 +73,7 @@
 
 	seeker.util.addUpdate = function(obj, d, key, f) {
 		if (d.__bound__) {
-
-
+			obj.bound.push([d,key]);
 			if (Object.prototype.toString.call(d) === '[object Array]') {
 				d.__onUpdate__.push([f, obj]);
 			} else {

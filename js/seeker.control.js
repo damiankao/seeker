@@ -84,6 +84,8 @@
     			d3.event.stopPropagation();
     		})
 
+    	this.bound = [];
+
     	return this;
 	}
 
@@ -118,7 +120,33 @@
 	}
 
 	seeker.base.prototype.unbind = function(d, k) {
+		if (this.bound.length > 0) {
+			var i = this.bound.length;
+			while ( i-- ) {
+				var d = this.bound[i][0];
 
+				if (Object.prototype.toString.call(d) === '[object Array]') {
+					var updates = d.__onUpdate__;
+					var l = updates.length;
+
+					while ( l-- ) {
+						if (updates[l][1] === this) {
+							updates.splice(l,1);
+						}
+					}
+				} else {
+					var key = this.bound[i][1];
+					var updates = d.__onUpdate__[key];
+					var l = updates.length;
+
+					while ( l-- ) {
+						if (updates[l][1] === this) {
+							updates.splice(l,1);
+						}
+					}
+				}
+			}
+		}
 
 		return this;
 	}
@@ -750,6 +778,14 @@
 				.each(function() {
 					_remove(this);
 				})
+				.remove();
+
+			return base;
+		}
+
+		base.reinit = function() {
+			list.container
+				.selectAll('li')
 				.remove();
 
 			return base;

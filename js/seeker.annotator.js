@@ -381,8 +381,16 @@
 		}
 
 		base.reinit = function() {
-			var all = canvas.container
+			base.unbind();
+
+			canvas.container
 				.selectAll('g').remove();
+
+			menu_sequences
+				.reinit();
+
+			menu_features
+				.reinit();
 
 			return base;
 		}
@@ -476,7 +484,7 @@
 						} else {
 							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
 						}
-					}	
+					}
 				}
 
 				d.seq = [];
@@ -491,7 +499,118 @@
 
 				return d;
 			} else if (type == 'tab') {
+				//sequence,feature,start,end,sequence length
+				var d = {};
 
+				var seqs = {};
+				var feats = {};
+
+				var lines = data.split('\n');
+				var length = lines.length;
+				var featCount = 0;
+				for ( var i = 0 ; i < length ; i ++ ) {
+					var line = lines[i];
+					if (line[0] != '#' && line[0] != '!') {
+						var cols = line.split("\t");
+
+						var feature = cols[1];
+						var seq = cols[0];
+						var start = cols[2];
+						var end = cols[3];
+						var seqLen = null;
+						if (cols.length > 4) {
+							seqLen = cols[4];
+						}
+
+						if (!feats[feature]) {
+							feats[feature] = {'name':feature,'color':_palette[featCount],'legend':true,'count':1};
+							featCount += 1;
+							if (featCount == _palette.length) {
+								featCount = 0;
+							}
+						} else {
+							feats[feature].count += 1;
+						}
+
+						if (!seqs[seq]) {
+							seqs[seq] = {'name':seq,'length':seqLen,'show':true,'seq':-1,'feat':[]};
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						} else {
+							if (seqLen) {
+								seqs[seq]['length'] = seqLen;
+							}
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						}
+					}
+				}
+
+				d.seq = [];
+				d.feat = [];
+				for (seq in seqs) {
+					d.seq.push(seqs[seq]);
+				}
+
+				for (feat in feats) {
+					d.feat.push(feats[feat]);
+				}
+
+				return d;
+			} else {
+				var d = {};
+
+				var seqs = {};
+				var feats = {};
+
+				var lines = data.split('\n');
+				var length = lines.length;
+				var featCount = 0;
+				for ( var i = 0 ; i < length ; i ++ ) {
+					var line = lines[i];
+					if (line[0] != '#' && line[0] != '!') {
+						var cols = line.split(type);
+
+						var feature = cols[1];
+						var seq = cols[0];
+						var start = cols[2];
+						var end = cols[3];
+						var seqLen = null;
+						if (cols.length > 4) {
+							seqLen = cols[4];
+						}
+
+						if (!feats[feature]) {
+							feats[feature] = {'name':feature,'color':_palette[featCount],'legend':true,'count':1};
+							featCount += 1;
+							if (featCount == _palette.length) {
+								featCount = 0;
+							}
+						} else {
+							feats[feature].count += 1;
+						}
+
+						if (!seqs[seq]) {
+							seqs[seq] = {'name':seq,'length':seqLen,'show':true,'seq':-1,'feat':[]};
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						} else {
+							if (seqLen) {
+								seqs[seq]['length'] = seqLen;
+							}
+							seqs[seq].feat.push({'name':feature,'start':start,'end':end,'show':true,'label':true,'ref':feats[feature]})
+						}
+					}
+				}
+
+				d.seq = [];
+				d.feat = [];
+				for (seq in seqs) {
+					d.seq.push(seqs[seq]);
+				}
+
+				for (feat in feats) {
+					d.feat.push(feats[feat]);
+				}
+
+				return d;
 			}
 		}
 
@@ -712,11 +831,11 @@
 			.style('top',110 + dim[1] * 1/2)
 			.style('left',dim[0] * 1/2 - 100)
 			.on('click', function() {
-				var parsedData = base.parseInput(textarea_input.container.node().value,'hmmscan');
+				var parsedData = base.parseInput(textarea_input.container.node().value,',');
 
 				base
-					.bind(parsedData, {'sequences':'seq','features':'feat'})
 					.reinit()
+					.bind(parsedData, {'sequences':'seq','features':'feat'})
 					.update();
 
 				blockscreen_input.hide();
