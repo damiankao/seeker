@@ -42,11 +42,11 @@
 
 		base.update = function() {
 			_scale = d3.scale.linear()
-			    .domain([0, d3.max(base.data[base.keys.sequences],function(d) {return d['length'];})])
+			    .domain([0, d3.max(base.datum('sequences'),function(d) {return d['length'];})])
 			    .range([0, base.settings.seq_maxLength]);
 
 			if (base.settings.legend_show) {
-				var featData = base.data[base.keys.features];
+				var featData = base.datum('features');
 				var legendGroups = canvas.container
 					.selectAll('#annotator_legendGroups')
 					.data(featData);
@@ -148,7 +148,7 @@
 			//sequences
 			var seqGroups = canvas.container
 				.selectAll('#annotator_seqGroups')
-				.data(base.data[base.keys.sequences]);
+				.data(base.datum('sequences'));
 
 			seqGroups
 				.enter()
@@ -405,18 +405,18 @@
 			}
 
 			menu_sequences
-				.bind(base.data[base.keys.sequences], {'text':'name','cb':'show'})
+				.bind({'items':base.datum('sequences')}, {'text':'name','cb':'show'})
 				.update();
 
 			menu_features
-				.bind(base.data[base.keys.features], {'text':'name','cb':'show'})
+				.bind({'items':base.datum('sequences')}, {'text':'name','cb':'show'})
 				.update();
 
 			return base;
 		}
 
 		base.hideAllFeature = function(name) {
-			var seqs = base.data[base.keys.sequences];
+			var seqs = base.datum('sequences');
 			var i = seqs.length;
 			while ( i-- ) {
 				var feats = seqs[i].feat;
@@ -432,7 +432,7 @@
 		}
 
 		base.showAllFeature = function(name) {
-			var seqs = base.data[base.keys.sequences];
+			var seqs = base.datum('sequences');
 			var i = seqs.length;
 			while ( i-- ) {
 				var feats = seqs[i].feat;
@@ -714,7 +714,7 @@
 
 		var navBar = new seeker.navBar()
 			.attachTo(base.container.node())
-			.bind(navData, {'text':'name','click':'click'})
+			.bind({'items':navData}, {'text':'name','click':'click'})
 			.whxy(-1,-1,50,20)
 			.update();
 
@@ -745,7 +745,7 @@
 		];
 		var sequenceMenu = new seeker.menu()
 			.attachTo(document.body)
-			.bind(sequenceMenuData, {'text':'name','click':'click'})
+			.bind({'items':sequenceMenuData}, {'text':'name','click':'click'})
 			.update()
 			.hide();
 
@@ -778,7 +778,7 @@
 		];
 		var featureMenu = new seeker.menu()
 			.attachTo(document.body)
-			.bind(featureMenuData, {'text':'name','click':'click'})
+			.bind({'items':featureMenuData}, {'text':'name','click':'click'})
 			.update()
 			.hide();
 
@@ -801,7 +801,7 @@
 		];
 		var legendMenu = new seeker.menu()
 			.attachTo(document.body)
-			.bind(legendMenuData, {'text':'name','click':'click'})
+			.bind({'items':legendMenuData}, {'text':'name','click':'click'})
 			.update()
 			.hide();
 
@@ -835,7 +835,7 @@
 
 				base
 					.reinit()
-					.bind(parsedData, {'sequences':'seq','features':'feat'})
+					.bind({'sequences':parsedData,'features':parsedData}, {'sequences':'seq','features':'feat'})
 					.update();
 
 				blockscreen_input.hide();
@@ -856,7 +856,7 @@
 
 		var menu_sequencesControlData = [
 			{'name':'show all','click':function() {
-				var seqs = base.data[base.keys.sequences];
+				var seqs = base.datum('sequences');
 				var i = seqs.length;
 				while ( i-- ) {
 					seqs[i].show = true;
@@ -864,7 +864,7 @@
 				base.update();
 			}},
 			{'name':'hide all','click':function() {
-				var seqs = base.data[base.keys.sequences];
+				var seqs = base.datum('sequences');
 				var i = seqs.length;
 				while ( i-- ) {
 					seqs[i].show = false;
@@ -875,17 +875,17 @@
 
 		var menu_sequences = new seeker.complexMenu()
 			.attachTo(document.body)
-		    .setControl(menu_sequencesControlData, {'text':'name','click':'click'})
+		    .setControl({'items':menu_sequencesControlData}, {'text':'name','click':'click'})
 		    .setTemplate(function(li, data, index, keys) {
 				var cbox = new seeker.checkbox()
 				.attachTo(li);
 
 				cbox
-					.bind(data, {'text':keys.text,'checkbox':keys.cb})
+					.bind({'text':data,'checkbox':data}, {'text':keys.text,'checkbox':keys.cb})
 					.prependText((index + 1) + '. ')
 					.update();
 
-				seeker.util.addUpdate(cbox, cbox.data, cbox.keys.checkbox, base.update);
+				seeker.util.addUpdate(cbox, cbox.data.checkbox, cbox.keys.checkbox, base.update);
 
 				li.checkbox = cbox;
 
@@ -893,7 +893,7 @@
 					.on('mouseover', function() {
 						_targetData = data.feat;
 						submenu_features
-							.bind(_targetData, {'text':'name','cb':'show'})
+							.bind({'items':_targetData}, {'text':'name','cb':'show'})
 							.update()
 							.show();
 
@@ -902,8 +902,8 @@
 							.place([seqMenu.offsetLeft + seqMenu.offsetWidth - 5,this.offsetTop - menu_sequences.list.container.node().scrollTop + seqMenu.offsetTop - 10]);
 					})
 		    })
-		    .setRemove(function(obj) {
-		      
+		    .setRemove(function(li) {
+		    	li.checkbox.unbind();
 		    })
 		    .whxy(-1,-1,100,57)
 		    .hide();
@@ -930,21 +930,21 @@
 		];
 		var submenu_features = new seeker.complexMenu()
 			.attachTo(document.body)
-		    .setControl(submenu_featuresControlData, {'text':'name','click':'click'})
+		    .setControl({'items':submenu_featuresControlData}, {'text':'name','click':'click'})
 		    .setTemplate(function(li, data, index, keys) {
 				var cbox = new seeker.checkbox()
 					.attachTo(li);
 				cbox
-					.bind(data, {'text':keys.text,'checkbox':keys.cb})
+					.bind({'text':data,'checkbox':data}, {'text':keys.text,'checkbox':keys.cb})
 					.prependText((index + 1) + '. ')
 					.update();
 
-				seeker.util.addUpdate(cbox, cbox.data, cbox.keys.checkbox, base.update)
+				seeker.util.addUpdate(cbox, cbox.data.checkbox, cbox.keys.checkbox, base.update)
 
 				li.checkbox = cbox;
 		    })
-		    .setRemove(function(obj) {
-		      
+		    .setRemove(function(li) {
+		    	li.checkbox.unbind();
 		    })
 		    .setOffset(0,0,50,40)
 		    .hide();
@@ -966,7 +966,7 @@
 
 		var menu_features = new seeker.complexMenu()
 			.attachTo(document.body)
-		    .setControl(menu_featuresControlData, {'text':'name','click':'click'})
+		    .setControl({'items':menu_featuresControlData}, {'text':'name','click':'click'})
 		    .setTemplate(function(li, data, index, keys) {
 				var tbox = new seeker.base('div')
 					.attachTo(li);
@@ -1035,13 +1035,13 @@
 			.style('overflow-y','auto');
 
 		var opt_legendShow = new seeker.checkbox()
-			.bind(base.settings, {'checkbox':'legend_show'})
+			.bind({'checkbox':base.settings}, {'checkbox':'legend_show'})
 			.attachTo(panel_options.container.node())
 			.setText('show legend')
 			.update();
 
 		var opt_seqNumbered = new seeker.checkbox()
-			.bind(base.settings, {'checkbox':'seq_numbered'})
+			.bind({'checkbox':base.settings}, {'checkbox':'seq_numbered'})
 			.attachTo(panel_options.container.node())
 			.setText('numbered sequences')
 			.update();
@@ -1049,7 +1049,7 @@
 		var opt_margin = new seeker.slider()
 			.setInterval(0,100)
 			.setText('figure margins')
-		    .bind(base.settings, {'slider':'margin'})
+		    .bind({'slider':base.settings}, {'slider':'margin'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,-1,-1)
 		    .update();
@@ -1057,14 +1057,14 @@
 		var opt_seqLength = new seeker.slider()
 			.setInterval(0,dim[0])
 			.setText('maximum sequence width')
-		    .bind(base.settings, {'slider':'seq_maxLength'})
+		    .bind({'slider':base.settings}, {'slider':'seq_maxLength'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,-1,-1)
 		    .update();
 
 		var opt_legendSpacing = new seeker.slider()
 			.setInterval(0,dim[1])
-		    .bind(base.settings, {'slider':'legend_spacing'})
+		    .bind({'slider':base.settings}, {'slider':'legend_spacing'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('spacing under legend')
@@ -1072,7 +1072,7 @@
 
 		var opt_legendWidth = new seeker.slider()
 			.setInterval(0,dim[0])
-		    .bind(base.settings, {'slider':'legend_width'})
+		    .bind({'slider':base.settings}, {'slider':'legend_width'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('legend width')
@@ -1080,7 +1080,7 @@
 
 		var opt_legendHeight = new seeker.slider()
 			.setInterval(0,dim[1])
-		    .bind(base.settings, {'slider':'legend_height'})
+		    .bind({'slider':base.settings}, {'slider':'legend_height'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('legend height')
@@ -1088,7 +1088,7 @@
 
 		var opt_legendCols = new seeker.slider()
 			.setInterval(0,20)
-		    .bind(base.settings, {'slider':'legend_cols'})
+		    .bind({'slider':base.settings}, {'slider':'legend_cols'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('legend columns')
@@ -1096,7 +1096,7 @@
 
 		var opt_legendColorSize = new seeker.slider()
 			.setInterval(0,200)
-		    .bind(base.settings, {'slider':'legend_size'})
+		    .bind({'slider':base.settings}, {'slider':'legend_size'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('legend color box size')
@@ -1104,7 +1104,7 @@
 
 		var opt_legendXPos = new seeker.slider()
 			.setInterval(0,dim[0])
-		    .bind(base.settings, {'slider':'legend_xPos'})
+		    .bind({'slider':base.settings}, {'slider':'legend_xPos'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('legend horizontal position')
@@ -1112,7 +1112,7 @@
 
 		var opt_seqSpacing = new seeker.slider()
 			.setInterval(5,500)
-		    .bind(base.settings, {'slider':'seq_spacing'})
+		    .bind({'slider':base.settings}, {'slider':'seq_spacing'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('spacing between sequences')
@@ -1120,7 +1120,7 @@
 
 		var opt_spineWidth = new seeker.slider()
 			.setInterval(1,50)
-		    .bind(base.settings, {'slider':'seq_spineWidth'})
+		    .bind({'slider':base.settings}, {'slider':'seq_spineWidth'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('sequence spine width')
@@ -1128,7 +1128,7 @@
 
 		var opt_featWidth = new seeker.slider()
 			.setInterval(1,50)
-		    .bind(base.settings, {'slider':'feat_width'})
+		    .bind({'slider':base.settings}, {'slider':'feat_width'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('feature width')
@@ -1136,7 +1136,7 @@
 
 		var opt_labelXPos = new seeker.slider()
 			.setInterval(0,dim[0])
-		    .bind(base.settings, {'slider':'seq_labelxPos'})
+		    .bind({'slider':base.settings}, {'slider':'seq_labelxPos'})
 		    .attachTo(panel_options.container.node())
 		    .whxy(200,-1,0,0)
 		    .setText('sequence label horizontal position')

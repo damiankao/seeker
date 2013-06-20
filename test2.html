@@ -20,29 +20,27 @@
   }},{'name':'cmd03','click':function() {console.log('three')}}],'cb':[{'name':'opt1','show':true},{'name':'opt2','show':false},{'name':'opt3','show':true}],'selection':['label Change one','label change two','label change three']};
 
   var textbox = new seeker.textbox()
-    .bind(data, {
-      'text':'label'
-    })
+    .bind({'text':data}, {'text':'label'})
     .attachTo(document.body)
     .update();
 
   var opt = new seeker.option()
     .attachTo(document.body)
     .setSelection(data.selection)
-    .bind(data, {'text':'label','option':'label'})
+    .bind({'text':data,'option':data}, {'text':'label','option':'label'})
     .whxy(-1,-1,400,100)
     .update();
 
 
   var slider = new seeker.slider()
     .setInterval(0,100)
-    .bind(data, {'text':'label','slider':'range'})
+    .bind({'text':data,'slider':data}, {'text':'label','slider':'range'})
     .attachTo(document.body)
     .whxy(200,-1,400,200)
     .update();
 
   var t = new seeker.menu()
-    .bind(data.items,{'text':'name','click':'click'})
+    .bind({'items':data.items}, {'text':'name','click':'click'})
     .attachTo(document.body)
     .update()
     .place([100,200]);
@@ -50,14 +48,14 @@
 
   var cmenu = new seeker.complexMenu()
     .attachTo(document.body)
-    .setControl(data.items, {'text':'name','click':'click'})
-    .bind(data.cb, {'text':'name','cb':'show'})
+    .setControl({'items':data.items}, {'text':'name','click':'click'})
+    .bind({'items':data.cb}, {'text':'name','cb':'show'})
     .setTemplate(function(li, data ,keys) {
       var cbox = new seeker.checkbox()
         .attachTo(li);
 
       cbox
-        .bind(data, {'text':keys.text,'checkbox':keys.cb})
+        .bind({'text':data,'checkbox':data}, {'text':keys.text,'checkbox':keys.cb})
         .update();
 
       li.checkbox = cbox;

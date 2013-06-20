@@ -106,17 +106,19 @@
 		return this;
 	}
 
-	seeker.base.prototype.bind = function(d, k) {
+	seeker.base.prototype.bind = function(d,k) {
 		this.data = d;
 		this.keys = k;
-
-		seeker.util.bindModel(d);
 
 		if (this.postBind) {
 			this.postBind();
 		}
 
 		return this;
+	}
+
+	seeker.base.prototype.datum = function(name) {
+		return this.data[name][this.keys[name]];
 	}
 
 	seeker.base.prototype.unbind = function(d, k) {
@@ -147,13 +149,6 @@
 				}
 			}
 		}
-
-		return this;
-	}
-
-	seeker.base.prototype.set = function(name, val) {
-		this.data[this.keys[name]] = val;
-		seeker.update(this.data, this.keys[name]);
 
 		return this;
 	}
@@ -303,13 +298,13 @@
 		
 		base.update = function() {
 			base.container
-				.html(_prepend + base.data[base.keys.text] + _append);
+				.html(_prepend + base.datum('text') + _append);
 
 			return base;
 		}
 
 		base.postBind = function() {
-			seeker.util.addUpdate(base, base.data, base.keys.text, base.update);
+			seeker.util.addUpdate(base, base.data.text, base.keys.text, base.update);
 		}
 
 		return base;
@@ -366,7 +361,7 @@
 					.update();
 			}
 
-			if (base.data[base.keys.checkbox]) {
+			if (base.datum('checkbox')) {
 				base.check();
 			} else {
 				base.uncheck();
@@ -378,20 +373,20 @@
 		base.postBind = function() {
 			if (this.keys.text) {
 				label
-					.bind(base.data, {'text':base.keys.text})
+					.bind({'text':base.data.text}, {'text':base.keys.text})
 					.update();
 			}
 
-			seeker.util.addUpdate(base, base.data, base.keys.checkbox, base.update);
+			seeker.util.addUpdate(base, base.data.checkbox, base.keys.checkbox, base.update);
 		}
 
 		base.container
 			.on('click',function(evt) {
 				d3.event.stopPropagation();
-				if (base.data[base.keys.checkbox]) {
-					base.set('checkbox',false);
+				if (base.datum('checkbox')) {
+					seeker.util.set(base.data.checkbox,base.keys.checkbox,false);
 				} else {
-					base.set('checkbox',true)
+					seeker.util.set(base.data.checkbox,base.keys.checkbox,true);
 				}
 			})
 
@@ -439,13 +434,13 @@
 				_selection.push({
 					'name':d[i],
 					'click':function(index) {
-						base.set('option',_selection[index].name);
+						seeker.util.set(base.data.option,base.keys.option,_selection[index].name);
 					}
 				});
 			}
 
 			menu
-				.bind(_selection, {'text':'name','click':'click'})
+				.bind({'items':_selection}, {'text':'name','click':'click'})
 				.update();
 
 			return base;
@@ -465,7 +460,7 @@
 				.style('width',lWidth > mWidth ? lWidth : mWidth);
 
 			selection.container
-				.html(base.data[base.keys.option]);
+				.html(base.datum('option'));
 
 			menu.container
 				.style('left',4)
@@ -483,9 +478,9 @@
 
 		base.postBind = function() {
 			label
-				.bind(base.data, {'text':base.keys.text});
+				.bind({'text':base.data.text}, {'text':base.keys.text});
 
-			seeker.util.addUpdate(base, base.data, base.keys.option, base.update);
+			seeker.util.addUpdate(base, base.data.option, base.keys.option, base.update);
 
 			return base;
 		}
@@ -547,7 +542,7 @@
 		}
 
 		base.update = function() {
-			var sliderVal = base.data[base.keys.slider];
+			var sliderVal = base.datum('slider');
 
 			if (base.keys.text) {
 				label
@@ -572,10 +567,10 @@
 		base.postBind = function() {
 			if (base.keys.text) {
 				label
-					.bind(base.data, {'text':base.keys.text});
+					.bind({'text':base.data.text}, {'text':base.keys.text});
 			}
 
-			seeker.util.addUpdate(base, base.data, base.keys.slider, base.update);
+			seeker.util.addUpdate(base, base.data.slider, base.keys.slider, base.update);
 
 			return base;
 		}
@@ -605,7 +600,7 @@
 							spinePos = _end;
 						}
 
-						base.set('slider',spinePos);
+						seeker.util.set(base.data.slider, base.keys.slider, spinePos);
 					})
 					.on('mouseup', function(evt) {
 						d3.select(document.body)
@@ -630,7 +625,7 @@
 					spinePos = _end;
 				}
 
-				base.set('slider',spinePos);
+				seeker.util.set(base.data.slider, base.keys.slider, spinePos);
 			})
 
 		numberBox.container
@@ -643,7 +638,8 @@
 				if (val > _end) {
 					val = _end
 				}
-				base.set('slider', val);
+
+				seeker.util.set(base.data.slider, base.key.slider, val);
 			});
 
 		base.container
@@ -658,23 +654,20 @@
 		base.container
 			.attr('id','menu');
 
-		base.data;
-		base.keys = {};
-
 		base.postBind = function() {
-			var i = base.data.length;
+			var i = base.data.items.length;
 			while ( i-- ) {
-				var obj = base.data[i];
+				var obj = base.data.items[i];
 
 				seeker.util.addUpdate(base, obj, base.keys.text, base.update);
 				seeker.util.addUpdate(base, obj, base.keys.click, base.update);
 			}
 
-			seeker.util.addUpdate(base, base.data, null, base.update);
+			seeker.util.addUpdate(base, base.data.items, null, base.update);
 		}
 
 		base.update = function() {
-			var items = base.data;
+			var items = base.data.items;
 			var li = base.container
 				.selectAll('li')
 				.data(items)
@@ -726,7 +719,7 @@
 
 			var li = controlList.container
 				.selectAll('li')
-				.data(_controlData);
+				.data(_controlData.items);
 
 			li
 				.enter()
@@ -764,7 +757,7 @@
 		base.update = function() {
 			var li = list.container
 				.selectAll('li')
-				.data(base.data);
+				.data(base.data.items);
 
 			li
 				.enter()
@@ -806,17 +799,17 @@
 		}
 
 		base.postBind = function() {
-			var i = base.data.length;
+			var i = base.data.items.length;
 			while ( i-- ) {
 				for (name in base.keys) {
-					var obj = base.data[i];
+					var obj = base.data.items[i];
 					var key = base.keys[name]
 
 					seeker.util.addUpdate(base, obj, key, base.update);
 				}
 			}
 
-			seeker.util.addUpdate(base, base.data, null, base.update);
+			seeker.util.addUpdate(base, base.data.items, null, base.update);
 		}
 
 		controlList
