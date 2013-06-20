@@ -78,7 +78,6 @@
 									})
 									.show()
 									.place(d3.mouse(canvas.container.node()));
-
 							});
 						obj
 							.append('text')
@@ -635,38 +634,39 @@
 			{'name':'input','click':function() {
 				seeker.env_closeAll();
 				if (blockscreen_input.container.style('visibility') == 'hidden') {
-							textarea_input.container
-								.style('width',dim[0] * 4/5)
-								.style('height',dim[1] * 1/2)
-								.style('top',200)
-								.style('left',dim[0] * 1/10);
+						textarea_input.container
+							.style('width',dim[0] * 4/5)
+							.style('height',dim[1] * 1/2)
+							.style('top',dim[1] / 2 - dim[1] / 4)
+							.style('left',dim[0] * 1/10);
 
-							text_inputInstruct.container
-								.style('top',134)
-								.style('left',dim[0] * 1/10)
-								.style('width',dim[0] * 4/5 - 20);
+						text_inputInstruct.container
+							.style('top',dim[1] / 2 - dim[1] / 4 - 65)
+							.style('left',dim[0] * 1/10)
+							.style('width',dim[0] * 4/5 - 20);
 
-							button_inputValidate.container
-								.style('top',210 + dim[1] * 1/2)
-								.style('left',dim[0] * 9/10 - 150);
+						button_inputValidate.container
+							.style('top',10 + dim[1] * 1/2  + dim[1] / 4)
+							.style('left',dim[0] * 9/10 - 150);
 
-							button_inputCancel.container
-								.style('top',210 + dim[1] * 1/2)
-								.style('left',dim[0] * 9/10 - 70);
+						button_inputCancel.container
+							.style('top',10 + dim[1] * 1/2  + dim[1] / 4)
+							.style('left',dim[0] * 9/10 - 70);
 
-							button_inputHMMSample.container
-								.style('top',210 + dim[1] * 1/2)
-								.style('left',dim[0] * 1/10);
+						button_inputHMMSample.container
+							.style('top',10 + dim[1] * 1/2  + dim[1] / 4)
+							.style('left',dim[0] * 1/10);
 
-							button_inputTabSample.container
-								.style('top',210 + dim[1] * 1/2)
-								.style('left',dim[0] * 1/10 + 160);
-					blockscreen_input.container
-						.style('visibility', 'visible')
-						.style('opacity',0)
-						.transition()
-						.duration(150)
-						.style('opacity',1);
+						button_inputTabSample.container
+							.style('top',10 + dim[1] * 1/2  + dim[1] / 4)
+							.style('left',dim[0] * 1/10 + 160);
+
+						blockscreen_input.container
+							.style('visibility', 'visible')
+							.style('opacity',0)
+							.transition()
+							.duration(150)
+							.style('opacity',0.95);
 				} else {
 					blockscreen_input.container.style('visibility', 'hidden')
 				}
@@ -747,7 +747,7 @@
 						.style('opacity',0)
 						.transition()
 						.duration(150)
-						.style('opacity',1);
+						.style('opacity',0.95);
 
 					var html = canvas.container
 						.attr("title", "annotations")
@@ -1133,7 +1133,8 @@
 			.style('left',dim[0] - 270)
 			.style('border-bottom','10px solid #38B87C')
 			.style('border-top','10px solid #38B87C')
-			.style('overflow-y','auto');
+			.style('overflow-y','auto')
+			.style('z-index',10000);
 
 		var opt_legendShow = new seeker.checkbox()
 			.bind({'checkbox':base.settings}, {'checkbox':'legend_show'})
