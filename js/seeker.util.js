@@ -50,23 +50,25 @@
 	}
 
 	seeker.util.bindModel = function(d) {
-		if (Object.prototype.toString.call(d) === '[object Array]') {
-			if (!d.__bound__) {
-				d.__onUpdate__ = [];
-				var i = d.length;
-				while ( i-- ) {
-					var obj = d[i];
-					if (!obj.__bound__) {
-						obj.__onUpdate__ = {};
-						obj.__bound__ = true;
+		if (!d.__bound__) {
+			if (Object.prototype.toString.call(d) === '[object Array]') {
+				if (!d.__bound__) {
+					d.__onUpdate__ = [];
+					var i = d.length;
+					while ( i-- ) {
+						var obj = d[i];
+						if (!obj.__bound__) {
+							obj.__onUpdate__ = {};
+							obj.__bound__ = true;
+						}
 					}
+					d.__bound__ = true;
 				}
-				d.__bound__ = true;
-			}
-		} else {
-			if (!d.__bound__) {
-				d.__onUpdate__ = {};
-				d.__bound__ = true;
+			} else {
+				if (!d.__bound__) {
+					d.__onUpdate__ = {};
+					d.__bound__ = true;
+				}
 			}
 		}
 	}

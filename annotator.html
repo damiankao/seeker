@@ -12,6 +12,10 @@
     body {
       overflow:hidden;
     }
+
+    a {
+      color:white;
+    }
     </style>
   </head>
   <body>
@@ -19,10 +23,10 @@
   var dim = seeker.util.winDimensions();
 
   var anno = new seeker.annotator()
-    .bind({'sequences':data,'features':data}, {'sequences':'seq','features':'feat'})
+    //.bind({'sequences':data,'features':data}, {'sequences':'seq','features':'feat'})
     .attachTo(document.body)
     .whxy(dim[0],dim[1],0,0)
-    .update();
+    //.update();
 
   </script>
   </body>

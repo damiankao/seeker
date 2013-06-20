@@ -7,41 +7,48 @@
 	DOM controls are included in this file. All view elements are inherited from the seeker.element class.
 
 	Data binding:
-	Some of these elements can be bound to a data object. When bound, __onChange array and __update()
-	function is added to the data object if it doesn't already exist. The update function of the view
-	element is then pushed into the __onChange array. When the scalars in the data object is updated, the 
-	__update() function can be called to update the view element bound to the scalars. 
+	Data is bound to these components by specifying the data object and the key of the data. In cases where
+	an array is being bound, just the data array is specified. The .bind function is prototyped for every 
+	seeker.base wrapped DOM object. This function takes in the object and keys to be bound. 
 
-	View objects can only be bound to the current hierchical level of the object in question. If the object
-	contains another object, any changes made in the child object will not call the parent update function,
-	instead it will call its own update function. While it is technically possible to "bubble up" the update
-	function to parental objects, it is usually a computational waste. 
+	Data and keys to be bound are organized into an array with component specific keys. For example, the
+	checkbox component expects a 'checkbox' data and key to bind the check/uncheck action to. For this data:
 
-	When a view element that has its update function bound to a data object is destroyed, the DOM node is 
-	detached. On the next __update() function, any __onChange function that returns a node not in the DOM, 
-	is spliced out of the __onChange array. No references to the view element or the node should remain 
-	and will be subsequently garbage collected. 
+	var dataObj = {'name':'myObject','visible':true};
+
+	We bind to a checkbox by:
+
+	checkbox.bind({'checkbox':dataObj},{'checkbox':'visible'});
+
+	The first argument tells the component what data obj the 'checkbox' is associated with. The second argument
+	tells the component which key in the data obj to further associate the value of the check/unchecking action
+	to.
 
 	Components:
 		base classes:
-			element: base element for all controls.
-			popup: arrowed container element that responds intelligently to window edges. 
+			base: base element for all controls.
+			responsiveBase: arrowed container element that responds intelligently to window edges. 
 
 		scalar binding views:
-			textbox
-			checkbox
-			slider: numerical slider
-			option: drop down menu of possible options
-			button
+			textbox: 
+				bind({'text':data}, {'text':key})
+			checkbox: 
+				bind({'text':data, 'checkbox':data}, {'text':key, 'checkbox':key}), text is optional
+			slider: 
+				setInterval(0,100)
+				bind({'text':data, 'slider':data}, {'text':key, 'slider':key}), text is optional
+			option: 
+				setSelection(['option1','option2','option3']);
+				bind({'text':data, 'option':data}, {'text':key, 'option':key}), text is optional
 
 		collection binding views:
-			menu: Simple menu. Input is an array of array['menu item name',click function]
-			complexMenu: Complex menu with a button list header and template driven items. The input require
-				are the object data and template function for creating each menu item.
+			menu: 
+			complexMenu: 
 
 		static views:
 			colorpicker
 			status
+			button
 	*/
 
 	seeker.update = function(d) {
@@ -82,7 +89,7 @@
     		.on('mousedown',function(evt) {
     			d3.event.preventDefault();
     			d3.event.stopPropagation();
-    		})
+    		});
 
     	this.bound = [];
 
