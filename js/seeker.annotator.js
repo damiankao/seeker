@@ -599,9 +599,9 @@
 								.style('left',dim[0] * 1/10);
 
 							text_inputInstruct.container
-								.style('top',40)
+								.style('top',34)
 								.style('left',dim[0] * 1/10)
-								.style('width',dim[0] * 4/5);
+								.style('width',dim[0] * 4/5 - 20);
 
 							button_inputValidate.container
 								.style('top',110 + dim[1] * 1/2)
@@ -817,20 +817,19 @@
 			.attachTo(blockscreen_input.container.node());
 		textarea_input.container
 			.style('position','absolute')
+			.style('border','4px solid #2980B9')
 			.on('mousedown',null);
 
 		var text_inputInstruct = new seeker.base('div')
+			.id('instruction')
 			.attachTo(blockscreen_input.container.node());
 		text_inputInstruct.container
-			.style('position','absolute')
-			.style('font-family','Arial')
-			.style('font-size','10pt')
 			.html("<big><b>Instructions:</b></big><br>Input can be HMMScan's domain table output or a tab delimited file. Click the following buttons to see sample inputs in HMMSCan domain table output or tab delimited file with format description.");
 
 
 		var button_inputHMMSample = new seeker.button()
 			.attachTo(blockscreen_input.container.node())
-			.setType('std');
+			.setType('inf');
 		button_inputHMMSample.container
 			.style('position','absolute')
 			.html('sample HMMSCan')
@@ -840,7 +839,7 @@
 
 		var button_inputTabSample = new seeker.button()
 			.attachTo(blockscreen_input.container.node())
-			.setType('std');
+			.setType('inf');
 		button_inputTabSample.container
 			.style('position','absolute')
 			.html('sample tab delimited')
@@ -850,7 +849,7 @@
 
 		var button_inputValidate = new seeker.button()
 			.attachTo(blockscreen_input.container.node())
-			.setType('std');
+			.setType('suc');
 		button_inputValidate.container
 			.style('position','absolute')
 			.html('submit')
@@ -867,7 +866,7 @@
 
 		var button_inputCancel = new seeker.button()
 			.attachTo(blockscreen_input.container.node())
-			.setType('std');
+			.setType('dan');
 		button_inputCancel.container
 			.style('position','absolute')
 			.html('cancel')
