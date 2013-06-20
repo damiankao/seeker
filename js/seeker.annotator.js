@@ -702,10 +702,10 @@
 				if (panel_about.container.style('visibility') == "hidden") {
 					panel_about.container
 						.style('visibility','visible')
-						.style('top',dim[1] / 2 - 150)
-						.style('left',dim[0] / 2 - 300)
-						.style('width',600)
-						.style('height',300);
+						.style('top',40)
+						.style('left',50)
+						.style('width',navBar.container.node().offsetWidth - 40)
+						.style('height',75);
 				} else {
 					panel_about.container.style('visibility','hidden');
 				}
@@ -1209,8 +1209,10 @@
 			.style('font-family','Arial')
 			.style('font-size','10pt')
 			.style('line-height','25px')
+			.style('background','#4D4D4D')
 			.on('mousedown',null)
 			.html('<big><b>Annotation Viewer</b> v1.0</big><br><b>Author:</b> Damian Kao (damian.kao[at]gmail.com)<br><b>Github source:</b> <a href="https://github.com/damiankao/">https://github.com/damiankao/</a>');
+		seeker.env_toClose.push(panel_about);
 
 		return base;
 	}
