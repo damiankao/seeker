@@ -499,8 +499,8 @@
 
 			if (type == "hmmscan") {
 				for ( var i = start ; i < length ; i ++ ) {
-					var line = lines[i];
-					if (line[0] != '#' && line[0] != '!') {
+					var line = String(lines[i]).replace(/^\s+|\s+$/g, '');
+					if (line[0] != '#' && line[0] != '!' && line != '') {
 						var cols = line.split(new RegExp("\\s+"));
 
 						var feature = cols[0];
@@ -535,12 +535,22 @@
 				}
 
 				for (seq in seqs) {
+					seqs[seq].feat.sort(function(a,b) {
+						if (a.start < b.start) {
+							return -1
+						}
+						if (a.start > b.start) {
+							return 1;
+						}
+
+						return 0;
+					});
 					d.seq.push(seqs[seq]);
 				}
 			} else if (type == 'tab') {
 				for ( var i = 0 ; i < length ; i ++ ) {
-					var line = lines[i];
-					if (line[0] != '#' && line[0] != '!') {
+					var line = String(lines[i]).replace(/^\s+|\s+$/g, '');
+					if (line[0] != '#' && line[0] != '!' && line != '') {
 						var cols = line.split("\t");
 
 						var feature = cols[1];
@@ -577,6 +587,17 @@
 				d.seq = [];
 				d.feat = [];
 				for (seq in seqs) {
+					seqs[seq].feat.sort(function(a,b) {
+						if (a.start < b.start) {
+							return -1
+						}
+						if (a.start > b.start) {
+							return 1;
+						}
+
+						return 0;
+					});
+
 					d.seq.push(seqs[seq]);
 				}
 
@@ -591,34 +612,40 @@
 		//menus
 		var navData = [
 			{'name':'input','click':function() {
+				seeker.env_closeAll();
 				if (blockscreen_input.container.style('visibility') == 'hidden') {
 							textarea_input.container
 								.style('width',dim[0] * 4/5)
 								.style('height',dim[1] * 1/2)
-								.style('top',100)
+								.style('top',200)
 								.style('left',dim[0] * 1/10);
 
 							text_inputInstruct.container
-								.style('top',34)
+								.style('top',134)
 								.style('left',dim[0] * 1/10)
 								.style('width',dim[0] * 4/5 - 20);
 
 							button_inputValidate.container
-								.style('top',110 + dim[1] * 1/2)
+								.style('top',210 + dim[1] * 1/2)
 								.style('left',dim[0] * 9/10 - 150);
 
 							button_inputCancel.container
-								.style('top',110 + dim[1] * 1/2)
+								.style('top',210 + dim[1] * 1/2)
 								.style('left',dim[0] * 9/10 - 70);
 
 							button_inputHMMSample.container
-								.style('top',110 + dim[1] * 1/2)
+								.style('top',210 + dim[1] * 1/2)
 								.style('left',dim[0] * 1/10);
 
 							button_inputTabSample.container
-								.style('top',110 + dim[1] * 1/2)
+								.style('top',210 + dim[1] * 1/2)
 								.style('left',dim[0] * 1/10 + 160);
-					blockscreen_input.container.style('visibility', 'visible');
+					blockscreen_input.container
+						.style('visibility', 'visible')
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
 				} else {
 					blockscreen_input.container.style('visibility', 'hidden')
 				}
@@ -631,6 +658,12 @@
 					menu_sequences
 						.respondToWindow()
 						.show();
+
+					menu_sequences.container
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
 
 					seeker.env_clickTarget = this;
 				} else {
@@ -646,35 +679,54 @@
 						.respondToWindow()
 						.show();
 
+					menu_features.container
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
+
 					seeker.env_clickTarget = this;
 				} else {
 					seeker.env_closeAll();
 				}
 			}},
 			{'name':'options','click':function() {
+				seeker.env_closeAll();
 				if (panel_options.container.style('visibility') == 'hidden') {
-					panel_options.container.style('visibility','visible');
+					panel_options.container
+						.style('visibility','visible')
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
+
 				} else {
 					panel_options.container.style('visibility','hidden');
 				}
 			}},
 			{'name':'export','click':function() {
 				d3.event.stopPropagation();
+				seeker.env_closeAll();
 
 				if (blockscreen_export.container.style('visibility') == 'hidden') {
 					var dim = seeker.util.winDimensions();
 
 					blockscreen_export.container.select('span')
-						.style('top', dim[1] * 1/4 - 25)
-						.style('left', dim[0] / 2 - 260);
-
+						.style('top', dim[1] * 1/4 - 30)
+						.style('width',dim[0] * 4/5 - 12)
+						.style('text-align','center')
+						.style('left', dim[0] * 1/10);
 
 					blockscreen_export.container.select('#button')
-						.style('top',dim[1] * 3/4 + 10)
+						.style('top',dim[1] * 3/4 + 15)
 						.style('left',dim[0] / 2 -50);
 
 					blockscreen_export.container
-						.style('visibility','visible');
+						.style('visibility','visible')
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
 
 					var html = canvas.container
 						.attr("title", "annotations")
@@ -699,13 +751,18 @@
 				}
 			}},
 			{'name':'about','click':function() {
+				seeker.env_closeAll();
 				if (panel_about.container.style('visibility') == "hidden") {
 					panel_about.container
 						.style('visibility','visible')
 						.style('top',40)
 						.style('left',50)
 						.style('width',navBar.container.node().offsetWidth - 40)
-						.style('height',75);
+						.style('height','auto')
+						.style('opacity',0)
+						.transition()
+						.duration(150)
+						.style('opacity',1);
 				} else {
 					panel_about.container.style('visibility','hidden');
 				}
@@ -824,7 +881,7 @@
 			.id('instruction')
 			.attachTo(blockscreen_input.container.node());
 		text_inputInstruct.container
-			.html("<big><b>Instructions:</b></big><br>Input can be HMMScan's domain table output or a tab delimited file. Click the following buttons to see sample inputs in HMMSCan domain table output or tab delimited file with format description.");
+			.html("<big><b>Instructions:</b></big><br>Input can be HMMScan's domain table output or a tab delimited file. Click the following buttons to see sample inputs in HMMScan domain table output or tab delimited file with format description.");
 
 
 		var button_inputHMMSample = new seeker.button()
@@ -832,7 +889,7 @@
 			.setType('inf');
 		button_inputHMMSample.container
 			.style('position','absolute')
-			.html('sample HMMSCan')
+			.html('sample HMMScan')
 			.on('click', function() {
 				textarea_input.container.node().value = '#                                                                                  --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord\n# target name        accession   tlen query name                 accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target\n#------------------- ---------- -----       -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------\nRRM_1                PF00076.16    70 SETD1B_Schistosoma_mansoni -           1789   1.5e-08   33.8   0.0   1   1   7.2e-12     3e-08   32.9   0.0     4    67    89   153    86   156 0.94 RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)\nSET                  PF00856.22   168 Trr_Schistosoma_mansoni -           1560   4.8e-25   88.4   1.7   1   1   3.2e-28   1.3e-24   86.9   0.6     1   168  1431  1536  1431  1536 0.94 SET domain\nFYRC                 PF05965.8     87 Trr_Schistosoma_mansoni -           1560   3.1e-21   74.7   0.0   1   1   6.8e-24   2.8e-20   71.7   0.0     2    86  1241  1326  1240  1327 0.95 F/Y rich C-terminus\nFYRN                 PF05964.8     54 Trr_Schistosoma_mansoni -           1560   2.5e-17   61.8   0.1   1   1   1.5e-20   6.2e-17   60.5   0.1     1    54  1182  1238  1182  1238 0.94 F/Y-rich N-terminus\nPHD                  PF00628.23    51 lost_PHDs_of_Trr_Schistosoma_mansoni -           1074   7.4e-41  137.3  99.9   1   3     4e-14   4.9e-10   38.6   3.1     2    51   313   362   312   362 0.96 PHD-finger\nPHD                  PF00628.23    51 lost_PHDs_of_Trr_Schistosoma_mansoni -           1074   7.4e-41  137.3  99.9   2   3   1.8e-15   2.1e-11   43.0   5.3     2    50   362   408   361   409 0.94 PHD-finger\nPHD                  PF00628.23    51 lost_PHDs_of_Trr_Schistosoma_mansoni -           1074   7.4e-41  137.3  99.9   3   3   1.1e-13   1.3e-09   37.3   6.1     1    49   820   866   818   868 0.89 PHD-finger\nSET                  PF00856.22   168 MLL1_Schistosoma_mansoni -           3002   1.2e-23   83.8   5.3   1   1   4.3e-27   2.7e-23   82.7   0.4     1   167  2875  2979  2875  2980 0.93 SET domain\nFYRN                 PF05964.8     54 MLL1_Schistosoma_mansoni -           3002   1.4e-05   24.2   0.4   1   1   8.4e-09   5.1e-05   22.3   0.1    22    52  2213  2243  2205  2245 0.91 F/Y-rich N-terminus\nSET                  PF00856.22   168 SET-16_Caenorhabditis_elegans -           2475   4.1e-24   85.3   3.7   1   1   2.3e-27   7.1e-24   84.5   0.3     1   167  2343  2450  2343  2451 0.93 SET domain\nFYRC                 PF05965.8     87 SET-16_Caenorhabditis_elegans -           2475   4.9e-22   77.3   0.1   1   1   4.4e-25   1.4e-21   75.9   0.1     2    86  2109  2194  2108  2196 0.95 F/Y rich C-terminus\nFYRN                 PF05964.8     54 SET-16_Caenorhabditis_elegans -           2475   3.5e-18   64.5   0.3   1   1   2.3e-21     7e-18   63.5   0.2     2    52  2053  2104  2052  2106 0.96 F/Y-rich N-terminus\nPHD                  PF00628.23    51 SET-16_Caenorhabditis_elegans -           2475   4.7e-17   61.1  85.8   1   2   1.4e-11   4.2e-08   32.5   4.0     1    50   427   479   427   480 0.92 PHD-finger\nPHD                  PF00628.23    51 SET-16_Caenorhabditis_elegans -           2475   4.7e-17   61.1  85.8   2   2   5.2e-11   1.6e-07   30.6   7.4     1    51   479   527   477   527 0.88 PHD-finger\nSET                  PF00856.22   168 SET-2_Caenorhabditis_elegans -           1507   4.3e-23   82.0   0.2   1   1   6.9e-27   4.3e-23   82.0   0.1     1   167  1379  1484  1379  1485 0.92 SET domain\nRRM_1                PF00076.16    70 SET-2_Caenorhabditis_elegans -           1507   7.7e-08   31.6   0.0   1   1   2.9e-11   1.8e-07   30.4   0.0     5    62   132   190   128   198 0.89 RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)\nSET                  PF00856.22   168 Trr2_Clonorchis_sinensis -           1443     2e-24   86.3   0.8   1   1   2.3e-27   9.3e-24   84.2   0.6     1   167  1313  1417  1313  1418 0.93 SET domain\nFYRC                 PF05965.8     87 Trr2_Clonorchis_sinensis -           1443   4.4e-19   67.8   0.0   1   1   2.4e-22   9.9e-19   66.7   0.0     4    86  1129  1214  1126  1215 0.91 F/Y rich C-terminus\nFYRN                 PF05964.8     54 Trr2_Clonorchis_sinensis -           1443   5.3e-17   60.7   0.3   1   1   3.1e-20   1.2e-16   59.5   0.2     1    52  1057  1111  1057  1113 0.92 F/Y-rich N-terminus\nSET                  PF00856.22   168 SETD1B_Clonorchis_sinensis -           1685     4e-24   85.4   0.3   1   1   4.8e-27   2.9e-23   82.6   0.1     2   167  1558  1662  1557  1663 0.91 SET domain\nSET                  PF00856.22   168 MLL5_Clonorchis_sinensis -            892   7.2e-11   42.2   0.0   1   1   4.9e-14     6e-10   39.2   0.0     3   165   652   763   650   766 0.91 SET domain\nN-SET                PF11764.2    166 SET1_Schizosaccharomyces_pombe -            920   6.6e-32  110.4   0.1   1   1   2.2e-35   6.6e-32  110.4   0.1     3   166   630   771   628   771 0.96 COMPASS (Complex proteins associated with Set1p) component N\nSET                  PF00856.22   168 SET1_Schizosaccharomyces_pombe -            920   5.2e-24   85.0   0.7   1   1     8e-27   2.5e-23   82.8   0.5     3   167   794   897   793   898 0.91 SET domain\nSET_assoc            PF11767.2     66 SET1_Schizosaccharomyces_pombe -            920   5.2e-21   73.4   2.2   1   1   1.7e-24   5.2e-21   73.4   1.6     2    66   279   343   278   343 0.97 Histone lysine methyltransferase SET associated\nRRM_1                PF00076.16    70 SET1_Schizosaccharomyces_pombe -            920   3.4e-12   45.5   0.1   1   1   5.8e-12   1.8e-08   33.6   0.0     1    69    96   172    96   173 0.85 RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)\nSET                  PF00856.22   168 MLL5_Clonorchis_sinensis -            973   5.2e-06   26.4   0.0   1   1   1.2e-09   1.5e-05   24.9   0.0   113   165   728   780   698   782 0.90 SET domain';
 			});
@@ -844,7 +901,7 @@
 			.style('position','absolute')
 			.html('sample tab delimited')
 			.on('click', function() {
-				textarea_input.container.node().value = '#\n!lines starting with "!" or "#" are ignored.\n!Format for tab delimited input contains 5 columns:\n!sequence name, feature name, start, end, position, sequence length\n!The 5th sequence length column can be omitted for rows with the same sequence name as long as at least one of the rows contain a sequence length.\n#\nSETD1B_Schistosoma_mansoni	RRM_1	89	153	1789\nTrr_Schistosoma_mansoni	SET	1431	1536	1560\nTrr_Schistosoma_mansoni	FYRC	1241	1326	1560\nTrr_Schistosoma_mansoni	FYRN	1182	1238\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	313	362	1074\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	362	408	1074\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	820	866\nMLL1_Schistosoma_mansoni	SET	2875	2979	3002\nMLL1_Schistosoma_mansoni	FYRN	2213	2243	3002\nSET-16_Caenorhabditis_elegans	SET	2343	2450	2475\nSET-16_Caenorhabditis_elegans	FYRC	2109	2194	2475\nSET-16_Caenorhabditis_elegans	FYRN	2053	2104	2475\nSET-16_Caenorhabditis_elegans	PHD	427	479	2475\nSET-16_Caenorhabditis_elegans	PHD	479	527	2475\nSET-2_Caenorhabditis_elegans	SET	1379	1484	1507\nSET-2_Caenorhabditis_elegans	RRM_1	132	190	1507\nTrr2_Clonorchis_sinensis	SET	1313	1417	1443\nTrr2_Clonorchis_sinensis	FYRC	1129	1214	1443\nTrr2_Clonorchis_sinensis	FYRN	1057	1111	1443\nSETD1B_Clonorchis_sinensis	SET	1558	1662	1685\nMLL5_Clonorchis_sinensis	SET	652	763	892\nSET1_Schizosaccharomyces_pombe	N-SET	630	771	920\nSET1_Schizosaccharomyces_pombe	SET	794	897	920\nSET1_Schizosaccharomyces_pombe	SET_assoc	279	343	920\nSET1_Schizosaccharomyces_pombe	RRM_1	96	172	920\nMLL5_Clonorchis_sinensis	SET	728	780	973\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	41	90	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	90	136	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	559	606	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	Cadherin	3303	3375	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	Cadherin	3408	3499	3518\nTrr1_Clonorchis_sinensis	SET	1634	1739	1763\nTrr1_Clonorchis_sinensis	FYRC	1452	1538	1763\nTrr1_Clonorchis_sinensis	FYRN	1394	1448	1763\nSETD1_Schmidtea_mediterranea	SET	263	367	390\nSETD1_Schmidtea_mediterranea	N-SET	134	234	390\nTrr2_Schmidtea_mediterranea	FYRC	1026	1110	1336\nTrr2_Schmidtea_mediterranea	SET	1206	1310	1336\nTrr2_Schmidtea_mediterranea	FYRN	967	1021	1336\nTrr1_Schmidtea_mediterranea	SET	821	925	951\nTrr1_Schmidtea_mediterranea	FYRC	639	724	951\nTrr1_Schmidtea_mediterranea	FYRN	578	633	951';
+				textarea_input.container.node().value = '#\n!lines starting with "!" or "#" are ignored.\n!Format for tab delimited input contains 5 columns:\n!sequence name, feature name, start position, end position, sequence length\n!The 5th sequence length column can be omitted for rows with the same sequence name as long as at least one of the rows contain a sequence length.\n#\nSETD1B_Schistosoma_mansoni	RRM_1	89	153	1789\nTrr_Schistosoma_mansoni	SET	1431	1536	1560\nTrr_Schistosoma_mansoni	FYRC	1241	1326	1560\nTrr_Schistosoma_mansoni	FYRN	1182	1238\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	313	362	1074\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	362	408	1074\nlost_PHDs_of_Trr_Schistosoma_mansoni	PHD	820	866\nMLL1_Schistosoma_mansoni	SET	2875	2979	3002\nMLL1_Schistosoma_mansoni	FYRN	2213	2243	3002\nSET-16_Caenorhabditis_elegans	SET	2343	2450	2475\nSET-16_Caenorhabditis_elegans	FYRC	2109	2194	2475\nSET-16_Caenorhabditis_elegans	FYRN	2053	2104	2475\nSET-16_Caenorhabditis_elegans	PHD	427	479	2475\nSET-16_Caenorhabditis_elegans	PHD	479	527	2475\nSET-2_Caenorhabditis_elegans	SET	1379	1484	1507\nSET-2_Caenorhabditis_elegans	RRM_1	132	190	1507\nTrr2_Clonorchis_sinensis	SET	1313	1417	1443\nTrr2_Clonorchis_sinensis	FYRC	1129	1214	1443\nTrr2_Clonorchis_sinensis	FYRN	1057	1111	1443\nSETD1B_Clonorchis_sinensis	SET	1558	1662	1685\nMLL5_Clonorchis_sinensis	SET	652	763	892\nSET1_Schizosaccharomyces_pombe	N-SET	630	771	920\nSET1_Schizosaccharomyces_pombe	SET	794	897	920\nSET1_Schizosaccharomyces_pombe	SET_assoc	279	343	920\nSET1_Schizosaccharomyces_pombe	RRM_1	96	172	920\nMLL5_Clonorchis_sinensis	SET	728	780	973\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	41	90	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	90	136	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	PHD	559	606	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	Cadherin	3303	3375	3518\nlost_PHDs_of_Trr_Clonorchis_sinensis	Cadherin	3408	3499	3518\nTrr1_Clonorchis_sinensis	SET	1634	1739	1763\nTrr1_Clonorchis_sinensis	FYRC	1452	1538	1763\nTrr1_Clonorchis_sinensis	FYRN	1394	1448	1763\nSETD1_Schmidtea_mediterranea	SET	263	367	390\nSETD1_Schmidtea_mediterranea	N-SET	134	234	390\nTrr2_Schmidtea_mediterranea	FYRC	1026	1110	1336\nTrr2_Schmidtea_mediterranea	SET	1206	1310	1336\nTrr2_Schmidtea_mediterranea	FYRN	967	1021	1336\nTrr1_Schmidtea_mediterranea	SET	821	925	951\nTrr1_Schmidtea_mediterranea	FYRC	639	724	951\nTrr1_Schmidtea_mediterranea	FYRN	578	633	951';
 			});
 
 		var button_inputValidate = new seeker.button()
@@ -1050,10 +1107,12 @@
 			.hide();
 
 		panel_options.container
-			.style('height',dim[1] - 40)
+			.style('height',dim[1] - 60)
 			.style('width', 240)
 			.style('top',20)
 			.style('left',dim[0] - 270)
+			.style('border-bottom','10px solid #38B87C')
+			.style('border-top','10px solid #38B87C')
 			.style('overflow-y','auto');
 
 		var opt_legendShow = new seeker.checkbox()
@@ -1175,6 +1234,7 @@
 			.style('border','1px solid gray')
 			.style('overflow-y','auto')
 			.style('overflow-x','hidden')
+			.style('border','4px solid #2980B9')
 			.attr('id','preview')
 				.append('img');
 
@@ -1183,11 +1243,12 @@
 			.style('position','absolute')
 			.style('font-family','Arial')
 			.style('font-size','10pt')
+			.attr('id','instruction')
 			.text('Right click on the below image and select "save as" to save the image as svg to your computer.');
 
 		var button_exportClose = new seeker.button()
 			.attachTo(blockscreen_export.container.node())
-			.setType('std');
+			.setType('dan');
 		button_exportClose.container
 			.html('close')
 			.on('click',function(evt) {
@@ -1208,10 +1269,19 @@
 			.style('font-family','Arial')
 			.style('font-size','10pt')
 			.style('line-height','25px')
-			.style('background','#4D4D4D')
+			.style('background','#2980B9')
+			.style('visibility','visible')
+			.style('border-bottom','7px solid #313841')
 			.on('mousedown',null)
-			.html('<big><b>Annotation Viewer</b> v1.0</big><br><b>Author:</b> Damian Kao (damian.kao[at]gmail.com)<br><b>Github source:</b> <a href="https://github.com/damiankao/">https://github.com/damiankao/</a>');
+			.html('<big><b>Annotation Viewer</b> v1.0</big><br><b>Author:</b> Damian Kao (damian.kao[at]gmail.com)<br><b>Github source:</b> <a href="https://github.com/damiankao/">https://github.com/damiankao/</a><br><br><b><big>Instructions:</big></b><br>1. click input to start <br>2. follow instructions on how to input your data<br>3. submit your data<br>4. manipulate the generated figure by clicking on labels, features, legend items, options<br>5. click on the export button to save as .svg')
+			.style('top',40)
+			.style('left',50)
+			.style('width',328)
+			.style('height','auto')
+			.style('opacity',1);
+
 		seeker.env_toClose.push(panel_about);
+
 
 		return base;
 	}
