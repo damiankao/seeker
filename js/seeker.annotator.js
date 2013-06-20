@@ -62,7 +62,24 @@
 							.append('rect')
 							.style('shape-rendering','crispEdges')
 							.attr('x',0)
-							.attr('y',0);
+							.attr('y',0)
+							.on('mouseover', function() {
+								document.body.style.cursor = 'pointer';
+							})
+							.on('mouseout', function() {
+								document.body.style.cursor = 'default';
+							})
+							.on('click', function() {
+								d3.event.stopPropagation();
+								colorpicker
+									.setCallback(function(hex) {
+										seeker.util.set(d,'color',hex);
+										base.update();
+									})
+									.show()
+									.place(d3.mouse(canvas.container.node()));
+
+							});
 						obj
 							.append('text')
 							.style('font-size','9pt')
@@ -610,6 +627,10 @@
 		}
 
 		//menus
+		var colorpicker = new seeker.colorpicker()
+			.attachTo(document.body)
+			.hide();
+
 		var navData = [
 			{'name':'input','click':function() {
 				seeker.env_closeAll();
@@ -751,7 +772,6 @@
 				}
 			}},
 			{'name':'about','click':function() {
-				seeker.env_closeAll();
 				if (panel_about.container.style('visibility') == "hidden") {
 					panel_about.container
 						.style('visibility','visible')

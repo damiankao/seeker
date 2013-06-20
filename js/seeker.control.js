@@ -917,16 +917,16 @@
 	}
 
 	seeker.colorpicker = function() {
-		var base = new seeker.popup('div')
+		var base = new seeker.responsiveBase('div')
 			.id('colorpicker');
 		var slider = new seeker.base('div')
-			.attachTo(base)
+			.attachTo(base.container.node())
 			.id('colorslider');
 		var picker = new seeker.base('div')
-			.attachTo(base)
+			.attachTo(base.container.node())
 			.id('picker');
 
-		var cp = ColorPicker(slider.node, picker.node,function(){});
+		var cp = ColorPicker(slider.container.node(), picker.container.node(),function(){});
 
 		base.setCallback = function(f) {
 			cp.callback = f;
