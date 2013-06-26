@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <title>annotation viewer</title>
+    <link href="css/theme.css" rel="stylesheet"  type="text/css">
+    <script type="text/javascript" src="ext/d3.v3.min.js"></script>
+    <script type="text/javascript" src="ext/crossfilter.min.js"></script>
+    <script type="text/javascript" src="ext/colorpicker.js"></script>
+    <script type="text/javascript" src="js/seeker.util.js"></script>
+    <script type="text/javascript" src="js/seeker.control.js"></script>
+    <script type="text/javascript" src="js/seeker.browser.js"></script>
+    <style>
+    body {
+      overflow:hidden;
+    }
+
+    a {
+      color:white;
+    }
+
+    #instruction {
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      -khtml-border-radius: 4px;
+      border-radius: 4px;
+      font-size:10pt;
+      font-family:Arial;
+      position:absolute;
+      color:white;
+      padding:10px;
+      background:#2980B9;
+    }
+
+    #inputText {
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      -khtml-border-radius: 4px;
+      border-radius: 4px;
+    }
+    </style>
+  </head>
+  <body>
+  <script>
+
+  var browser = new seeker.browser();
+  browser.load('data/data.js');
+
+  </script>
+  </body>
+</html>

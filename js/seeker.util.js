@@ -102,4 +102,26 @@
 			}
 		}
 	}
+
+	seeker.util.injectScript = function(fileName, postLoad) {
+		var old = document.getElementById('uploadScript');  
+		var head = document.getElementsByTagName("head")[0];  
+
+		if (old != null) {  
+			for (var prop in old) {
+				delete old[prop];
+			}
+
+			head.removeChild(old);  
+			delete old;  
+		} 
+
+		var head = document.getElementsByTagName("head")[0];  
+		script = document.createElement('script');  
+		script.id = 'uploadScript';  
+		script.type = 'text/javascript';  
+		script.src = fileName;
+		script.onload = postLoad;
+		head.appendChild(script); 
+	}
 })();
