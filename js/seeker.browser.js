@@ -7,14 +7,82 @@
 		
 	}
 
+	to-do:
+		-Ramer–Douglas–Peucker algorithm to approximate feature density
+
 	*/
 	seeker.browser = function() {
 		var base = new seeker.base('div');
+		var viewport = new seeker.base('div')
+			.attachTo(base.container.node());
+
+		viewport.container
+			.style('position','absolute')
+			.style('overflow','hidden');
+
+		var canvas = new seeker.base('svg')
+			.attachTo(viewport.container.node());
+
+		var _ref;
+		var _refLength;
+		var _startBP;
+		var _endBP;
+		var _feats;
 
 		base.features;
 		base.dim_ref;
 		base.dim_start;
 		base.dim_end;
+		base.lengths;
+
+		base.setWindow = function(ref, start, end) {
+			_ref = ref;
+			_startBP = start;
+			_endBP = end;
+			_refLength = base.lengths[ref];
+
+			return base;
+		}
+
+		base.update = function() {
+			var dim = seeker.util.winDimensions();
+			var length = _endBP - _startBP;
+			var startBound = _startBP - length;
+			var endBound = _endBP + length;
+			if (startBound < 1) {
+				startBound = 1;
+			}
+
+			if (endBound > _refLength) {
+				endBound = _refLength;
+			}
+
+			base.dim_ref.filter(_ref);
+			base.dim_end.filterFunction(function(d) {
+				return d > startBound;
+			})
+			base.dim_start.filterFunction(function(d) {
+				return d < endBound;
+			})
+
+			_feats = base.dim_ref.top(Infinity);
+
+			viewport.container
+				.style('width',dim[0])
+				.style('height',dim[1] - 100);
+
+			return base;
+		}
+
+		base.render = function() {
+			if (_feats.length > 100) {
+				//show feature density
+			} else {
+				//render each feature
+			}
+
+			return base;
+		}
 
 		base.load = function(path) {
 			var postLoad = function() {
@@ -50,6 +118,7 @@
 				base.dim_ref = base.features.dimension(function(d) {return d.ref;});
 				base.dim_start = base.features.dimension(function(d) {return d.start});
 				base.dim_end = base.features.dimension(function(d) {return d.end});
+				base.lengths = refLengths;
 			}
 
 			seeker.util.injectScript(path, postLoad);

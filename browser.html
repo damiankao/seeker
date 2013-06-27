@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>annotation viewer</title>
+    <title>genome browser</title>
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
     <script type="text/javascript" src="ext/d3.v3.min.js"></script>
     <script type="text/javascript" src="ext/crossfilter.min.js"></script>
@@ -40,9 +40,17 @@
   </head>
   <body>
   <script>
+  var refLengths = {
+    'chr1':500000000,
+    'chr2':500000000,
+  };
 
-  var browser = new seeker.browser();
-  browser.load('data/data.js');
+  var dim = seeker.util.winDimensions();
+  var browser = new seeker.browser()
+    .attachTo(document.body)
+    .whxy(dim[0],dim[1],0,0);
+
+
 
   </script>
   </body>
