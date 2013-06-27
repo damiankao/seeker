@@ -405,14 +405,9 @@
 			canvas.container
 				.selectAll('g').remove();
 
-			menu_sequences
-				.reinit();
-
-			submenu_features
-				.reinit();
-
-			menu_features
-				.reinit();
+			if (base.additionInit) {
+				base.additionInit();
+			}
 
 			return base;
 		}
@@ -426,14 +421,9 @@
 				}
 			}
 
-			menu_sequences
-				.bind({'items':base.datum('sequences')}, {'text':'name','cb':'show'})
-				.update();
-
-			menu_features
-				.bind({'items':base.datum('features')}, {'text':'name','cb':'show'})
-				.update();
-
+			if (base.additionPostBind) {
+				base.additionPostBind();
+			}
 			return base;
 		}
 

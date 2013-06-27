@@ -770,6 +770,28 @@
         .html('view demo data');
 
     seeker.env_toClose.push(panel_about);
+
+    anno.additionPostBind = function() {
+        menu_sequences
+            .bind({'items':anno.datum('sequences')}, {'text':'name','cb':'show'})
+            .update();
+
+        menu_features
+            .bind({'items':anno.datum('features')}, {'text':'name','cb':'show'})
+            .update();
+    }
+
+    anno.additionInit = function() {
+        menu_sequences
+            .reinit();
+
+        submenu_features
+            .reinit();
+
+        menu_features
+            .reinit();
+
+    }
     </script>
 </body>
 </html>
