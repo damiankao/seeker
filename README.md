@@ -1,13 +1,12 @@
 Seeker
 
-Description: A suite of javascript apps for visualizing sequencing data
+Description: 
+A suite of javascript apps for visualizing sequencing data
 
-I plan to create 3 components: annotation viewer, genome browser, and sequence editor
-
-Annotation viewer: (annotator.html)
+Annotation viewer:
 Version 1.0
 
-Genome browser: (browser.html)
+Genome browser: 
 In progress
 
 Sequence editor: 
