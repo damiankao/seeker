@@ -614,6 +614,14 @@
 	        return data;
 		}
 
+		base.loadData = function(d) {
+			var parsedData = base.parseInput(d);
+            base
+                .reinit()
+                .bind({'sequences':parsedData,'features':parsedData}, {'sequences':'seq','features':'feat'})
+                .update();
+		}
+
 		return base;
 	}
 })();

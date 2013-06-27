@@ -392,13 +392,7 @@
         .style('position','absolute')
         .html('submit')
         .on('click', function() {
-            var parsedData = anno.parseInput(textarea_input.container.node().value);
-            console.log(parsedData)
-            anno
-                .reinit()
-                .bind({'sequences':parsedData,'features':parsedData}, {'sequences':'seq','features':'feat'})
-                .update();
-
+            anno.loadData(textarea_input.container.node().value)
             blockscreen_input.hide();
         });
 
@@ -769,12 +763,7 @@
     about_sampleButton.container
         .style('float','right')
         .on('click',function() {
-            var parsedData = anno.parseInput(TabSampleTxt);
-
-            anno
-                .reinit()
-                .bind({'sequences':parsedData,'features':parsedData}, {'sequences':'seq','features':'feat'})
-                .update();
+            anno.loadData(TabSampleTxt);
 
             blockscreen_input.hide();
         })
