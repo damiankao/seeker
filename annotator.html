@@ -1,5 +1,5 @@
 <html>
-  <head>
+<head>
     <title>annotation viewer</title>
     <link href="css/theme.css" rel="stylesheet"  type="text/css">
     <script type="text/javascript" src="ext/d3.v3.min.js"></script>
@@ -7,16 +7,16 @@
     <script type="text/javascript" src="js/seeker.util.js"></script>
     <script type="text/javascript" src="js/seeker.control.js"></script>
     <script type="text/javascript" src="js/seeker.annotator.js"></script>
-  </head>
-  <body>
-  <script>
-  
-  var dim = seeker.util.winDimensions();
+</head>
+<body>
+    <script>
+    //render the annotation canvas
+    var dim = seeker.util.winDimensions();
 
-  var anno = new seeker.annotator()
-    .attachTo(document.body)
-    .whxy(dim[0],dim[1],0,0);
+    var anno = new seeker.annotator()
+        .attachTo(document.body)
+        .whxy(dim[0],dim[1],0,0);
 
-  </script>
-  </body>
+    </script>
+</body>
 </html>
