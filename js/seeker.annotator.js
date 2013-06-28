@@ -39,6 +39,8 @@
 		base.onLegendClick;
 		base.onSequenceClick;
 		base.onFeatureClick;
+		base.additionInit;
+		base.additionPostBind;
 
 		var _scale;
 		var _navBarHeight = 20;
