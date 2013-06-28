@@ -1,8 +1,21 @@
 # Seeker #
 
-
 ## Description ##
 A javascript library for visualization of biological sequencing data. In addition to a standard library of components (checkboxes, menu, buttons..), I plan to code three components: annotation viewer, genome browser, and sequence editor. 
+
+The seeker javascript library currently has 3 dependencies (located in the ext folder):
+
+1.	[D3.js](https://github.com/mbostock/d3): Used for all svg rendering and DOM manipulations
+2.	[crossfilter.js](https://github.com/square/crossfilter): Used primarily in the genome browser component. This decision is still tentative.
+3.	[FlexiColorpicker.js](https://github.com/DavidDurman/FlexiColorPicker): Used for the color picker control
+
+There are several components to the seeker javascript library (located in the js folder). I will consolidate them all into one .js file when I am done. So far there are:
+
+1.	seeker.control.js: Contains all the standard control elements (checkboxes, sliders, option menus)
+2.	seeker.util.js: Contains all utility functions and data binding functions for MVC
+3.	seeker.annotator.js: Contains the annotator element used to render sequence feature figures
+4.	seeker.browser.js: Contains the genome browser element. Still in progress.
+
 
 ## Annotation viewer ##
 **Version 1.0**  
