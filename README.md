@@ -30,7 +30,7 @@ This will create a new annotator element and attach the node to body of the docu
 
     var dim = seeker.util.winDimensions()
     anno
-        .whyx(dim[0],dim[1],0,0);
+        .whxy(dim[0],dim[1],0,0);
 
 The function `seeker.util.winDimensions()` returns the width and height of the browser window as an array of `[w,h]`. We then assigned the browser width/height to the annotator width/height and positioned it at 0, 0. This will effectively make the annotator element fill up the entire screen of the browser.
 
