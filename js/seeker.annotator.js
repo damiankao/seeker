@@ -429,6 +429,14 @@
 			return base;
 		}
 
+		base.postUnbind = function() {
+			console.log('test');
+			base.settings.__onUpdate__ = null;
+			base.settings.__bound__ = null;
+
+			return base;
+		}
+
 		base.hideAllFeature = function(name) {
 			var seqs = base.datum('sequences');
 			var i = seqs.length;

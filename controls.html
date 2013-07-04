@@ -50,7 +50,7 @@
     .attachTo(document.body)
     .setControl({'items':data.items}, {'text':'name','click':'click'})
     .bind({'items':data.cb}, {'text':'name','cb':'show'})
-    .setTemplate(function(li, data ,keys) {
+    .setTemplate(function(li, data, index ,keys) {
       var cbox = new seeker.checkbox()
         .attachTo(li);
 
@@ -60,8 +60,8 @@
 
       li.checkbox = cbox;
     })
-    .setRemove(function(obj) {
-      
+    .setRemove(function(li) {
+      li.checkbox.unbind();
     })
     .whxy(-1,-1,800,200)
     .update();

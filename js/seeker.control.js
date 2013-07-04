@@ -157,6 +157,10 @@
 			}
 		}
 
+		if (this.postUnbind) {
+			this.postUnbind();
+		}
+
 		return this;
 	}
 
@@ -397,6 +401,14 @@
 				}
 			})
 
+		base.postUnbind = function() {
+			if (this.keys.text) {
+				label.unbind();
+			}
+
+			return base;
+		}
+
 		return base;
 	}
 
@@ -492,6 +504,12 @@
 			return base;
 		}
 
+		base.postUnbind = function() {
+			label.unbind();
+
+			return base;
+		}
+
 		selection.container
 			.on('click',function() {
 				d3.event.stopPropagation();
@@ -578,6 +596,14 @@
 			}
 
 			seeker.util.addUpdate(base, base.data.slider, base.keys.slider, base.update);
+
+			return base;
+		}
+
+		base.postUnbind = function() {
+			if (base.keys.text) {
+				label.unbind();
+			}
 
 			return base;
 		}
@@ -787,6 +813,9 @@
 		base.reinit = function() {
 			list.container
 				.selectAll('li')
+				.each(function() {
+					_remove(this);
+				})
 				.remove();
 
 			return base;
@@ -818,6 +847,12 @@
 			}
 
 			seeker.util.addUpdate(base, base.data.items, null, base.update);
+		}
+
+		base.postUnbind = function() {
+			base.reinit();
+
+			return base;
 		}
 
 		controlList
