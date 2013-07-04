@@ -91,6 +91,8 @@
     			d3.event.stopPropagation();
     		});
 
+    	this.container.seeker = this;
+
     	this.bound = [];
 
     	return this;

@@ -124,4 +124,29 @@
 		script.onload = postLoad;
 		head.appendChild(script); 
 	}
+
+	seeker.util.pool = function(t) {
+		this.type = t;
+		this.free = [];
+		this.created = 0;
+
+		this.get = function() {
+			if (this.free.length == 0) {
+				var pool = this;
+    			var obj = document.createElementNS('http://www.w3.org/2000/svg', this.type);
+				obj.free = function() {
+					obj.parentNode.removeChild(obj);
+					pool.free.push(obj);
+				}
+
+				this.created += 1;
+
+				return obj;
+			} else {
+				return this.free.pop();
+			}
+		}
+
+		return this;
+	}
 })();

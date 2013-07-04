@@ -23,6 +23,9 @@
 		var canvas = new seeker.base('svg')
 			.attachTo(viewport.container.node());
 
+		var linePool = new seeker.util.pool('line');
+		var groupPool = new seeker.util.pool('g');
+
 		var _ref;
 		var _refLength;
 		var _startBP;
@@ -114,27 +117,25 @@
 
 			f
 				.enter()
-				.append('g')
-				.attr('id','features');
-
-			f
-				.append('line')
-				.attr('id','spine')
-				.style('shape-rendering','crispEdges')
-				.style('stroke-width','2px')
-				.style('stroke','gray')
-				.attr('x1',function(d) {
-						return 1;
-					})
-					.attr('y1',function(d) {
-						return 0;
-					})
-					.attr('x2',function(d) {
-						return parseInt(base.bpToPx(_startBound + d.end - d.start + 1));
-					})
-					.attr('y2',function(d) {
-						return 0;
-					});
+				.append(function() {return groupPool.get();})
+				.attr('id','features')
+					.append(function() {return linePool.get();})
+					.attr('id','spine')
+					.style('shape-rendering','crispEdges')
+					.style('stroke-width','2px')
+					.style('stroke','gray')
+					.attr('x1',function(d) {
+							return 1;
+						})
+						.attr('y1',function(d) {
+							return 0;
+						})
+						.attr('x2',function(d) {
+							return parseInt(base.bpToPx(_startBound + d.end - d.start + 1));
+						})
+						.attr('y2',function(d) {
+							return 0;
+						});
 
 				var subf = f
 					.selectAll('#subfeatures')
@@ -144,7 +145,7 @@
 
 				subf
 					.enter()
-					.append('line')
+					.append(function() {return linePool.get();})
 					.attr('id','subfeatures')
 					.style('shape-rendering','crispEdges')
 					.style('stroke-width','8px')
@@ -164,10 +165,6 @@
 						return 0;
 					});
 
-				subf
-					.exit()
-					.remove();
-
 			f
 				.attr('transform',function(d) {
 					return 'translate(' + base.bpToPx(d.start) + ',50)';
@@ -175,11 +172,13 @@
 
 			f
 				.exit()
-				.select('#spine')
-				.remove();
-			f
-				.exit()
-				.remove();
+				.each(function() {
+					while (this.firstChild) {
+    					this.firstChild.free();
+					}
+
+					this.free();
+				});
 
 			return base;
 		}
@@ -224,8 +223,9 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(1000000,2000000)
+						.setWindow(1000000,1050000)
 						.update();
+
 					break;
 				}
 			}
