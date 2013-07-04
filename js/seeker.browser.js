@@ -57,7 +57,7 @@
 			var length = end - start + 1;
 
 			_startBP = start;
-			_startBound = start - length;
+			_startBound = start - length - 1;
 			_endBP = end;
 			_endBound = end + length;
 
@@ -114,26 +114,69 @@
 
 			f
 				.enter()
-				.append('line')
-				.attr('id','features')
-				.style('shape-rendering','crispEdges')
-				.style('stroke-width','3px')
-				.style('stroke','gray');;
+				.append('g')
+				.attr('id','features');
 
 			f
+				.append('line')
+				.attr('id','spine')
+				.style('shape-rendering','crispEdges')
+				.style('stroke-width','2px')
+				.style('stroke','gray')
 				.attr('x1',function(d) {
-					return parseInt(base.bpToPx(d.start));
-				})
-				.attr('y1',function(d) {
-					return 10;
-				})
-				.attr('x2',function(d) {
-					return parseInt(base.bpToPx(d.end));
-				})
-				.attr('y2',function(d) {
-					return 10;
+						return 1;
+					})
+					.attr('y1',function(d) {
+						return 0;
+					})
+					.attr('x2',function(d) {
+						return parseInt(base.bpToPx(_startBound + d.end - d.start + 1));
+					})
+					.attr('y2',function(d) {
+						return 0;
+					});
+
+				var subf = f
+					.selectAll('#subfeatures')
+					.data(function(d) {
+						return d.coords;
+					});
+
+				subf
+					.enter()
+					.append('line')
+					.attr('id','subfeatures')
+					.style('shape-rendering','crispEdges')
+					.style('stroke-width','8px')
+					.style('stroke','red');
+
+				subf
+					.attr('x1',function(d) {
+						return parseInt(base.bpToPx(_startBound + d[0]));
+					})
+					.attr('y1',function(d) {
+						return 0;
+					})
+					.attr('x2',function(d) {
+						return parseInt(base.bpToPx(_startBound + d[0] + d[1]));
+					})
+					.attr('y2',function(d) {
+						return 0;
+					});
+
+				subf
+					.exit()
+					.remove();
+
+			f
+				.attr('transform',function(d) {
+					return 'translate(' + base.bpToPx(d.start) + ',50)';
 				});
 
+			f
+				.exit()
+				.select('#spine')
+				.remove();
 			f
 				.exit()
 				.remove();
@@ -153,21 +196,22 @@
 					var name = cols[0];
 					var ref = cols[1];
 					var strand = cols[2];
+					var start = parseInt(cols[3]);
 					var coordinates = [];
 
 					var coords = cols[4].split(';');
 					for ( a = 0 ; a < coords.length ; a++ ) {
 						var c = coords[a].split(',')
-						coordinates.push([parseInt(c[0]) + parseInt(cols[3]), parseInt(c[1])]);
+						coordinates.push([parseInt(c[0]), parseInt(c[1])]);
 					}
 
 					feats.push({
-					'name':name,
-					'ref':ref,
-					'strand':strand,
-					'start':coordinates[0][0],
-					'end':coordinates[coordinates.length - 1][0] + coordinates[coordinates.length - 1][1] - 1,
-					'coords':coordinates
+						'name':name,
+						'ref':ref,
+						'strand':strand,
+						'start':start,
+						'end':start + coordinates[coordinates.length - 1][0] + coordinates[coordinates.length - 1][1] - 1,
+						'coords':coordinates
 					});
 				}
 				
@@ -180,7 +224,7 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(1000000,5000000)
+						.setWindow(1000000,2000000)
 						.update();
 					break;
 				}
@@ -209,7 +253,7 @@
 					})
 					.on('mouseup', function() {
 						var length = _endBP - _startBP + 1
-						var newStart = base.pxToBp(viewport.container.node().scrollLeft);
+						var newStart = parseInt(base.pxToBp(viewport.container.node().scrollLeft));
 
 						base
 							.setWindow(newStart, newStart + length)

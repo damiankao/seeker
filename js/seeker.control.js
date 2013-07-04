@@ -638,6 +638,7 @@
 		numberBox.container
 			.on('mousedown',null)
 			.on('change', function() {
+
 				var val = parseInt(this.value);
 				if (val < _start) {
 					val = _start;
@@ -645,8 +646,8 @@
 				if (val > _end) {
 					val = _end
 				}
-
-				seeker.util.set(base.data.slider, base.key.slider, val);
+				
+				seeker.util.set(base.data.slider, base.keys.slider, val);
 			});
 
 		base.container
