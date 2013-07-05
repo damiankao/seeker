@@ -12,7 +12,8 @@
 
 	*/
 	seeker.browser = function() {
-		var base = new seeker.base('div');
+		var base = new seeker.base('div')
+			.id('browser');
 		var viewport = new seeker.base('div')
 			.attachTo(base.container.node());
 		var overview = new seeker.base('svg')
@@ -50,13 +51,15 @@
 			.attachTo(base.container.node());
 		scale.container
 			.style('position','absolute')
-			.style('background','purple')
+			.style('background','white')
+			.style('overflow','hidden')
 			.style('top',40)
 			.style('left',0)
 			.style('height',20);
 
 		var scaleCanvas = new seeker.base('svg')
-			.attachTo(scale.conatiner.node());
+			.id('scale')
+			.attachTo(scale.container.node());
 
 		var linePool = new seeker.util.pool('line');
 		var groupPool = new seeker.util.pool('g');
@@ -73,6 +76,8 @@
 		var _fieldWidth;
 
 		var _fieldReset = false;
+
+		var _ticks;
 
 		base.features;
 		base.dim_ref;
@@ -116,7 +121,10 @@
 		base.update = function() {
 			if (!_fieldReset) {
 				var dim = seeker.util.winDimensions();
+
 				_fieldWidth = dim[0] * 3;
+
+				_ticks = Math.floor(_fieldWidth / 50);
 
 				base.rescale();
 				
@@ -130,7 +138,7 @@
 				viewport.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
 
 				overview.container
-					.style('top',dim[1]-100)
+					.style('top',dim[1] - 100)
 					.style('width',dim[0]);
 
 				navBar.container
@@ -164,6 +172,22 @@
 		}
 
 		base.render = function() {
+			var scaleAxis = d3.svg.axis()
+	            .scale(base.bpToPx)
+	            .tickSize(6,4,0)
+	            .tickSubdivide(1)
+	            .tickFormat(d3.format(",.3s"))
+	            .ticks(_ticks);
+
+			scaleCanvas.container
+				.style('font-family','arial')
+				.style('font-size','10px')
+				.call(scaleAxis);
+
+			scaleCanvas.container
+				.selectAll('line')
+				.style('stroke','black');
+
 			var f = canvas.container
 				.selectAll('#features')
 				.data(_feats, function(d) {
@@ -174,23 +198,36 @@
 				.enter()
 				.append(function() {return groupPool.get();})
 				.attr('id','features')
+				.on('mouseover', function(d) {
+					d3.event.preventDefault();
+					d3.event.stopPropagation();
+					document.body.style.cursor = 'pointer';
+				})
+				.on('mouseout', function(d) {
+					d3.event.preventDefault();
+					d3.event.stopPropagation();
+					document.body.style.cursor = 'default';
+				})
+				.on('click',function(d) {
+					console.log(d.name)
+				})
 					.append(function() {return linePool.get();})
 					.attr('id','spine')
 					.style('shape-rendering','crispEdges')
-					.style('stroke-width','1px')
+					.style('stroke-width','2px')
 					.style('stroke','red')
 					.attr('x1',function(d) {
-							return 1;
-						})
-						.attr('y1',function(d) {
-							return 0;
-						})
-						.attr('x2',function(d) {
-							return parseInt(base.bpToPx(_startBound + d.end - d.start + 1));
-						})
-						.attr('y2',function(d) {
-							return 0;
-						});
+						return 1;
+					})
+					.attr('y1',function(d) {
+						return 0;
+					})
+					.attr('x2',function(d) {
+						return parseInt(base.bpToPx(_startBound + d.end - d.start + 1));
+					})
+					.attr('y2',function(d) {
+						return 0;
+					});
 
 				var subf = f
 					.selectAll('#subfeatures')
@@ -266,10 +303,11 @@
 					this.free();
 				});
 
-			var maxHeight = viewport.container.style('height');
-			if (maxHeight < levels.length * 15 + 100) {
+			var maxHeight = parseInt(viewport.container.style('height'));
+			if (maxHeight < (levels.length * 15 + 100)) {
 				maxHeight = levels.length * 15 + 100;
 			}
+
 			canvas.container
 				.style('height',maxHeight);
 
@@ -341,7 +379,10 @@
 
 		canvas.container
 			.on('mouseover',function() {
-				document.body.style.cursor = 'pointer';
+				document.body.style.cursor = 'move';
+			})
+			.on('mouseout',function() {
+				document.body.style.cursor = 'default';
 			})
 			.on('mousedown', function() {
 				if (!_fieldReset) {
@@ -367,6 +408,11 @@
 							.on('mouseup',null);
 					});
 			})
+
+		viewport.container
+			.on('scroll', function() {
+				scale.container.node().scrollLeft = viewport.container.node().scrollLeft;
+			});
 
 		Mousetrap.bind('w', function() {
 			viewport.container.node().scrollTop -= 20;
