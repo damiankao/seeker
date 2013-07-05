@@ -78,6 +78,8 @@
 
 		var _ticks;
 
+		var _palette = ['#F2E479','#622C7A','#2C337A','#2C7A69','#337A2C','#7A5C2C','#9E2121','#A8DEFF','#FC7632','#B3E8A0'];
+
 		base.features;
 		base.dim_ref;
 		base.dim_start;
@@ -173,7 +175,8 @@
 		base.render = function() {
 			var scaleAxis = d3.svg.axis()
 	            .scale(base.bpToPx)
-	            .tickSize(6,4,0)
+	            .tickSize(7,4,0)
+	            .tickPadding(5)
 	            .tickSubdivide(1)
 	            .tickFormat(d3.format(",.3s"))
 	            .ticks(_ticks);
@@ -214,7 +217,7 @@
 					.attr('id','spine')
 					.style('shape-rendering','crispEdges')
 					.style('stroke-width','2px')
-					.style('stroke','red')
+					.style('stroke',_palette[1])
 					.attr('x1',function(d) {
 						return 1;
 					})
@@ -240,7 +243,7 @@
 					.attr('id','subfeatures')
 					.style('shape-rendering','crispEdges')
 					.style('stroke-width','8px')
-					.style('stroke','red');
+					.style('stroke',_palette[1]);
 
 				subf
 					.attr('x1',function(d) {
