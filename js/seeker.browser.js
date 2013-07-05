@@ -15,13 +15,48 @@
 		var base = new seeker.base('div');
 		var viewport = new seeker.base('div')
 			.attachTo(base.container.node());
+		var overview = new seeker.base('svg')
+			.attachTo(base.container.node());
+		var navBar = new seeker.base('div')
+			.attachTo(base.container.node());
+
+		navBar.container
+			.style('position','absolute')
+			.style('left',0)
+			.style('top',0)
+			.style('background','gray')
+			.style('height',40);
 
 		viewport.container
+			.style('background','yellow')
 			.style('position','absolute')
-			.style('overflow','auto');
+			.style('top',40)
+			.style('overflow','hidden');
 
 		var canvas = new seeker.base('svg')
 			.attachTo(viewport.container.node());
+		canvas.container
+			.style('position','absolute')
+			.style('top',0)
+			.style('left',0);
+
+		overview.container
+			.style('background','blue')
+			.style('position','absolute')
+			.style('left',0)
+			.style('height',100);
+
+		var scale = new seeker.base('div')
+			.attachTo(base.container.node());
+		scale.container
+			.style('position','absolute')
+			.style('background','purple')
+			.style('top',40)
+			.style('left',0)
+			.style('height',20);
+
+		var scaleCanvas = new seeker.base('svg')
+			.attachTo(scale.conatiner.node());
 
 		var linePool = new seeker.util.pool('line');
 		var groupPool = new seeker.util.pool('g');
@@ -36,6 +71,8 @@
 
 		var _feats;
 		var _fieldWidth;
+
+		var _fieldReset = false;
 
 		base.features;
 		base.dim_ref;
@@ -77,21 +114,40 @@
 		}
 
 		base.update = function() {
-			var dim = seeker.util.winDimensions();
-			_fieldWidth = dim[0] * 3;
+			if (!_fieldReset) {
+				var dim = seeker.util.winDimensions();
+				_fieldWidth = dim[0] * 3;
 
-			base.rescale();
-			
-			viewport.container
-				.style('width',dim[0])
-				.style('height',dim[1] - 100);
+				base.rescale();
+				
+				viewport.container
+					.style('width',dim[0])
+					.style('height',dim[1] - 140);
 
-			canvas.container
-				.style('width',_fieldWidth);
+				canvas.container
+					.style('width',_fieldWidth);
 
-			viewport.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
+				viewport.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
 
-			base.render();
+				overview.container
+					.style('top',dim[1]-100)
+					.style('width',dim[0]);
+
+				navBar.container
+					.style('width',dim[0]);
+
+				scaleCanvas.container
+					.style('width',_fieldWidth);
+
+				scale.container
+					.style('width',dim[0]);
+
+				scale.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
+
+				base.render();
+
+				_fieldReset = true;
+			}
 			return base;
 		}
 
@@ -210,8 +266,13 @@
 					this.free();
 				});
 
+			var maxHeight = viewport.container.style('height');
+			if (maxHeight < levels.length * 15 + 100) {
+				maxHeight = levels.length * 15 + 100;
+			}
 			canvas.container
-				.style('height',levels.length * 15 + 100);
+				.style('height',maxHeight);
+
 			return base;
 		}
 
@@ -255,7 +316,7 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(1000000,1500000)
+						.setWindow(6000000,6500000)
 						.update();
 
 					break;
@@ -267,15 +328,30 @@
 			return base;
 		}
 
+		base.scrollUpdate = function() {
+			var length = _endBP - _startBP + 1;
+			var newStart = parseInt(base.pxToBp(viewport.container.node().scrollLeft + 0.65));
+
+			base
+				.setWindow(newStart, newStart + length)
+				.update();
+
+			return base;
+		}
+
 		canvas.container
 			.on('mouseover',function() {
 				document.body.style.cursor = 'pointer';
 			})
 			.on('mousedown', function() {
+				if (!_fieldReset) {
+					base.scrollUpdate();
+				}
 				var downCoord = d3.mouse(document.body);
 				var downScroll = [viewport.container.node().scrollLeft, viewport.container.node().scrollTop];
 				d3.select(document.body)
 					.on('mousemove', function() {
+						_fieldReset = false;
 						var coord = d3.mouse(document.body);
 						var offX = coord[0] - downCoord[0];
 						var offY = coord[1] - downCoord[1];
@@ -284,18 +360,37 @@
 						viewport.container.node().scrollTop = downScroll[1] - offY;
 					})
 					.on('mouseup', function() {
-						var length = _endBP - _startBP + 1
-						var newStart = parseInt(base.pxToBp(viewport.container.node().scrollLeft + 0.65));
-
-						base
-							.setWindow(newStart, newStart + length)
-							.update();
+						base.scrollUpdate();
 
 						d3.select(document.body)
 							.on('mousemove',null)
 							.on('mouseup',null);
 					});
 			})
+
+		Mousetrap.bind('w', function() {
+			viewport.container.node().scrollTop -= 20;
+		}, 'keydown')
+
+		Mousetrap.bind('a', function() {
+			_fieldReset = false;
+			viewport.container.node().scrollLeft -= 20;
+			if (viewport.container.node().scrollLeft < _fieldWidth / 6) {
+				base.scrollUpdate();
+			}
+		}, 'keydown')
+
+		Mousetrap.bind('s', function() {
+			viewport.container.node().scrollTop += 20;
+		}, 'keydown')
+
+		Mousetrap.bind('d', function() {
+			_fieldReset = false;
+			viewport.container.node().scrollLeft += 20;
+			if (viewport.container.node().scrollLeft > _fieldWidth / 2) {
+				base.scrollUpdate();
+			}
+		}, 'keydown')
 
 		return base;
 	}
