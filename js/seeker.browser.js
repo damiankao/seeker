@@ -71,7 +71,7 @@
 				return d < _endBound;
 			})
 
-			_feats = base.dim_ref.top(Infinity);
+			_feats = base.dim_start.bottom(Infinity);
 
 			return base;
 		}
@@ -87,8 +87,7 @@
 				.style('height',dim[1] - 100);
 
 			canvas.container
-				.style('width',_fieldWidth)
-				.style('height',dim[1]);
+				.style('width',_fieldWidth);
 
 			viewport.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
 
@@ -122,8 +121,8 @@
 					.append(function() {return linePool.get();})
 					.attr('id','spine')
 					.style('shape-rendering','crispEdges')
-					.style('stroke-width','2px')
-					.style('stroke','gray')
+					.style('stroke-width','1px')
+					.style('stroke','red')
 					.attr('x1',function(d) {
 							return 1;
 						})
@@ -159,15 +158,46 @@
 						return 0;
 					})
 					.attr('x2',function(d) {
-						return parseInt(base.bpToPx(_startBound + d[0] + d[1]));
+						var x1 = parseInt(d3.select(this).attr('x1'));
+						var x2 = base.bpToPx(_startBound + d[0] + d[1]);
+						var length = x2 - x1;
+
+						if (length > 1) {
+							return parseInt(x2);
+						} else {
+							return x1 + 1;
+						}
 					})
 					.attr('y2',function(d) {
 						return 0;
 					});
 
+			var levels = [];
 			f
 				.attr('transform',function(d) {
-					return 'translate(' + base.bpToPx(d.start) + ',50)';
+					var currentStart = base.bpToPx(d.start);
+					var currentEnd = currentStart + this.getBBox().width;
+					
+					var l = null;
+					for (var a = 0; a < levels.length ; a++ ) {
+						if (currentStart > levels[a] + 5) {
+							l = a;
+							levels[a] = currentEnd;
+							break;
+						}
+					}
+
+					if (l == null) {
+						levels.push(currentEnd);
+						l = levels.length - 1;
+					}
+
+					if (l == 0) {
+						return 'translate(' + currentStart + ',50)';
+					} else {
+						return 'translate(' + currentStart + ',' + (50 + l * 15) + ')';
+						return 35 + (base.settings.feat_width) + (l * 14);
+					}
 				});
 
 			f
@@ -180,6 +210,8 @@
 					this.free();
 				});
 
+			canvas.container
+				.style('height',levels.length * 15 + 100);
 			return base;
 		}
 
@@ -223,7 +255,7 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(1000000,1050000)
+						.setWindow(1000000,1500000)
 						.update();
 
 					break;
