@@ -356,7 +356,7 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(6000000,6500000)
+						.setWindow(6000000,7000000)
 						.update();
 
 					break;
