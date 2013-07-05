@@ -25,11 +25,10 @@
 			.style('position','absolute')
 			.style('left',0)
 			.style('top',0)
-			.style('background','gray')
+			.style('background','#4F61B3')
 			.style('height',40);
 
 		viewport.container
-			.style('background','yellow')
 			.style('position','absolute')
 			.style('top',40)
 			.style('overflow','hidden');
@@ -42,7 +41,7 @@
 			.style('left',0);
 
 		overview.container
-			.style('background','blue')
+			.style('background','#E3E3E3')
 			.style('position','absolute')
 			.style('left',0)
 			.style('height',100);
