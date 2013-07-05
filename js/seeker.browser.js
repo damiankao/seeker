@@ -285,7 +285,7 @@
 					})
 					.on('mouseup', function() {
 						var length = _endBP - _startBP + 1
-						var newStart = parseInt(base.pxToBp(viewport.container.node().scrollLeft));
+						var newStart = parseInt(base.pxToBp(viewport.container.node().scrollLeft + 0.65));
 
 						base
 							.setWindow(newStart, newStart + length)
