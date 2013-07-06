@@ -16,8 +16,6 @@
 			.id('browser');
 		var viewport = new seeker.base('div')
 			.attachTo(base.container.node());
-		var overview = new seeker.base('svg')
-			.attachTo(base.container.node());
 		var navBar = new seeker.base('div')
 			.attachTo(base.container.node());
 
@@ -25,12 +23,13 @@
 			.style('position','absolute')
 			.style('left',0)
 			.style('top',0)
-			.style('background','#4F61B3')
+			.style('background','#313841')
 			.style('height',40);
 
 		viewport.container
 			.style('position','absolute')
 			.style('top',40)
+			.style('border-bottom','1px solid black')
 			.style('overflow','hidden');
 
 		var canvas = new seeker.base('svg')
@@ -40,11 +39,26 @@
 			.style('top',0)
 			.style('left',0);
 
+		var overviewImage = new seeker.base('canvas')
+			.attachTo(base.container.node());
+
+		overviewImage.container
+			.style('position','absolute')
+			.style('background','#2980B9');
+
+		var overview = new seeker.base('div')
+			.attachTo(base.container.node());
+
 		overview.container
-			.style('background','#E3E3E3')
 			.style('position','absolute')
 			.style('left',0)
-			.style('height',100);
+			.style('height',60);
+
+		var overviewSVG = overview.container
+			.append('svg')
+			.style('position','absolute')
+			.style('width','100%')
+			.style('height',60);
 
 		var scale = new seeker.base('div')
 			.attachTo(base.container.node());
@@ -60,13 +74,36 @@
 			.id('scale')
 			.attachTo(scale.container.node());
 
+		var overviewMarker = new seeker.base('div')
+			.id('marker')
+			.attachTo(base.container.node());
+
+		overviewMarker.container
+			.style('position','absolute')
+			.style('height',61)
+			.style('border-left','1px solid black')
+			.style('border-right','1px solid black')
+			.style('border-top','1px solid white');
+
+		overviewMarker.container
+			.append('div')
+			.style('width','100%')
+			.style('height','100%')
+			.style('background','white')
+			.style('opacity',0.6);
+
 		var linePool = new seeker.util.pool('line');
 		var groupPool = new seeker.util.pool('g');
+
+		var settings = {
+			'scrollInterval':10
+		};
 
 		var _ref;
 		var _refLength;
 		var _startBP;
 		var _endBP;
+		var _windowBP;
 
 		var _startBound;
 		var _endBound;
@@ -88,13 +125,30 @@
 
 		base.bpToPx;
 		base.pxToBp;
+		base.overviewScaleX;
+		base.overviewScaleY;
 		base.svg_feats;
 
 		base.setRef = function(ref) {
+			var dim = seeker.util.winDimensions();
 			_ref = ref;
 			_refLength = base.lengths[_ref];
 
 			base.dim_ref.filter(_ref);
+
+			base.overviewScaleX = d3.scale.linear()
+			    .domain([1, base.lengths[_ref]])
+			    .range([1, dim[0]]);
+
+			base.overviewScaleX2 = d3.scale.linear()
+			    .range([1, base.lengths[_ref]])
+			    .domain([1, dim[0]]);
+
+			base.overviewScaleY = d3.scale.linear()
+			    .domain([1, d3.max(pts,function(d) {return d[1]})])
+			    .range([1, 50]);
+
+			base.renderOverview();
 
 			return base;
 		}
@@ -106,6 +160,7 @@
 			_startBound = start - length - 1;
 			_endBP = end;
 			_endBound = end + length;
+			_windowBP = end - start + 1;
 
 			base.dim_end.filterFunction(function(d) {
 				return d > _startBound;
@@ -115,6 +170,14 @@
 			})
 
 			_feats = base.dim_start.bottom(Infinity);
+
+			var markerWidth = base.overviewScaleX(length);
+			if (markerWidth < 1) {
+				markerWidth = 1;
+			}
+
+			overviewMarker.container
+					.style('width',markerWidth)
 
 			return base;
 		}
@@ -131,7 +194,7 @@
 				
 				viewport.container
 					.style('width',dim[0])
-					.style('height',dim[1] - 140);
+					.style('height',dim[1] - 101);
 
 				canvas.container
 					.style('width',_fieldWidth);
@@ -139,8 +202,19 @@
 				viewport.container.node().scrollLeft = _fieldWidth / 2 - dim[0] / 2;
 
 				overview.container
-					.style('top',dim[1] - 100)
+					.style('top',dim[1] - 60)
 					.style('width',dim[0]);
+
+				overviewSVG
+					.style('top',0)
+					.style('left',0);
+
+				overviewImage.container
+					.style('top',dim[1] - 60)
+					.style('left',0);
+
+				overviewMarker.container
+					.style('top',dim[1] - 61);
 
 				navBar.container
 					.style('width',dim[0]);
@@ -155,6 +229,7 @@
 
 				base.render();
 
+				base.updateMarker();
 				_fieldReset = true;
 			}
 			return base;
@@ -168,6 +243,16 @@
 			base.pxToBp = d3.scale.linear()
 			    .domain([1, _fieldWidth])
 			    .range([_startBound, _endBound]);
+
+			return base;
+		}
+
+		base.updateMarker = function() {			
+			var viewStart = parseInt(base.overviewScaleX(parseInt(base.pxToBp(viewport.container.node().scrollLeft))));
+
+			if (viewStart != parseInt(overviewMarker.container.node().style.left)) {
+				overviewMarker.container.node().style.left = viewStart
+			}
 
 			return base;
 		}
@@ -306,12 +391,71 @@
 				});
 
 			var maxHeight = parseInt(viewport.container.style('height'));
-			if (maxHeight < (levels.length * 15 + 100)) {
-				maxHeight = levels.length * 15 + 100;
+			if (maxHeight < (levels.length * 15 + 60)) {
+				maxHeight = levels.length * 15 + 60;
 			}
 
 			canvas.container
 				.style('height',maxHeight);
+
+			return base;
+		}
+
+		base.renderOverview = function() {
+			var dim = seeker.util.winDimensions();
+
+			var overviewLine = overviewSVG
+				.append('path')
+				.style('stroke','#BDC3AF')
+				.style('fill','#BDC3AF');
+
+			var line = d3.svg.line()
+				.x(function(d) {
+					return base.overviewScaleX(d[0]);
+				})
+				.y(function(d) {
+					return base.overviewScaleY(d[1]);
+				})
+				.interpolate('step-after');
+
+			overviewLine
+				.attr('d', line(pts) + "z");
+
+			var svgData = overviewSVG
+	            .attr("title", "overview")
+	            .attr("version", 1.1)
+	            .attr("xmlns", "http://www.w3.org/2000/svg")
+	            .node().parentNode.innerHTML;
+
+	        canvg(overviewImage.container.node(),svgData)
+
+	        overviewSVG
+				.select('path')
+				.remove();
+
+	        var overviewGroup = overviewSVG
+				.append('g');
+
+	        var overviewAxis = d3.svg.axis()
+				.orient('top')
+	            .scale(base.overviewScaleX)
+	            .tickSize(7,4,0)
+	            .tickPadding(5)
+	            .tickSubdivide(1)
+	            .tickFormat(d3.format(",.3s"))
+	            .ticks(Math.floor(dim[0] / 50));
+
+			overviewGroup
+				.style('font-family','arial')
+				.style('font-size','12px')
+				.style('fill','white')
+				.attr('transform', 'translate(0,60)')
+				.call(overviewAxis);
+
+			overviewGroup
+				.selectAll('line')
+				.style('stroke-width','1px')
+				.style('stroke','white');
 
 			return base;
 		}
@@ -356,7 +500,7 @@
 				for (name in base.lengths) {
 					base
 						.setRef(name)
-						.setWindow(6000000,7000000)
+						.setWindow(155000000,156000000)
 						.update();
 
 					break;
@@ -374,6 +518,27 @@
 
 			base
 				.setWindow(newStart, newStart + length)
+				.update();
+
+			return base;
+		}
+
+		base.jumpTo = function(bp) {
+			_fieldReset = false;
+			var halfWindow = _windowBP / 2
+			var start = parseInt(bp - halfWindow);
+			var end = parseInt(bp + halfWindow);
+
+			if (start < 1) {
+				start = 1;
+			}
+
+			if (end > _refLength) {
+				end = _refLength;
+			}
+
+			base
+				.setWindow(start,end)
 				.update();
 
 			return base;
@@ -401,6 +566,8 @@
 
 						viewport.container.node().scrollLeft = downScroll[0] - offX;
 						viewport.container.node().scrollTop = downScroll[1] - offY;
+
+						base.updateMarker();
 					})
 					.on('mouseup', function() {
 						base.scrollUpdate();
@@ -416,6 +583,32 @@
 				scale.container.node().scrollLeft = viewport.container.node().scrollLeft;
 			});
 
+		overview.container
+			.on('mousedown', function() {
+				base.jumpTo(parseInt(base.overviewScaleX2(d3.mouse(document.body)[0])));
+
+				var limit;
+				d3.select(document.body)
+					.on('mousemove', function() {
+						var bp = parseInt(base.overviewScaleX2(d3.mouse(document.body)[0]));
+						clearTimeout(limit);
+						limit = setTimeout(function() {
+							base.jumpTo(bp);
+						},settings.scrollInterval);
+					})
+					.on('mouseup', function() {
+						d3.select(document.body)
+							.on('mousemove',null)
+							.on('mouseup',null);
+					})
+			})
+			.on('mouseover', function() {
+				document.body.style.cursor = 'pointer';
+			})
+			.on('mouseout', function() {
+				document.body.style.cursor = 'default';
+			})
+
 		Mousetrap.bind('w', function() {
 			viewport.container.node().scrollTop -= 20;
 		}, 'keydown')
@@ -426,6 +619,7 @@
 			if (viewport.container.node().scrollLeft < _fieldWidth / 6) {
 				base.scrollUpdate();
 			}
+			base.updateMarker();
 		}, 'keydown')
 
 		Mousetrap.bind('s', function() {
@@ -438,6 +632,7 @@
 			if (viewport.container.node().scrollLeft > _fieldWidth / 2) {
 				base.scrollUpdate();
 			}
+			base.updateMarker();
 		}, 'keydown')
 
 		return base;
