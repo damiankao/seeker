@@ -23,7 +23,7 @@
 			.style('top',0)
 			.style('background','#313841')
 			.style('height',40)
-			.html('<center><small><small><font face="Arial" color="white">This is the very very preliminary alpha version of the seeker genome browser. The data shown is human chromosome 1 (980kb of data). Drag scrolling function is possible. Also clicking on the overview bar at the bottom is possible. The line graph shown at the bottom is feature density.</font></small></small></center>');
+			.html('<center><small><small><font face="Arial" color="white">This is the very very preliminary alpha version of the seeker genome browser. The data shown is human chromosome 1 (980kb of data). Keyboard interactions: W - scroll up, A - scroll left, S - scroll down, D - scroll right, Q - zoom out, E - zoom in</font></small></small></center>');
 
 		var overviewImage = new seeker.base('canvas')
 			.attachTo(base.container.node());
@@ -256,7 +256,7 @@
 	            .tickSize(7,4,0)
 	            .tickPadding(5)
 	            .tickSubdivide(1)
-	            .tickFormat(d3.format(",.6s"))
+	            .tickFormat(d3.format(",.s"))
 	            .ticks(_ticks);
 
 			scaleCanvas.container
@@ -556,6 +556,28 @@
 			return base;
 		}
 
+		base.zoom = function(windowSize) {
+			var half = parseInt(windowSize / 2);
+			var mid = _startBP + parseInt(_windowBP / 2);
+			var start = mid - half; 
+			var end = mid + half;
+
+			if (start < 1) {
+				start = 1;
+			}
+
+			if (end > _refLength) {
+				end = _refLength;
+			}
+
+
+			base
+				.setWindow(start,end)
+				.update();
+
+			return base;
+		}
+
 		canvas.container
 			.on('mouseover',function() {
 				document.body.style.cursor = 'move';
@@ -673,57 +695,19 @@
 
 		Mousetrap.bind('q', function() {
 			_fieldReset = false;
-			var quarter = parseInt(_windowBP / 4);
-			var start = _startBP + quarter;
-			var end = _endBP - quarter;
-
-			if (start < 1) {
-				start = 1;
-			}
-
-			if (end > _refLength) {
-				end = _refLength;
-			}
-
-			if (end - start + 1 < 100) {
-				var mid = _startBP + ((_endBP - _startBP) / 2);
-				start = mid - 50;
-				end = mid + 50;
-			}
 
 			base
-				.setWindow(start, end)
-				.update();
+				.zoom(parseInt(_windowBP * 1.5));
 
 			base.updateMarker();
 		}, 'keydown')
 
 		Mousetrap.bind('e', function() {
 			_fieldReset = false;
-			_fieldReset = false;
-			var quarter = parseInt(_windowBP / 4);
-			var start = _startBP - quarter;
-			var end = _endBP + quarter;
-
-			if (start < 1) {
-				start = 1;
-			}
-
-			if (end > _refLength) {
-				end = _refLength;
-			}
-
-			if (end - start + 1 < 100) {
-				var mid = _startBP + ((_endBP - _startBP) / 2);
-				start = mid - 50;
-				end = mid + 50;
-			}
 
 			base
-				.setWindow(start, end)
-				.update();
-
-			base.updateMarker();
+				.zoom(parseInt(_windowBP * 0.75));
+			
 			base.updateMarker();
 		}, 'keydown')
 
