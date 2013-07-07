@@ -14,8 +14,6 @@
 	seeker.browser = function() {
 		var base = new seeker.base('div')
 			.id('browser');
-		var viewport = new seeker.base('div')
-			.attachTo(base.container.node());
 		var navBar = new seeker.base('div')
 			.attachTo(base.container.node());
 
@@ -24,27 +22,14 @@
 			.style('left',0)
 			.style('top',0)
 			.style('background','#313841')
-			.style('height',40);
-
-		viewport.container
-			.style('position','absolute')
-			.style('top',40)
-			.style('border-bottom','1px solid black')
-			.style('overflow','hidden');
-
-		var canvas = new seeker.base('svg')
-			.attachTo(viewport.container.node());
-		canvas.container
-			.style('position','absolute')
-			.style('top',0)
-			.style('left',0);
+			.style('height',40)
+			.html('<center><small><small><font face="Arial" color="white">This is the very very preliminary alpha version of the seeker genome browser. The data shown is human chromosome 1 (980kb of data). Drag scrolling function is possible. Also clicking on the overview bar at the bottom is possible. The line graph shown at the bottom is feature density.</font></small></small></center>');
 
 		var overviewImage = new seeker.base('canvas')
 			.attachTo(base.container.node());
 
 		overviewImage.container
-			.style('position','absolute')
-			.style('background','#2980B9');
+			.style('position','absolute');
 
 		var overview = new seeker.base('div')
 			.attachTo(base.container.node());
@@ -60,11 +45,26 @@
 			.style('width','100%')
 			.style('height',60);
 
+		var viewport = new seeker.base('div')
+			.attachTo(base.container.node());
+		viewport.container
+			.style('position','absolute')
+			.style('top',40)
+			.style('overflow','hidden')
+			.style('box-shadow','2px 3px 50px -1px black');
+
+		var canvas = new seeker.base('svg')
+			.attachTo(viewport.container.node());
+		canvas.container
+			.style('position','absolute')
+			.style('top',0)
+			.style('left',0);
+
 		var scale = new seeker.base('div')
 			.attachTo(base.container.node());
 		scale.container
-			.style('position','absolute')
 			.style('background','white')
+			.style('position','absolute')
 			.style('overflow','hidden')
 			.style('top',40)
 			.style('left',0)
@@ -79,18 +79,10 @@
 			.attachTo(base.container.node());
 
 		overviewMarker.container
-			.style('position','absolute')
-			.style('height',61)
-			.style('border-left','1px solid black')
-			.style('border-right','1px solid black')
-			.style('border-top','1px solid white');
+			.append('div');
 
-		overviewMarker.container
-			.append('div')
-			.style('width','100%')
-			.style('height','100%')
-			.style('background','white')
-			.style('opacity',0.6);
+		blockscreen_load = new seeker.blockscreen()
+			.attachTo(document.body);
 
 		var linePool = new seeker.util.pool('line');
 		var groupPool = new seeker.util.pool('g');
@@ -146,7 +138,7 @@
 
 			base.overviewScaleY = d3.scale.linear()
 			    .domain([1, d3.max(pts,function(d) {return d[1]})])
-			    .range([1, 50]);
+			    .range([40, 1]);
 
 			base.renderOverview();
 
@@ -160,7 +152,7 @@
 			_startBound = start - length - 1;
 			_endBP = end;
 			_endBound = end + length;
-			_windowBP = end - start + 1;
+			_windowBP = length;
 
 			base.dim_end.filterFunction(function(d) {
 				return d > _startBound;
@@ -188,7 +180,7 @@
 
 				_fieldWidth = dim[0] * 3;
 
-				_ticks = Math.floor(_fieldWidth / 50);
+				_ticks = Math.floor(_fieldWidth / 100);
 
 				base.rescale();
 				
@@ -210,11 +202,12 @@
 					.style('left',0);
 
 				overviewImage.container
+					.style('background','#2980B9')
 					.style('top',dim[1] - 60)
 					.style('left',0);
 
 				overviewMarker.container
-					.style('top',dim[1] - 61);
+					.style('top',dim[1] - 62);
 
 				navBar.container
 					.style('width',dim[0]);
@@ -263,7 +256,7 @@
 	            .tickSize(7,4,0)
 	            .tickPadding(5)
 	            .tickSubdivide(1)
-	            .tickFormat(d3.format(",.3s"))
+	            .tickFormat(d3.format(",.6s"))
 	            .ticks(_ticks);
 
 			scaleCanvas.container
@@ -302,7 +295,10 @@
 					.attr('id','spine')
 					.style('shape-rendering','crispEdges')
 					.style('stroke-width','2px')
-					.style('stroke',_palette[1])
+					.style('stroke',_palette[6]);
+
+				f
+					.select('#spine')
 					.attr('x1',function(d) {
 						return 1;
 					})
@@ -328,7 +324,7 @@
 					.attr('id','subfeatures')
 					.style('shape-rendering','crispEdges')
 					.style('stroke-width','8px')
-					.style('stroke',_palette[1]);
+					.style('stroke',_palette[6]);
 
 				subf
 					.attr('x1',function(d) {
@@ -406,8 +402,8 @@
 
 			var overviewLine = overviewSVG
 				.append('path')
-				.style('stroke','#BDC3AF')
-				.style('fill','#BDC3AF');
+				.style('stroke','white')
+				.style('fill','white');
 
 			var line = d3.svg.line()
 				.x(function(d) {
@@ -433,34 +429,48 @@
 				.select('path')
 				.remove();
 
+			var overviewRect = overviewSVG
+				.append('rect')
+				.style('fill','white')
+				.style('opacity',0.7)
+				.attr('width',dim[0])
+				.attr('height',20)
+				.attr('x',0)
+				.attr('y',40);
+
 	        var overviewGroup = overviewSVG
 				.append('g');
 
 	        var overviewAxis = d3.svg.axis()
-				.orient('top')
 	            .scale(base.overviewScaleX)
-	            .tickSize(7,4,0)
-	            .tickPadding(5)
+	            .tickSize(4,2,0)
+	            .tickPadding(2)
 	            .tickSubdivide(1)
 	            .tickFormat(d3.format(",.3s"))
 	            .ticks(Math.floor(dim[0] / 50));
 
 			overviewGroup
 				.style('font-family','arial')
-				.style('font-size','12px')
-				.style('fill','white')
-				.attr('transform', 'translate(0,60)')
+				.style('font-size','11px')
+				.style('fill','black')
+				.attr('transform', 'translate(0,41)')
 				.call(overviewAxis);
 
 			overviewGroup
 				.selectAll('line')
 				.style('stroke-width','1px')
-				.style('stroke','white');
+				.style('stroke','black');
 
 			return base;
 		}
 
 		base.load = function(path) {
+			blockscreen_load
+				.show()
+				.update()
+				.container
+				.html('<BR><BR><BR><BR><BR><center><font face="arial">L O A D I N G . . .</font></center>');
+
 			var postLoad = function() {
 				var feats = [];
 				var refs = {};
@@ -505,6 +515,8 @@
 
 					break;
 				}
+
+				blockscreen_load.hide();
 			}
 
 			seeker.util.injectScript(path, postLoad);
@@ -609,6 +621,30 @@
 				document.body.style.cursor = 'default';
 			})
 
+		overviewMarker.container
+			.on('mousedown', function() {
+				var limit;
+				d3.select(document.body)
+					.on('mousemove', function() {
+						var bp = parseInt(base.overviewScaleX2(d3.mouse(document.body)[0]));
+						clearTimeout(limit);
+						limit = setTimeout(function() {
+							base.jumpTo(bp);
+						},settings.scrollInterval);
+					})
+					.on('mouseup', function() {
+						d3.select(document.body)
+							.on('mousemove',null)
+							.on('mouseup',null);
+					})
+			})
+			.on('mouseover', function() {
+				document.body.style.cursor = 'pointer';
+			})
+			.on('mouseout', function() {
+				document.body.style.cursor = 'default';
+			})
+
 		Mousetrap.bind('w', function() {
 			viewport.container.node().scrollTop -= 20;
 		}, 'keydown')
@@ -632,6 +668,62 @@
 			if (viewport.container.node().scrollLeft > _fieldWidth / 2) {
 				base.scrollUpdate();
 			}
+			base.updateMarker();
+		}, 'keydown')
+
+		Mousetrap.bind('q', function() {
+			_fieldReset = false;
+			var quarter = parseInt(_windowBP / 4);
+			var start = _startBP + quarter;
+			var end = _endBP - quarter;
+
+			if (start < 1) {
+				start = 1;
+			}
+
+			if (end > _refLength) {
+				end = _refLength;
+			}
+
+			if (end - start + 1 < 100) {
+				var mid = _startBP + ((_endBP - _startBP) / 2);
+				start = mid - 50;
+				end = mid + 50;
+			}
+
+			base
+				.setWindow(start, end)
+				.update();
+
+			base.updateMarker();
+		}, 'keydown')
+
+		Mousetrap.bind('e', function() {
+			_fieldReset = false;
+			_fieldReset = false;
+			var quarter = parseInt(_windowBP / 4);
+			var start = _startBP - quarter;
+			var end = _endBP + quarter;
+
+			if (start < 1) {
+				start = 1;
+			}
+
+			if (end > _refLength) {
+				end = _refLength;
+			}
+
+			if (end - start + 1 < 100) {
+				var mid = _startBP + ((_endBP - _startBP) / 2);
+				start = mid - 50;
+				end = mid + 50;
+			}
+
+			base
+				.setWindow(start, end)
+				.update();
+
+			base.updateMarker();
 			base.updateMarker();
 		}, 'keydown')
 
