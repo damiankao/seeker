@@ -253,7 +253,7 @@
 		base.render = function() {
 			var scaleAxis = d3.svg.axis()
 	            .scale(base.bpToPx)
-	            .tickSize(7,4,0)
+	            .tickSize(5,3,0)
 	            .tickPadding(5)
 	            .tickSubdivide(1)
 	            .tickFormat(d3.format(",.s"))
