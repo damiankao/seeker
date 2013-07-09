@@ -32,7 +32,8 @@
 			'seq_spineColor':'grey',
 			'seq_spineWidth':5,
 			'seq_labelxPos':0,
-			'seq_numbered':true
+			'seq_numbered':true,
+			'scale_show':false
 		};
 
 		base.targetData;
@@ -177,7 +178,7 @@
 						.attr('id','seq')
 						.style('font-family','Arial')
 						.style('font-weight','bold')
-						.style('font-size','10pt')
+						.style('font-size','10pt');
 
 					if (base.onSequenceClick) {
 						obj.select('text')
@@ -286,9 +287,9 @@
 						}
 
 						if (l == 0) {
-							return 30;
+							return 25;
 						} else {
-							return 35 + (base.settings.feat_width) + (l * 14);
+							return 30 + (base.settings.feat_width) + (l * 14);
 						}
 					})
 					.on('mouseover', function() {
@@ -322,13 +323,13 @@
 						return _scale(d.start);
 					})
 					.attr('y1',function(d) {
-						return 35 + base.settings.feat_width / 2;
+						return 30 + base.settings.feat_width / 2;
 					})
 					.attr('x2',function(d) {
 						return _scale(d.end);
 					})
 					.attr('y2',function(d) {
-						return 35 + base.settings.feat_width / 2;
+						return 30 + base.settings.feat_width / 2;
 					})
 					.style('stroke', function(d) {
 						return d.ref.color;
@@ -345,13 +346,13 @@
 					return 0;
 				})
 				.attr('y1',function(d) {
-					return 35 + base.settings.feat_width / 2;
+					return 30 + base.settings.feat_width / 2;
 				})
 				.attr('x2',function(d) {
 					return _scale(d.length);
 				})
 				.attr('y2',function(d) {
-					return 35 + base.settings.feat_width / 2;
+					return 30 + base.settings.feat_width / 2;
 				})
 				.style('stroke-width',base.settings.seq_spineWidth)
 				.style('stroke', function(d) {
@@ -368,6 +369,76 @@
 					}
 				})
 				.attr('x',base.settings.seq_labelxPos);
+
+			if (base.settings.scale_show) {
+				seqGroups
+					.select('#scale')
+					.remove();
+
+				seqGroups
+					.each(function(d, i) {
+						d3.select(this)
+							.append('g')
+							.attr('id','scale');
+
+						var l = _scale(d.length);
+						var ticks = l / 80;
+						var scale = d3.scale.linear()
+						    .domain([1, d.length])
+						    .range([1, l]);
+
+						var ruler = d3.svg.axis()
+							.orient('bottom')
+				            .scale(scale)
+				            .tickSize(3,0,0)
+				            .tickPadding(4)
+				            .tickSubdivide(1)
+				            .tickFormat(d3.format(",.s"))
+				            .ticks(ticks);
+
+						var h = this.getBBox().height;
+						var scaleGroup = d3.select(this).select('#scale');
+
+				        scaleGroup
+				        	.attr('transform',function() {
+				        		return 'translate(0,' + (h + 15) + ")";
+				        	})
+				        	.call(ruler);
+
+				        scaleGroup
+				        	.selectAll('line')
+				        	.style('stroke','#A3A3A3');
+
+				        scaleGroup
+				        	.select('path')
+				        	.style('stroke','#A3A3A3');
+
+				        scaleGroup
+				        	.selectAll('text')
+				        	.style('font-family','Arial')
+				        	.style('font-size','10px')
+				        	.style('fill','#A3A3A3');
+
+				        var format = d3.format(',.s')
+				        scaleGroup
+							.append('text')
+							.text(function() {
+								return format(d.length) + ' bp total';
+							})
+							.attr('x',_scale(d.length) / 2)
+							.attr('y',30)
+							.style('font-weight','bold')
+							.style('text-anchor','middle')
+							.style('font-family','Arial')
+				        	.style('font-size','10px')
+				        	.style('fill','#636363');
+					})
+
+			} else {
+				seqGroups
+					.select('#scale')
+					.remove();
+			}
 
 			var startY = base.settings.margin + _navBarHeight;
 			if (base.settings.legend_show) {
@@ -430,9 +501,6 @@
 		}
 
 		base.postUnbind = function() {
-			console.log('test');
-			base.settings.__onUpdate__ = null;
-			base.settings.__bound__ = null;
 
 			return base;
 		}
