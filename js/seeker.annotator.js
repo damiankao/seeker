@@ -370,6 +370,15 @@
 				})
 				.attr('x',base.settings.seq_labelxPos);
 
+			seqGroups
+				.style('display',function(d) {
+					if (d.show) {
+						return 'block';
+					} else {
+						return 'none';
+					}
+				});
+
 			if (base.settings.scale_show) {
 				seqGroups
 					.select('#scale')
@@ -445,14 +454,8 @@
 				startY += base.settings.legend_height + base.settings.legend_spacing;
 			}
 			var startX = base.settings.margin;
+	
 			seqGroups
-				.style('display',function(d) {
-					if (d.show) {
-						return 'block';
-					} else {
-						return 'none';
-					}
-				})
 				.attr('transform',function(d,i) {
 					var trans = 'translate(' + startX + ',' + startY +')';
 					if (this.style.display == 'block') {
