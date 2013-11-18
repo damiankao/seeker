@@ -16,9 +16,19 @@ There are several components to the seeker javascript library (located in the js
 3.	seeker.annotator.js: Contains the annotator element used to render sequence feature figures
 4.	seeker.browser.js: Contains the genome browser element. Still in progress.
 
+## Genome browser ##
+work in progress 
+
+A toy demo of the genome browser can be found here: http://www.nextgenetics.net/tools/browser/browser.html 
+
+ - Data is loaded in as a delimited file instead of JSON formatted file. Decided to go with this route because pre-JSON formatted files are huge. The time saving in parsing the delimited file is not significant enough to warrant JSON formatted data. Sample data is currently genes on human chromosome 1 from UCSC. The parse.py script in the data folder parses a .gtf into the correct format.
+ - Interface is designed similar to stock charts. Bottom overview bar will show feature density of the entire reference contig. Aim is to keep the interface as simple and uncluttered as possible.
+ - Implemented a "rubber-banding" system for rendering genomic loci instead of classic google map tiling system. Seems to be working well. Potentially less update() calls needed than tiling systems. More details on this system to follow.
+ - Element pooling system to recycle svg elements instead of continuously creating and destroying DOM nodes. Saves garbage collector a lot of work.
+ - WASD key movement for scrolling through the genome.
 
 ## Annotation viewer ##
-**Version 1.0**  
+**Version 1.1**  
 This web app is used to view domain or feature annotations on genes. A demo of this app can be viewed [here](http://www.nextgenetics.net/tools/anno_view/annotator.html):  
 
 The sequence/feature rendering function is performed by the `seeker.annotator` element. This element can be instantiated by:
@@ -77,15 +87,6 @@ To change a setting and update the figure:
 	    .update();
 
 Setting the `legend_show` property to false will hide the legend. Update the figure will calling the `update()` function.
-
-## Genome browser ##
-work in progress  
-
- - Data is loaded in as a delimited file instead of JSON formatted file. Decided to go with this route because pre-JSON formatted files are huge. The time saving in parsing the delimited file is not significant enough to warrant JSON formatted data. Sample data is currently genes on human chromosome 1 from UCSC. The parse.py script in the data folder parses a .gtf into the correct format.
- - Interface is designed similar to stock charts. Bottom overview bar will show feature density of the entire reference contig. Aim is to keep the interface as simple and uncluttered as possible.
- - Implemented a "rubber-banding" system for rendering genomic loci instead of classic google map tiling system. Seems to be working well. Potentially less update() calls needed than tiling systems. More details on this system to follow.
- - Element pooling system to recycle svg elements instead of continuously creating and destroying DOM nodes. Saves garbage collector a lot of work.
- - WASD key movement for scrolling through the genome.
 
 ## Sequence editor ##
 Not yet started
