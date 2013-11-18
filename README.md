@@ -19,7 +19,7 @@ There are several components to the seeker javascript library (located in the js
 
 update(Nov 17th, 2013):  
 
- -The lack of progress is due to thesis writing. I plan to be submitting my thesis in January. Hopefully I'll pick this back up around that time.
+ - The lack of progress is due to thesis writing. I plan to be submitting my thesis in January. Hopefully I'll pick this back up around that time.
 
 
 ## Genome browser ##
@@ -29,7 +29,7 @@ A toy demo of the genome browser can be found [here](http://www.nextgenetics.net
 
 Here are some brief description of this demo:  
 
- -The demo currently displays all gene features on human chromosome 1. Features are rendered with D3.js. 
+ - The demo currently displays all gene features on human chromosome 1. Features are rendered with D3.js. 
  - Data is loaded in as a delimited file instead of JSON formatted file. Decided to go with this route because pre-JSON formatted files are huge. The time saving in parsing the delimited file is not significant enough to warrant JSON formatted data. Sample data is currently genes on human chromosome 1 from UCSC. The parse.py script in the data folder parses a .gtf into the correct format.
  - Interface is designed similar to stock charts. Bottom overview bar will show feature density of the entire reference contig. Aim is to keep the interface as simple and uncluttered as possible.
  - Implemented a "rubber-banding" system for rendering genomic loci instead of classic google map tiling system. Seems to be working well. Potentially less update() calls needed than tiling systems. More details on this system to follow.
