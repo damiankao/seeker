@@ -1,26 +1,33 @@
 # Seeker #
 
 ## Description ##
-A javascript library for visualization of biological sequencing data. In addition to a standard library of components (checkboxes, menu, buttons..), I plan to code three components: annotation viewer, genome browser, and sequence editor. 
+A javascript library for visualization of biological sequencing data. I plan to code three components: annotation viewer, genome browser, and sequence editor. 
 
 The seeker javascript library currently has 3 dependencies (located in the ext folder):
 
 1.	[D3.js](https://github.com/mbostock/d3): Used for all svg rendering and DOM manipulations
 2.	[crossfilter.js](https://github.com/square/crossfilter): Used primarily in the genome browser component. This decision is still tentative.
 3.	[FlexiColorpicker.js](https://github.com/DavidDurman/FlexiColorPicker): Used for the color picker control
+4.	[Cavg.js](http://code.google.com/p/canvg/): Rendering of gene coverage plot of the genome browser is not efficient with SVG. Instead, the plot is converted to canvas using canvg library.
 
 There are several components to the seeker javascript library (located in the js folder). I will consolidate them all into one .js file when I am done. So far there are:
 
-1.	seeker.control.js: Contains all the standard control elements (checkboxes, sliders, option menus)
+1.	seeker.control.js: Contains all the standard control elements (checkboxes, sliders, option menus).
 2.	seeker.util.js: Contains all utility functions and data binding functions for MVC
 3.	seeker.annotator.js: Contains the annotator element used to render sequence feature figures
 4.	seeker.browser.js: Contains the genome browser element. Still in progress.
 
+update(Nov 17th, 2013):
+ -The lack of progress is due to thesis writing. I plan to be submitting my thesis in January. Hopefully I'll pick this back up around that time.
+
+
 ## Genome browser ##
 work in progress 
 
-A toy demo of the genome browser can be found here: http://www.nextgenetics.net/tools/browser/browser.html 
+A toy demo of the genome browser can be found [here](http://www.nextgenetics.net/tools/browser/browser.html)  
 
+Here are some brief description of this demo:
+ -The demo currently displays all gene features on human chromosome 1. Features are rendered with D3.js. 
  - Data is loaded in as a delimited file instead of JSON formatted file. Decided to go with this route because pre-JSON formatted files are huge. The time saving in parsing the delimited file is not significant enough to warrant JSON formatted data. Sample data is currently genes on human chromosome 1 from UCSC. The parse.py script in the data folder parses a .gtf into the correct format.
  - Interface is designed similar to stock charts. Bottom overview bar will show feature density of the entire reference contig. Aim is to keep the interface as simple and uncluttered as possible.
  - Implemented a "rubber-banding" system for rendering genomic loci instead of classic google map tiling system. Seems to be working well. Potentially less update() calls needed than tiling systems. More details on this system to follow.
